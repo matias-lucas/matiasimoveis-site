@@ -1,0 +1,146 @@
+@import "tailwindcss";
+@import "../styles/tokens/colors.css";
+@import "../styles/tokens/typography.css";
+@import "../styles/tokens/spacing.css";
+
+/*
+ * Tokens above are copied verbatim from the Claude Design handoff
+ * (handoff/project/ds/tokens/*.css) — do not hand-edit values here,
+ * edit the source tokens and re-copy. See CLAUDE.md > Design system.
+ */
+
+/*
+ * typography.css ships a Google Fonts @import for Poppins/Inter; that
+ * import is stripped at copy time (see CLAUDE.md) and the fonts are
+ * loaded instead via next/font/google in src/app/layout.tsx, which
+ * exposes them as --font-poppins/--font-inter on <html>. Point the
+ * design-system's --font-display/--font-body at those here so every
+ * component that already uses the tokens picks up the self-hosted fonts
+ * for free.
+ */
+:root {
+  --font-display: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+
+@theme inline {
+  /* brand */
+  --color-brand-primary: var(--brand-primary);
+  --color-brand-primary-hover: var(--brand-primary-hover);
+  --color-brand-primary-active: var(--brand-primary-active);
+  --color-brand-secondary: var(--brand-secondary);
+  --color-brand-secondary-hover: var(--brand-secondary-hover);
+  --color-brand-secondary-active: var(--brand-secondary-active);
+
+  /* surfaces */
+  --color-bg-page: var(--bg-page);
+  --color-bg-surface: var(--bg-surface);
+  --color-bg-sunken: var(--bg-sunken);
+  --color-bg-inverse: var(--bg-inverse);
+
+  /* text */
+  --color-text-1: var(--text-1);
+  --color-text-2: var(--text-2);
+  --color-text-3: var(--text-3);
+  --color-text-on-primary: var(--text-on-primary);
+  --color-text-on-inverse: var(--text-on-inverse);
+  --color-text-link: var(--text-link);
+  --color-text-link-hover: var(--text-link-hover);
+
+  /* borders */
+  --color-border-1: var(--border-1);
+  --color-border-2: var(--border-2);
+  --color-border-focus: var(--border-focus);
+
+  /* status */
+  --color-status-venda-bg: var(--status-venda-bg);
+  --color-status-venda-fg: var(--status-venda-fg);
+  --color-status-locacao-bg: var(--status-locacao-bg);
+  --color-status-locacao-fg: var(--status-locacao-fg);
+  --color-status-success-bg: var(--status-success-bg);
+  --color-status-success-fg: var(--status-success-fg);
+  --color-status-warning-bg: var(--status-warning-bg);
+  --color-status-warning-fg: var(--status-warning-fg);
+
+  /* whatsapp */
+  --color-whatsapp: var(--whatsapp);
+  --color-whatsapp-hover: var(--whatsapp-hover);
+
+  /* raw ramps, for one-off needs */
+  --color-red-50: var(--red-50);
+  --color-red-100: var(--red-100);
+  --color-red-300: var(--red-300);
+  --color-red-500: var(--red-500);
+  --color-red-600: var(--red-600);
+  --color-red-700: var(--red-700);
+  --color-red-900: var(--red-900);
+  --color-blue-50: var(--blue-50);
+  --color-blue-100: var(--blue-100);
+  --color-blue-300: var(--blue-300);
+  --color-blue-500: var(--blue-500);
+  --color-blue-600: var(--blue-600);
+  --color-blue-700: var(--blue-700);
+  --color-blue-900: var(--blue-900);
+  --color-gray-0: var(--gray-0);
+  --color-gray-50: var(--gray-50);
+  --color-gray-100: var(--gray-100);
+  --color-gray-200: var(--gray-200);
+  --color-gray-300: var(--gray-300);
+  --color-gray-400: var(--gray-400);
+  --color-gray-500: var(--gray-500);
+  --color-gray-600: var(--gray-600);
+  --color-gray-700: var(--gray-700);
+  --color-gray-800: var(--gray-800);
+  --color-gray-900: var(--gray-900);
+  --color-green-100: var(--green-100);
+  --color-green-500: var(--green-500);
+  --color-amber-100: var(--amber-100);
+  --color-amber-500: var(--amber-500);
+
+  /* radius */
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+  --radius-pill: var(--radius-pill);
+
+  /* shadow */
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-focus: var(--shadow-focus);
+
+  /* font family */
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+
+  /* container */
+  --container-max: var(--container-max);
+}
+
+/*
+ * Layered deliberately: Tailwind's own rules live inside @layer
+ * (theme/base/components/utilities) via the @import above, and layered
+ * CSS always loses to *unlayered* CSS regardless of specificity. Without
+ * this @layer wrapper, these defaults would beat every Tailwind utility
+ * class (e.g. text-white on a link), not just get overridden by them as
+ * intended — bit us once already on the hero's outline button text.
+ */
+@layer base {
+  body {
+    background: var(--bg-page);
+    color: var(--text-1);
+    font-family: var(--font-body);
+  }
+
+  a {
+    color: var(--text-link);
+  }
+  a:hover {
+    color: var(--text-link-hover);
+  }
+
+  * {
+    border-color: var(--border-1);
+  }
+}
