@@ -12,9 +12,11 @@ import type { Property, PropertyKind, PropertyPurpose } from "./types";
 
 type PropertyRow = Database["public"]["Tables"]["properties"]["Row"];
 type PhotoRow = Database["public"]["Tables"]["property_photos"]["Row"];
-type RowWithPhotos = PropertyRow & { property_photos: PhotoRow[] };
+type BrokerRow = Database["public"]["Tables"]["brokers"]["Row"];
+type RowWithPhotos = PropertyRow & { property_photos: PhotoRow[]; brokers: BrokerRow | null };
 
-const PROPERTY_SELECT = "*, property_photos(id, storage_path, alt, is_cover, position)";
+const PROPERTY_SELECT =
+  "*, property_photos(id, storage_path, alt, is_cover, position), brokers(id, name, creci, contact)";
 
 function mapRow(row: RowWithPhotos): Property {
   const photos = [...row.property_photos].sort((a, b) => a.position - b.position);
@@ -26,6 +28,7 @@ function mapRow(row: RowWithPhotos): Property {
     ref: row.ref,
     purpose: row.purpose,
     kind: row.kind,
+    kindOther: row.kind_other ?? undefined,
     title: row.title,
     description: row.description,
     neighborhood: row.neighborhood,
@@ -37,12 +40,15 @@ function mapRow(row: RowWithPhotos): Property {
     bedrooms: row.bedrooms ?? undefined,
     bathrooms: row.bathrooms ?? undefined,
     parking: row.parking ?? undefined,
+    parkingMotorcycleOnly: row.parking_motorcycle_only,
     areaM2: Number(row.area_m2 ?? 0),
     lotAreaM2: row.lot_area_m2 != null ? Number(row.lot_area_m2) : undefined,
     features: row.features.length ? row.features : undefined,
     status: row.status,
     featured: row.featured,
-    broker: { name: row.broker_name, creci: row.broker_creci },
+    broker: row.brokers
+      ? { id: row.brokers.id, name: row.brokers.name, creci: row.brokers.creci, contact: row.brokers.contact }
+      : undefined,
     photos: photos.map((p) => ({
       id: p.id,
       url: publicStorageUrl(p.storage_path),
