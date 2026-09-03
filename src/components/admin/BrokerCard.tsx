@@ -99,18 +99,21 @@ export function BrokerCard({ broker, updateAction, deleteAction }: BrokerCardPro
           <Input label="CRECI" name="creci" defaultValue={broker.creci} required />
           <Input label="Contato" name="contact" defaultValue={broker.contact} required />
         </div>
-        <div className="flex items-center gap-2 self-start">
-          <Button type="submit" size="sm" disabled={uploading}>
-            Salvar
-          </Button>
-          <button
-            type="button"
-            onClick={() => setIsEditing(false)}
-            className="text-text-2 bg-transparent border-none cursor-pointer px-2 py-2 transition-colors duration-150 ease-out hover:text-text-1"
-            style={{ font: "var(--text-body-sm)" }}
-          >
-            Cancelar
-          </button>
+        <div className="flex items-center justify-between gap-2 w-full">
+          <div className="flex items-center gap-2">
+            <Button type="submit" size="sm" disabled={uploading}>
+              Salvar
+            </Button>
+            <button
+              type="button"
+              onClick={() => setIsEditing(false)}
+              className="text-text-2 bg-transparent border-none cursor-pointer px-2 py-2 transition-colors duration-150 ease-out hover:text-text-1"
+              style={{ font: "var(--text-body-sm)" }}
+            >
+              Cancelar
+            </button>
+          </div>
+          <DeleteBrokerButton action={deleteAction} name={broker.name} />
         </div>
       </form>
     );
@@ -161,7 +164,6 @@ export function BrokerCard({ broker, updateAction, deleteAction }: BrokerCardPro
         >
           <Pencil className="w-3.5 h-3.5" />
         </button>
-        <DeleteBrokerButton action={deleteAction} name={broker.name} iconOnly />
       </div>
     </div>
   );

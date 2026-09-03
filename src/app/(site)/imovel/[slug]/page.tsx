@@ -138,6 +138,28 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
             <p className="text-text-2 mt-5 leading-[1.7]" style={{ font: "var(--text-body-md)" }}>
               {description}
             </p>
+
+            {property.videos && property.videos.length > 0 && (
+              <div className="mt-7">
+                <h2
+                  className="text-text-1 mb-3"
+                  style={{ font: "var(--text-display-sm)", fontFamily: "var(--font-display)" }}
+                >
+                  Vídeos
+                </h2>
+                <div className="flex flex-col gap-4">
+                  {property.videos.map((video) => (
+                    <video
+                      key={video.id}
+                      src={video.url}
+                      controls
+                      preload="metadata"
+                      className="w-full rounded-lg bg-bg-sunken"
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

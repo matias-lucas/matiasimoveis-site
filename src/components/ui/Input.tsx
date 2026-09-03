@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { clsx } from "clsx";
 
 interface InputProps extends React.ComponentPropsWithoutRef<"input"> {
-  label?: string;
+  label?: ReactNode;
   icon?: ReactNode;
   containerClassName?: string;
 }

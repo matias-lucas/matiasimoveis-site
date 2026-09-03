@@ -201,6 +201,41 @@ export type Database = {
           },
         ];
       };
+      property_videos: {
+        Row: {
+          created_at: string;
+          id: string;
+          label: string;
+          position: number;
+          property_id: string;
+          storage_path: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          label?: string;
+          position?: number;
+          property_id: string;
+          storage_path: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          label?: string;
+          position?: number;
+          property_id?: string;
+          storage_path?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "property_videos_property_id_fkey";
+            columns: ["property_id"];
+            isOneToOne: false;
+            referencedRelation: "properties";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: { [_ in never]: never };
     Functions: { [_ in never]: never };

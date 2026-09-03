@@ -29,8 +29,8 @@ export function DeletePropertyButton({ action, title, className }: DeletePropert
       }
       style={{ font: "var(--text-body-sm)" }}
     >
-      <Trash2 className="w-3.5 h-3.5" />
-      Excluir
+      <Trash2 className="w-4 h-5.5" />
+      
     </button>
   );
 }

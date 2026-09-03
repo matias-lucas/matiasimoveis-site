@@ -1,5 +1,5 @@
 import { createPublicClient } from "./supabase/public";
-import { publicStorageUrl } from "./supabase/env";
+import { publicStorageUrl, PROPERTY_VIDEOS_BUCKET } from "./supabase/env";
 import type { Database } from "./supabase/database.types";
 import type { Property, PropertyKind, PropertyPurpose } from "./types";
 
@@ -12,15 +12,21 @@ import type { Property, PropertyKind, PropertyPurpose } from "./types";
 
 type PropertyRow = Database["public"]["Tables"]["properties"]["Row"];
 type PhotoRow = Database["public"]["Tables"]["property_photos"]["Row"];
+type VideoRow = Database["public"]["Tables"]["property_videos"]["Row"];
 type BrokerRow = Database["public"]["Tables"]["brokers"]["Row"];
-type RowWithPhotos = PropertyRow & { property_photos: PhotoRow[]; brokers: BrokerRow | null };
+type RowWithPhotos = PropertyRow & {
+  property_photos: PhotoRow[];
+  property_videos: VideoRow[];
+  brokers: BrokerRow | null;
+};
 
 const PROPERTY_SELECT =
-  "*, property_photos(id, storage_path, alt, is_cover, position), brokers(id, name, creci, contact)";
+  "*, property_photos(id, storage_path, alt, is_cover, position), property_videos(id, storage_path, label, position), brokers(id, name, creci, contact)";
 
 function mapRow(row: RowWithPhotos): Property {
   const photos = [...row.property_photos].sort((a, b) => a.position - b.position);
   const cover = photos.find((p) => p.is_cover) ?? photos[0];
+  const videos = [...row.property_videos].sort((a, b) => a.position - b.position);
 
   return {
     id: row.id,
@@ -57,6 +63,12 @@ function mapRow(row: RowWithPhotos): Property {
       position: p.position,
     })),
     coverImage: cover ? publicStorageUrl(cover.storage_path) : undefined,
+    videos: videos.map((v) => ({
+      id: v.id,
+      url: publicStorageUrl(v.storage_path, PROPERTY_VIDEOS_BUCKET),
+      label: v.label,
+      position: v.position,
+    })),
   };
 }
 

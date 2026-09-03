@@ -1,13 +1,15 @@
 import { createClient } from "@/lib/supabase/server";
-import { publicStorageUrl } from "@/lib/supabase/env";
+import { publicStorageUrl, PROPERTY_VIDEOS_BUCKET } from "@/lib/supabase/env";
 import type { Database } from "@/lib/supabase/database.types";
 
 export type AdminPropertyRow = Database["public"]["Tables"]["properties"]["Row"];
 export type AdminPhotoRow = Database["public"]["Tables"]["property_photos"]["Row"];
+export type AdminVideoRow = Database["public"]["Tables"]["property_videos"]["Row"];
 export type BrokerRow = Database["public"]["Tables"]["brokers"]["Row"];
 
 export interface AdminProperty extends AdminPropertyRow {
   photos: (AdminPhotoRow & { url: string })[];
+  videos: (AdminVideoRow & { url: string })[];
 }
 
 export interface AdminPropertyListItem extends AdminPropertyRow {
@@ -39,19 +41,22 @@ export async function getPropertyById(id: string): Promise<AdminProperty | null>
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("properties")
-    .select("*, property_photos(*)")
+    .select("*, property_photos(*), property_videos(*)")
     .eq("id", id)
     .maybeSingle();
 
   if (error) throw new Error(error.message);
   if (!data) return null;
 
-  const { property_photos, ...rest } = data;
+  const { property_photos, property_videos, ...rest } = data;
   return {
     ...rest,
     photos: [...property_photos]
       .sort((a, b) => a.position - b.position)
       .map((p) => ({ ...p, url: publicStorageUrl(p.storage_path) })),
+    videos: [...property_videos]
+      .sort((a, b) => a.position - b.position)
+      .map((v) => ({ ...v, url: publicStorageUrl(v.storage_path, PROPERTY_VIDEOS_BUCKET) })),
   };
 }
 

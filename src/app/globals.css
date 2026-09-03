@@ -144,3 +144,116 @@
     border-color: var(--border-1);
   }
 }
+
+/*
+ * PropertyForm's characteristics/location/photos tabs (src/components/admin/
+ * PropertyForm.tsx). Deliberately unlayered like the block above: the
+ * pf-panel rule needs to beat the .h-11/.gap-4 Tailwind utilities still
+ * present on individual fields, which a @layer components rule couldn't do
+ * against Tailwind's own @layer utilities. Class names are pf-* namespaced
+ * so nothing else on the site is affected. Visibility is driven by
+ * .pf-tabs:has(#pfTabN:checked) rather than a #pfTabN:checked ~ sibling
+ * combinator, since the radios and the panel they control aren't always
+ * direct siblings (any wrapper in between breaks ~).
+ *
+ * The 3 panels scroll internally instead of growing the page: pf-panel-wrap
+ * holds all three positioned absolutely (inset: 0), which removes them from
+ * normal flow so they contribute no height to .pf-tabs — .pf-tabs's own
+ * height then comes only from the tabnav (auto) + pf-panel-wrap's flex-grow
+ * share of whatever height .pf-tabs is given. .pf-tabs itself is stretched
+ * (form's items-stretch) to match the left sidebar column's height exactly,
+ * since that column is always the taller of the two grid items. Net effect:
+ * both columns render at the same height, the active panel fills the
+ * remaining space below the tabnav and scrolls its own overflow, and the
+ * page never grows past that — no page-level scroll, no magic-number
+ * max-height, no JS.
+ */
+.pf-tabnav {
+  display: inline-flex;
+  align-items: center;
+  gap: 20px;
+  border-bottom: 1px solid var(--border-1);
+  margin-bottom: 4px;
+}
+.pf-tab {
+  display: none;
+  cursor: pointer;
+  padding: 8px 2px;
+  color: var(--text-2);
+  font: var(--text-label);
+  font-family: var(--font-display);
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  transition: color 150ms ease-out, border-color 150ms ease-out;
+}
+.pf-tab-1,
+.pf-tab-2 {
+  display: inline-flex;
+  align-items: center;
+}
+.pf-tab:hover {
+  color: var(--text-1);
+}
+form:has(input[name="purpose"][value="venda"]:checked) .pf-tab-corretor {
+  display: inline-flex;
+  align-items: center;
+}
+.pf-tabs:has(#pfTab1:checked) .pf-tab-1,
+.pf-tabs:has(#pfTab2:checked) .pf-tab-2,
+.pf-tabs:has(#pfTab3:checked) .pf-tab-3 {
+  color: var(--brand-secondary);
+  border-bottom-color: var(--brand-secondary);
+}
+.pf-tabs:has(#pfTab1:focus-visible) .pf-tab-1,
+.pf-tabs:has(#pfTab2:focus-visible) .pf-tab-2,
+.pf-tabs:has(#pfTab3:focus-visible) .pf-tab-3 {
+  box-shadow: var(--shadow-focus);
+}
+.pf-panel-wrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+.pf-panel {
+  display: none;
+  flex-direction: column;
+  gap: 20px;
+  background: var(--bg-sunken);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+}
+.pf-tabs:has(#pfTab1:checked) .pf-panel-1,
+.pf-tabs:has(#pfTab2:checked) .pf-panel-2,
+.pf-tabs:has(#pfTab3:checked) .pf-panel-3 {
+  display: flex;
+}
+.pf-panel-scroll {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  padding-right: 8px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-2) transparent;
+}
+.pf-panel-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+.pf-panel-scroll::-webkit-scrollbar-button {
+  display: none;
+}
+.pf-panel-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.pf-panel-scroll::-webkit-scrollbar-thumb {
+  background: var(--border-2);
+  border-radius: var(--radius-pill);
+}
+.pf-panel-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--text-3);
+}
+.pf-field-icon svg {
+  color: var(--text-2);
+}
+.pf-layout-2x2 {
+  gap: 12px;
+}

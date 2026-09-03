@@ -5,6 +5,7 @@ import { ArrowLeft, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { PropertyForm } from "@/components/admin/PropertyForm";
 import { PhotoManager } from "@/components/admin/PhotoManager";
+import { VideoManager } from "@/components/admin/VideoManager";
 import { DeletePropertyButton } from "@/components/admin/DeletePropertyButton";
 import { getPropertyById, listBrokers } from "@/lib/admin/queries";
 import { updateProperty, setPublished, deleteProperty } from "../actions";
@@ -83,6 +84,9 @@ export default async function EditPropertyPage({ params }: EditPropertyPageProps
         brokers={brokers}
         photoManager={
           <PhotoManager propertyId={property.id} propertyTitle={property.title} initialPhotos={property.photos} />
+        }
+        videoManager={
+          <VideoManager propertyId={property.id} propertyTitle={property.title} initialVideos={property.videos} />
         }
         action={updateProperty.bind(null, property.id)}
         submitLabel="Salvar alterações"

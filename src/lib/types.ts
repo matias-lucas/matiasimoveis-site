@@ -27,6 +27,13 @@ export interface PropertyPhotoRecord {
   position: number;
 }
 
+export interface PropertyVideoRecord {
+  id: string;
+  url: string;
+  label: string;
+  position: number;
+}
+
 export interface Property {
   id: string;
   slug: string;
@@ -60,4 +67,6 @@ export interface Property {
   photos?: PropertyPhotoRecord[];
   /** Cover photo URL (Supabase Storage), or undefined to show the placeholder state. */
   coverImage?: string;
+  /** Public listing videos, ordered. */
+  videos?: PropertyVideoRecord[];
 }
