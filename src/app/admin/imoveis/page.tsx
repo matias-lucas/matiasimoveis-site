@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { PropertyPhoto } from "@/components/property/PropertyPhoto";
 import { DeletePropertyButton } from "@/components/admin/DeletePropertyButton";
 import { listProperties, type PublishFilter } from "@/lib/admin/queries";
-import { KIND_LABELS, STATUS_LABELS } from "@/lib/admin/labels";
+import { KIND_LABELS, LEGACY_KIND_LABELS, STATUS_LABELS } from "@/lib/admin/labels";
 import { formatPrice } from "@/lib/format";
 import { setPublished, setFeatured, deleteProperty } from "./actions";
 
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
 const TABS: { value: PublishFilter; label: string }[] = [
   { value: "all", label: "Todos" },
   { value: "published", label: "Publicados" },
-  { value: "draft", label: "Rascunhos" },
+  { value: "draft", label: "Ocultos" },
 ];
 
 interface AdminImoveisPageProps {
@@ -87,7 +87,7 @@ export default async function AdminImoveisPage({ searchParams }: AdminImoveisPag
                   <span className="text-text-3" style={{ font: "var(--text-caption)" }}>
                     {property.kind === "outros" && property.kind_other
                       ? property.kind_other
-                      : KIND_LABELS[property.kind]}{" "}
+                      : (KIND_LABELS[property.kind] ?? LEGACY_KIND_LABELS[property.kind])}{" "}
                     · Ref.: {property.ref}
                   </span>
                 </div>
@@ -131,7 +131,7 @@ export default async function AdminImoveisPage({ searchParams }: AdminImoveisPag
                     style={{ font: "var(--text-body-sm)" }}
                   >
                     {property.published ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-                    {property.published ? "Publicado" : "Rascunho"}
+                    {property.published ? "Visível" : "Oculto"}
                   </button>
                 </form>
 

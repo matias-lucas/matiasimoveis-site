@@ -9,7 +9,7 @@ import { WhatsAppLink } from "@/components/ui/WhatsAppLink";
 import { Button } from "@/components/ui/Button";
 import { getAllPublishedSlugs, getPropertyBySlug } from "@/lib/queries";
 import { formatArea, formatPrice, pluralize } from "@/lib/format";
-import { propertyInquiryMessage } from "@/lib/whatsapp";
+import { propertyInquiryMessage, toWhatsAppNumber } from "@/lib/whatsapp";
 import { SITE } from "@/lib/site";
 
 interface PropertyDetailPageProps {
@@ -56,6 +56,13 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
     price,
     broker,
   } = property;
+
+  // Venda listings route contact straight to the responsible broker; locação
+  // (and venda without a broker assigned) falls back to the company line.
+  const directBroker = purpose === "venda" ? broker : undefined;
+  const contactWhatsAppNumber = directBroker ? toWhatsAppNumber(directBroker.contact) : undefined;
+  const contactPhoneHref = directBroker ? `tel:+${toWhatsAppNumber(directBroker.contact)}` : SITE.phoneHref;
+  const contactPhoneLabel = directBroker ? directBroker.contact : SITE.phone;
 
   return (
     <Container className="py-8">
@@ -138,15 +145,21 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
           <div className="text-brand-primary" style={{ font: "var(--text-price)", fontSize: 32 }}>
             {formatPrice(price, purpose)}
           </div>
-          <WhatsAppLink message={propertyInquiryMessage(property)} className="w-full">
+          <WhatsAppLink
+            message={propertyInquiryMessage(property)}
+            number={contactWhatsAppNumber}
+            className="w-full"
+          >
             Falar no WhatsApp
           </WhatsAppLink>
-          <Button variant="outline" href={SITE.phoneHref} icon={<Phone className="w-4 h-4" />} className="w-full">
-            {SITE.phone}
+          <Button variant="outline" href={contactPhoneHref} icon={<Phone className="w-4 h-4" />} className="w-full">
+            {contactPhoneLabel}
           </Button>
-          <div className="text-text-3" style={{ font: "var(--text-caption)" }}>
-            Corretor responsável: {broker.name} · {broker.creci}
-          </div>
+          {directBroker && (
+            <div className="text-text-3" style={{ font: "var(--text-caption)" }}>
+              Corretor responsável: {directBroker.name} · {directBroker.creci}
+            </div>
+          )}
         </div>
       </div>
     </Container>

@@ -7,6 +7,13 @@ export function buildWhatsAppUrl(message: string, number: string = SITE.whatsapp
   return `https://api.whatsapp.com/send?${params.toString()}`;
 }
 
+/** Normalizes a human-typed Brazilian phone (e.g. "(62) 99999-9999") into the
+ *  digits-only, country-code-prefixed format WhatsApp's API expects. */
+export function toWhatsAppNumber(phone: string): string {
+  const digits = phone.replace(/\D/g, "");
+  return digits.startsWith("55") ? digits : `55${digits}`;
+}
+
 export function propertyInquiryMessage(property: Property): string {
   const price = formatPrice(property.price, property.purpose);
   const url = `${SITE.url}/imovel/${property.slug}`;

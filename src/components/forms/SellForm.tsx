@@ -26,10 +26,12 @@ const PURPOSE_OPTIONS = [
 
 const KIND_OPTIONS = [
   { value: "Casa", label: "Casa" },
+  { value: "Kitnet", label: "Kitnet" },
   { value: "Apartamento", label: "Apartamento" },
-  { value: "Lote", label: "Lote" },
+  { value: "Sala comercial", label: "Sala comercial" },
   { value: "Galpão", label: "Galpão" },
-  { value: "Kitnete", label: "Kitnete" },
+  { value: "Lote", label: "Lote" },
+  { value: "Outros", label: "Outros" },
 ];
 
 export function SellForm() {

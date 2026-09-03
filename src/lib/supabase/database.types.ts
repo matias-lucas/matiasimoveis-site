@@ -18,6 +18,7 @@ export type Database = {
           creci: string;
           id: string;
           name: string;
+          photo_path: string | null;
         };
         Insert: {
           contact: string;
@@ -25,6 +26,7 @@ export type Database = {
           creci: string;
           id?: string;
           name: string;
+          photo_path?: string | null;
         };
         Update: {
           contact?: string;
@@ -32,6 +34,7 @@ export type Database = {
           creci?: string;
           id?: string;
           name?: string;
+          photo_path?: string | null;
         };
         Relationships: [];
       };

@@ -4,16 +4,8 @@ import { useState } from "react";
 import { Search, MapPin } from "lucide-react";
 import { Select } from "@/components/ui/Select";
 import { PRICE_BANDS } from "@/lib/price-bands";
+import { KIND_OPTIONS } from "@/lib/admin/labels";
 import type { PropertyPurpose } from "@/lib/types";
-
-const KIND_OPTIONS = [
-  { value: "casa", label: "Casa" },
-  { value: "apartamento", label: "Apartamento" },
-  { value: "sobrado", label: "Sobrado" },
-  { value: "lote", label: "Lote" },
-  { value: "galpao", label: "Galpão" },
-  { value: "kitnete", label: "Kitnete" },
-];
 
 const BEDROOM_OPTIONS = [
   { value: "1", label: "1+" },

@@ -11,13 +11,14 @@ interface BrokerFormProps {
 export function BrokerForm({ broker, action, submitLabel }: BrokerFormProps) {
   return (
     <form action={action} className="flex flex-col gap-5 bg-bg-surface border border-border-1 rounded-lg p-7">
+      <input type="hidden" name="photoPath" value={broker?.photo_path ?? ""} />
       <Input label="Nome" name="name" defaultValue={broker?.name} required />
       <Input label="CRECI" name="creci" placeholder="Ex.: CRECI-GO 9155" defaultValue={broker?.creci} required />
       <div className="flex flex-col gap-1.5">
         <Input
           label="Contato"
           name="contact"
-          placeholder="Ex.: (62) 99999-9999"
+          placeholder="Ex.: (62) 9 9999-9999"
           defaultValue={broker?.contact}
           required
         />

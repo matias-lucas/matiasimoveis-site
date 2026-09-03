@@ -5,6 +5,8 @@ import type { ButtonSize } from "./Button";
 
 interface WhatsAppLinkProps {
   message: string;
+  /** Overrides the destination number (digits, country-code prefixed). Defaults to SITE.whatsappNumber. */
+  number?: string;
   children: React.ReactNode;
   size?: ButtonSize;
   className?: string;
@@ -22,10 +24,10 @@ const sizeFont: Record<ButtonSize, string> = {
   lg: "var(--text-display-sm)",
 };
 
-export function WhatsAppLink({ message, children, size = "md", className }: WhatsAppLinkProps) {
+export function WhatsAppLink({ message, number, children, size = "md", className }: WhatsAppLinkProps) {
   return (
     <a
-      href={buildWhatsAppUrl(message)}
+      href={buildWhatsAppUrl(message, number)}
       target="_blank"
       rel="noopener noreferrer"
       className={clsx(

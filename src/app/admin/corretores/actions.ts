@@ -5,10 +5,12 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
 function fieldsFromForm(formData: FormData) {
+  const photoPath = ((formData.get("photoPath") as string) ?? "").trim();
   return {
     name: ((formData.get("name") as string) ?? "").trim(),
     creci: ((formData.get("creci") as string) ?? "").trim(),
     contact: ((formData.get("contact") as string) ?? "").trim(),
+    photo_path: photoPath || null,
   };
 }
 

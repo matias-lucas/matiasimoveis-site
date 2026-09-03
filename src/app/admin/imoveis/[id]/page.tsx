@@ -24,21 +24,21 @@ export default async function EditPropertyPage({ params }: EditPropertyPageProps
   if (!property) notFound();
 
   return (
-    <div className="max-w-[820px] mx-auto px-8 py-8">
+    <div className="max-w-[1080px] mx-auto px-8 py-8">
       <Link
         href="/admin/imoveis"
         className="inline-flex items-center gap-1.5 text-text-2 no-underline mb-4 hover:text-text-1 transition-colors duration-150 ease-out"
         style={{ font: "var(--text-body-sm)" }}
       >
         <ArrowLeft className="w-4 h-4" />
-        Voltar para a lista
+        Voltar
       </Link>
 
       <div className="flex items-start justify-between gap-4 mb-6">
         <div>
           <div className="flex items-center gap-2 mb-2">
             <Badge tone={property.published ? "success" : "warning"}>
-              {property.published ? "Publicado" : "Rascunho"}
+              {property.published ? "Visível" : "Oculto"}
             </Badge>
             <span className="text-text-3" style={{ font: "var(--text-caption)" }}>
               Ref.: {property.ref}

@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { Plus, Pencil } from "lucide-react";
+import { Plus } from "lucide-react";
 import { Container } from "@/components/layout/Container";
 import { Button } from "@/components/ui/Button";
-import { DeleteBrokerButton } from "@/components/admin/DeleteBrokerButton";
+import { BrokerCard } from "@/components/admin/BrokerCard";
 import { listBrokers } from "@/lib/admin/queries";
-import { deleteBroker } from "./actions";
+import { updateBroker, deleteBroker } from "./actions";
 
 export const metadata: Metadata = {
   title: "Corretores",
@@ -35,33 +35,14 @@ export default async function AdminCorretoresPage() {
           </p>
         </div>
       ) : (
-        <div className="flex flex-col gap-3">
+        <div className="grid grid-cols-3 gap-5">
           {brokers.map((broker) => (
-            <div
+            <BrokerCard
               key={broker.id}
-              className="flex items-center gap-4 bg-bg-surface border border-border-1 rounded-lg p-4"
-            >
-              <div className="flex-1 min-w-0">
-                <div className="text-text-1 font-semibold truncate" style={{ font: "var(--text-body-md)" }}>
-                  {broker.name}
-                </div>
-                <div className="text-text-2 truncate" style={{ font: "var(--text-body-sm)" }}>
-                  {broker.creci} · {broker.contact}
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 shrink-0">
-                <Button
-                  href={`/admin/corretores/${broker.id}`}
-                  variant="outline"
-                  size="sm"
-                  icon={<Pencil className="w-3.5 h-3.5" />}
-                >
-                  Editar
-                </Button>
-                <DeleteBrokerButton action={deleteBroker.bind(null, broker.id)} name={broker.name} />
-              </div>
-            </div>
+              broker={broker}
+              updateAction={updateBroker.bind(null, broker.id)}
+              deleteAction={deleteBroker.bind(null, broker.id)}
+            />
           ))}
         </div>
       )}

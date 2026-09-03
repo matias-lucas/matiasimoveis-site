@@ -14,14 +14,14 @@ export default async function NewPropertyPage() {
   const brokers = await listBrokers();
 
   return (
-    <div className="max-w-[820px] mx-auto px-8 py-8">
+    <div className="max-w-[1080px] mx-auto px-8 py-8">
       <Link
         href="/admin/imoveis"
         className="inline-flex items-center gap-1.5 text-text-2 no-underline mb-4 hover:text-text-1 transition-colors duration-150 ease-out"
         style={{ font: "var(--text-body-sm)" }}
       >
         <ArrowLeft className="w-4 h-4" />
-        Voltar para a lista
+        Voltar
       </Link>
 
       <h1
