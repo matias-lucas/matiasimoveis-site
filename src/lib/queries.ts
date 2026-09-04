@@ -108,10 +108,74 @@ export async function getAllPublishedSlugs(): Promise<string[]> {
 export interface ImovelFilters {
   purpose?: ImovelPurpose;
   neighborhood?: string;
-  kind?: ImovelKind;
+  // Lista de kinds quando o filtro "Tipo" é uma categoria (Residencial/
+  // Comercial/Lotes) — ver resolveKindFilter() em lib/imovel-kind-categories.
+  kind?: ImovelKind | ImovelKind[];
   minBedrooms?: number;
+  maxBedrooms?: number;
   minPrice?: number;
   maxPrice?: number;
+}
+
+export interface ImovelRange {
+  minPrice: number;
+  maxPrice: number;
+  minBedrooms: number;
+  maxBedrooms: number;
+}
+
+export interface ImovelRangesByPurpose {
+  locacao: ImovelRange;
+  venda: ImovelRange;
+}
+
+// Usado quando não há nenhum imóvel publicado para a finalidade (catálogo
+// vazio ainda) — sem isso min/max ficariam os dois em 0 e o slider de faixa
+// dupla teria largura zero.
+const FALLBACK_RANGE: ImovelRange = { minPrice: 0, maxPrice: 5000, minBedrooms: 0, maxBedrooms: 5 };
+
+function computeRange(rows: { price: number; bedrooms: number | null }[]): ImovelRange {
+  if (rows.length === 0) return FALLBACK_RANGE;
+
+  const prices = rows.map((row) => row.price);
+  const bedrooms = rows.map((row) => row.bedrooms).filter((value): value is number => value != null);
+
+  const minPrice = Math.min(...prices);
+  const maxPrice = Math.max(...prices);
+  const minBedrooms = bedrooms.length ? Math.min(...bedrooms) : FALLBACK_RANGE.minBedrooms;
+  const maxBedrooms = bedrooms.length ? Math.max(...bedrooms) : FALLBACK_RANGE.maxBedrooms;
+
+  return {
+    minPrice,
+    // maxPrice === minPrice (só um imóvel, ou todos com o mesmo preço)
+    // também deixaria o slider com largura zero.
+    maxPrice: maxPrice > minPrice ? maxPrice : minPrice + 500,
+    minBedrooms,
+    maxBedrooms: maxBedrooms > minBedrooms ? maxBedrooms : minBedrooms + 1,
+  };
+}
+
+/**
+ * Menor/maior preço e nº de quartos entre os imóveis publicados, por
+ * finalidade — usado para calibrar os extremos do slider de faixa dupla do
+ * SearchFilterBar em vez de limites fixos arbitrários.
+ */
+export async function getImovelRanges(): Promise<ImovelRangesByPurpose> {
+  const supabase = createPublicClient();
+  const { data, error } = await supabase.from("properties").select("purpose, price, bedrooms").eq("published", true);
+
+  if (error) throw error;
+
+  const rows = data ?? [];
+  const byPurpose = (purpose: ImovelPurpose) =>
+    rows
+      .filter((row) => row.purpose === purpose)
+      .map((row) => ({ price: Number(row.price), bedrooms: row.bedrooms }));
+
+  return {
+    locacao: computeRange(byPurpose("locacao")),
+    venda: computeRange(byPurpose("venda")),
+  };
 }
 
 export async function searchImoveis(filters: ImovelFilters): Promise<Imovel[]> {
@@ -124,8 +188,11 @@ export async function searchImoveis(filters: ImovelFilters): Promise<Imovel[]> {
 
   if (filters.purpose) query = query.eq("purpose", filters.purpose);
   if (filters.neighborhood) query = query.ilike("neighborhood", `%${filters.neighborhood}%`);
-  if (filters.kind) query = query.eq("kind", filters.kind);
+  if (filters.kind) {
+    query = Array.isArray(filters.kind) ? query.in("kind", filters.kind) : query.eq("kind", filters.kind);
+  }
   if (filters.minBedrooms) query = query.gte("bedrooms", filters.minBedrooms);
+  if (filters.maxBedrooms != null) query = query.lte("bedrooms", filters.maxBedrooms);
   if (filters.minPrice != null) query = query.gte("price", filters.minPrice);
   if (filters.maxPrice != null) query = query.lte("price", filters.maxPrice);
 

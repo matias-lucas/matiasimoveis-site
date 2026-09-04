@@ -90,7 +90,10 @@ src/lib/queries.ts          Public read layer — searchImoveis()/getImovelBySlu
                             gained `await`). RLS restricts these to `published = true` rows.
 src/lib/format.ts           formatPrice/formatArea/pluralize/slugify — small display/string
                             helpers with no Supabase dependency, used across app/ and components/.
-src/lib/price-bands.ts      Purpose-dependent price filter buckets (see "Fixed bugs" below).
+src/lib/imovel-kind-categories.ts KIND_CATEGORIES (Residencial/Comercial/Lotes — the first row of
+                            "Tipo" buttons in SearchFilterBar) and resolveKindFilter(), which
+                            turns the URL's `tipo` value into either a single ImovelKind or the
+                            category's full list for searchImoveis()'s `.in()` filter.
 src/lib/whatsapp.ts         buildWhatsAppUrl() + the 3 message builders (imovelInquiryMessage,
                             sellInquiryMessage, contactInquiryMessage). All lead capture goes
                             through here.
@@ -136,9 +139,14 @@ src/components/ui/          Design-system primitives ported from the handoff's _
                             flows) and FieldError (react-hook-form error line, used by every
                             form). These stay English-named — generic UI vocabulary, not this
                             business's domain — see "Domain vocabulary" below.
-src/components/imovel/      ImovelCard, SearchFilterBar (native GET form, client component only
-                            because the price-band options depend on the Alugar/Comprar toggle —
-                            see below), ImovelPhoto (shared image-or-placeholder slot, now also
+src/components/imovel/      ImovelCard, ImovelCardSkeleton (same footprint as ImovelCard, shown
+                            while a filter change is in flight — see the auto-submit note below),
+                            SearchFilterBar (client component: purpose-dependent range-slider
+                            bounds, and now also owns auto-submit-on-change — see "Fixed bugs"
+                            below), ImoveisResultsSection (client wrapper used only by
+                            /imoveis/page.tsx — pairs SearchFilterBar with the results grid so it
+                            can swap in ImovelCardSkeleton while a navigation it triggered is
+                            pending), ImovelPhoto (shared image-or-placeholder slot, now also
                             used for real Supabase Storage photos, not just mock data).
                             Public-facing only — admin equivalents live under components/admin/.
 src/components/layout/      Navbar, Footer, WhatsAppFab, Container. Wired into
@@ -287,10 +295,32 @@ From the user, during implementation:
   rules). Caught via screenshot — the hero's white outline button was rendering blue-purple text.
   Fixed by wrapping those base rules in `@layer base { ... }` in `globals.css`. If a Tailwind
   color/border utility ever silently "doesn't work" again, check for unlayered CSS first.
-- **Price bands are purpose-dependent** (`lib/price-bands.ts`): the handoff's `SearchFilterBar`
-  had one fixed sale-oriented price scale (hundreds of thousands) applied regardless of
-  Alugar/Comprar — meaningless for rent prices (hundreds/month). `SearchFilterBar` is a client
-  component specifically so the "Faixa de preço" options can react to the purpose toggle.
+- **Quartos/Faixa de preço bounds are purpose-dependent**: the handoff's `SearchFilterBar` had one
+  fixed sale-oriented price scale (hundreds of thousands) applied regardless of Alugar/Comprar —
+  meaningless for rent prices (hundreds/month). `getImovelRanges()` (`lib/queries.ts`) computes
+  real min/max price and bedroom counts per finalidade from published listings, and
+  `SearchFilterBar`'s `DualRangeSlider` remounts (`key={`quartos-${purpose}`}`, same for preço)
+  with that finalidade's bounds whenever the toggle changes. This replaced an earlier discrete
+  "price band" `<select>` (`lib/price-bands.ts`, now deleted) with a continuous two-handle slider.
+- **`SearchFilterBar` has no submit button — it auto-submits on every change**, debounced for
+  Bairro, via `router.push` wrapped in `useTransition` (not a native form GET). The `<form>` is
+  still the source of truth for field values (read with `new FormData(formRef.current)` at submit
+  time) so the native radio/hidden-input plumbing didn't need to change, just how submission is
+  triggered: a delegated `onChange` on the `<form>` schedules `submitNow()` — immediately for most
+  fields, after a 500ms debounce for `bairro` (`name=""` visible range `<input type="range">`
+  elements are ignored here; they fire onChange on every drag tick, and their commit instead comes
+  from `DualRangeSlider`'s new `onCommit` prop, called on pointer-up/blur). The one subtlety: when
+  the Alugar/Comprar toggle changes, `setPurpose` remounts the two `DualRangeSlider`s with a new
+  finalidade's default bounds, but that remount hasn't committed yet inside the same synchronous
+  change-event handler — reading `FormData` right there would still see the *old* finalidade's
+  slider values. `scheduleSubmit`'s `setTimeout(fn, delay)` (even at `delay=0`) defers to the next
+  macrotask, which is after React's commit, so `submitNow()` always reads the post-remount DOM.
+  `SearchFilterBar` takes an optional `onPendingChange(pending)` prop — `/imoveis` wires it up via
+  `ImoveisResultsSection` (a small client wrapper) to swap the results grid for
+  `ImovelCardSkeleton` cards while `isPending` is true, so a filter change never blanks the page
+  (the "pisca-pisca" the user explicitly asked to avoid) while still showing that something is
+  loading. Home's usage of `SearchFilterBar` doesn't pass `onPendingChange` — there's no local
+  results grid to cover there, changing a filter just client-navigates to `/imoveis`.
 - **`ImovelPhoto` never reuses the one real handoff photo across listings.** The handoff bundle
   had exactly one real stock photo (a house exterior, embedded in `.image-slots.state.json`),
   repeated across every image slot in the prototype. Reusing it across 6 different fake listings
@@ -300,9 +330,12 @@ From the user, during implementation:
   empty state instead. Don't wire the hero photo into card placeholders as a shortcut.
 - **Native HTML over client state where possible**: SegmentedControl/purpose toggle = radio
   inputs + `peer-checked`/`group-has-checked` CSS, not `useState`. Checkbox = same pattern.
-  `SearchFilterBar` submits via a real `<form method="get">` to `/imoveis` — filters are URL
-  query params, shareable/bookmarkable, not client state. Keep this pattern for new interactive
-  UI unless there's a real reason (e.g. price bands) to reach for a client component.
+  `SearchFilterBar` still uses a real `<form>` as its state container — filters are read from it
+  via `FormData` into URL query params on `/imoveis`, shareable/bookmarkable, not React state —
+  but submission itself is client-driven (`router.push` in a transition, no button, auto-submit on
+  change) rather than a native GET; see the "Fixed bugs" note above for why. Keep the native-form-
+  as-data-source pattern for new interactive UI unless there's a real reason (e.g. purpose-
+  dependent range bounds, or needing a pending state) to reach for a client component.
 - **`src/app/icon.png` (favicon)** is not a raw copy of the handoff's `logo-icon.png` — that asset has
   "CJ-40079" baked into the same PNG below the house mark, illegible at favicon size and unreadable-
   contrast on a dark browser tab bar (transparent background). It's cropped to just the circular
