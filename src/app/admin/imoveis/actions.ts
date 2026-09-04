@@ -78,9 +78,11 @@ export async function createProperty(formData: FormData) {
   const fields = fieldsFromForm(formData);
   const slug = await uniqueSlug(supabase, slugify(`${fields.title}-${fields.neighborhood}`));
 
+  const requestedRef = ((formData.get("ref") as string) ?? "").trim();
+
   const { data, error } = await supabase
     .from("properties")
-    .insert({ ...fields, slug })
+    .insert({ ...fields, slug, ...(requestedRef ? { ref: requestedRef } : {}) })
     .select("id")
     .single();
 

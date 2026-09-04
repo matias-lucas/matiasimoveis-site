@@ -232,23 +232,38 @@ form:has(input[name="purpose"][value="venda"]:checked) .pf-tab-corretor {
   inset: 0;
   overflow-y: auto;
   padding-right: 8px;
+}
+
+/*
+ * Shared thin, brand-colored scrollbar — used by the pf-panel tabs above and
+ * by ui/Select.tsx's custom dropdown menu (a native <select> popup can't be
+ * themed in any browser, so that component renders its own listbox and
+ * needs this same look).
+ */
+.pf-panel-scroll,
+.ui-select-menu {
   scrollbar-width: thin;
   scrollbar-color: var(--border-2) transparent;
 }
-.pf-panel-scroll::-webkit-scrollbar {
+.pf-panel-scroll::-webkit-scrollbar,
+.ui-select-menu::-webkit-scrollbar {
   width: 8px;
 }
-.pf-panel-scroll::-webkit-scrollbar-button {
+.pf-panel-scroll::-webkit-scrollbar-button,
+.ui-select-menu::-webkit-scrollbar-button {
   display: none;
 }
-.pf-panel-scroll::-webkit-scrollbar-track {
+.pf-panel-scroll::-webkit-scrollbar-track,
+.ui-select-menu::-webkit-scrollbar-track {
   background: transparent;
 }
-.pf-panel-scroll::-webkit-scrollbar-thumb {
+.pf-panel-scroll::-webkit-scrollbar-thumb,
+.ui-select-menu::-webkit-scrollbar-thumb {
   background: var(--border-2);
   border-radius: var(--radius-pill);
 }
-.pf-panel-scroll::-webkit-scrollbar-thumb:hover {
+.pf-panel-scroll::-webkit-scrollbar-thumb:hover,
+.ui-select-menu::-webkit-scrollbar-thumb:hover {
   background: var(--text-3);
 }
 .pf-field-icon svg {

@@ -6,9 +6,9 @@ import { Badge } from "@/components/ui/Badge";
 import { PropertyForm } from "@/components/admin/PropertyForm";
 import { PhotoManager } from "@/components/admin/PhotoManager";
 import { VideoManager } from "@/components/admin/VideoManager";
-import { DeletePropertyButton } from "@/components/admin/DeletePropertyButton";
+import { PropertyQuickActions } from "@/components/admin/PropertyQuickActions";
 import { getPropertyById, listBrokers } from "@/lib/admin/queries";
-import { updateProperty, setPublished, deleteProperty } from "../actions";
+import { updateProperty, setPublished, setFeatured, deleteProperty } from "../actions";
 
 export const metadata: Metadata = {
   title: "Editar imóvel",
@@ -66,16 +66,6 @@ export default async function EditPropertyPage({ params }: EditPropertyPageProps
               Pré-visualizar
             </Link>
           )}
-          <form action={setPublished.bind(null, property.id, !property.published)}>
-            <button
-              type="submit"
-              className="inline-flex items-center gap-1.5 rounded-md border border-transparent px-3 py-2 cursor-pointer transition-colors duration-150 ease-out bg-brand-secondary text-white hover:bg-brand-secondary-hover"
-              style={{ font: "var(--text-body-sm)" }}
-            >
-              {property.published ? "Despublicar" : "Publicar"}
-            </button>
-          </form>
-          <DeletePropertyButton action={deleteProperty.bind(null, property.id)} title={property.title} />
         </div>
       </div>
 
@@ -90,6 +80,16 @@ export default async function EditPropertyPage({ params }: EditPropertyPageProps
         }
         action={updateProperty.bind(null, property.id)}
         submitLabel="Salvar alterações"
+        quickActions={
+          <PropertyQuickActions
+            featured={property.featured}
+            published={property.published}
+            title={property.title}
+            onToggleFeatured={setFeatured.bind(null, property.id, !property.featured)}
+            onTogglePublished={setPublished.bind(null, property.id, !property.published)}
+            onDelete={deleteProperty.bind(null, property.id)}
+          />
+        }
       />
     </div>
   );

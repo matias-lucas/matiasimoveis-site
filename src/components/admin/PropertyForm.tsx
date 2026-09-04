@@ -22,6 +22,9 @@ interface PropertyFormProps {
   /** Rendered right after photoManager, same section — omitted on create
    *  for the same reason (videos need a saved property_id too). */
   videoManager?: ReactNode;
+  /** Destacar/Publicar/Excluir instant-action row, rendered below "Preço".
+   *  Omitted on create — those actions bind to a saved property_id. */
+  quickActions?: ReactNode;
   action: (formData: FormData) => void;
   submitLabel: string;
 }
@@ -38,7 +41,7 @@ function SubLabel({ children }: { children: ReactNode }) {
   );
 }
 
-export function PropertyForm({ property, brokers, photoManager, videoManager, action, submitLabel }: PropertyFormProps) {
+export function PropertyForm({ property, brokers, photoManager, videoManager, quickActions, action, submitLabel }: PropertyFormProps) {
   // Legacy fallback: keeps a currently-assigned kind that's no longer offered
   // (see LEGACY_KIND_LABELS) selectable, so saving the form doesn't silently
   // switch it to whichever option happens to be first in the list.
@@ -57,7 +60,7 @@ export function PropertyForm({ property, brokers, photoManager, videoManager, ac
           a mesma altura desta coluna — ver pf-panel-wrap/.pf-panel-scroll em
           globals.css para como os painéis rolam dentro desse espaço. */}
       <div className="pf-left-col flex flex-col gap-4">
-        <div className={`grid gap-4 ${property ? "grid-cols-4" : "grid-cols-1"}`}>
+        <div className="grid gap-4 grid-cols-4">
           <Field className="col-span-3">
             <span className="text-text-1" style={{ font: "var(--text-label)" }}>
               Finalidade
@@ -71,11 +74,9 @@ export function PropertyForm({ property, brokers, photoManager, videoManager, ac
               ]}
             />
           </Field>
-          {property && (
-            <Field className="col-start-4">
-              <Input label="Código" name="ref" placeholder="000" defaultValue={property.ref} />
-            </Field>
-          )}
+          <Field className="col-start-4">
+            <Input label="Código" name="ref" placeholder="000" defaultValue={property?.ref} />
+          </Field>
         </div>
 
         <Field>
@@ -122,6 +123,8 @@ export function PropertyForm({ property, brokers, photoManager, videoManager, ac
           step="1"
           defaultValue={property?.iptu_price ?? ""}
         /> */}
+
+        {quickActions}
 
         <Button type="submit" size="lg" className="mt-2 w-full" icon={<Save className="w-5 h-5" />}>
           {submitLabel}
@@ -212,16 +215,22 @@ export function PropertyForm({ property, brokers, photoManager, videoManager, ac
             </Field>
 
             <SubLabel>Situação</SubLabel>
-            <div className={`grid gap-4 ${property ? "grid-cols-3" : "grid-cols-2"}`}>
+            <div className={`grid gap-4 ${property ? "grid-cols-1" : "grid-cols-2"}`}>
               <Select label="Situação" name="status" options={STATUS_OPTIONS} defaultValue={property?.status ?? "disponivel"} />
-              <Field>
-                <span className="text-text-1" style={{ font: "var(--text-label)" }}>
-                  Destaque
-                </span>
-                <div className="h-11 flex items-center">
-                  <Checkbox label="Exibir na home" name="featured" defaultChecked={property?.featured} />
-                </div>
-              </Field>
+              {/* Editing a saved property drives "featured" from the instant
+                  Destacar action in quickActions instead — avoids two controls
+                  for the same field. Create has no property_id for that action
+                  yet, so it keeps this deferred checkbox. */}
+              {!property && (
+                <Field>
+                  <span className="text-text-1" style={{ font: "var(--text-label)" }}>
+                    Destaque
+                  </span>
+                  <div className="h-11 flex items-center">
+                    <Checkbox label="Exibir na home" name="featured" />
+                  </div>
+                </Field>
+              )}
             </div>
           </div>
 
