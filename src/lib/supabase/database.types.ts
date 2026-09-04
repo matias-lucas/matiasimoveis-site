@@ -1,7 +1,7 @@
 /**
- * Generated via `mcp__Supabase__generate_typescript_types` against the
- * `matiasimoveis` project. Regenerate the same way after any schema change
- * (see the migrations applied through the same MCP tool) — don't hand-edit.
+ * Gerado via `mcp__Supabase__generate_typescript_types` contra o projeto
+ * `matiasimoveis`. Regenere da mesma forma após qualquer mudança de schema
+ * (ver as migrations aplicadas pela mesma ferramenta MCP) — não edite à mão.
  */
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 

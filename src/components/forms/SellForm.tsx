@@ -6,6 +6,7 @@ import { z } from "zod";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
+import { FieldError } from "@/components/ui/FieldError";
 import { buildWhatsAppUrl, sellInquiryMessage } from "@/lib/whatsapp";
 
 const schema = z.object({
@@ -55,7 +56,7 @@ export function SellForm() {
       <div className="grid grid-cols-2 gap-4">
         <div>
           <Input label="Nome completo" placeholder="Seu nome" {...register("name")} />
-          {errors.name && <FieldError message={errors.name.message} />}
+          {errors.name && <FieldError message={errors.name.message} className="mt-1" />}
         </div>
         <div>
           <Input
@@ -63,7 +64,7 @@ export function SellForm() {
             placeholder="(62) 90000-0000"
             {...register("phone")}
           />
-          {errors.phone && <FieldError message={errors.phone.message} />}
+          {errors.phone && <FieldError message={errors.phone.message} className="mt-1" />}
         </div>
       </div>
 
@@ -74,7 +75,7 @@ export function SellForm() {
           options={PURPOSE_OPTIONS}
           {...register("purpose")}
         />
-        {errors.purpose && <FieldError message={errors.purpose.message} />}
+        {errors.purpose && <FieldError message={errors.purpose.message} className="mt-1" />}
       </div>
 
       <div className="grid grid-cols-2 gap-4">
@@ -85,11 +86,11 @@ export function SellForm() {
             options={KIND_OPTIONS}
             {...register("kind")}
           />
-          {errors.kind && <FieldError message={errors.kind.message} />}
+          {errors.kind && <FieldError message={errors.kind.message} className="mt-1" />}
         </div>
         <div>
           <Input label="Bairro" placeholder="Ex.: Setor Sul" {...register("neighborhood")} />
-          {errors.neighborhood && <FieldError message={errors.neighborhood.message} />}
+          {errors.neighborhood && <FieldError message={errors.neighborhood.message} className="mt-1" />}
         </div>
       </div>
 
@@ -99,14 +100,5 @@ export function SellForm() {
         Falar no WhatsApp
       </Button>
     </form>
-  );
-}
-
-function FieldError({ message }: { message?: string }) {
-  if (!message) return null;
-  return (
-    <p className="text-red-600 mt-1" style={{ font: "var(--text-caption)" }}>
-      {message}
-    </p>
   );
 }

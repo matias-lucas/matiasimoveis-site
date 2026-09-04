@@ -1,26 +1,26 @@
 import { SITE } from "./site";
 import { formatPrice } from "./format";
-import type { Property } from "./types";
+import type { Imovel } from "./types";
 
 export function buildWhatsAppUrl(message: string, number: string = SITE.whatsappNumber): string {
   const params = new URLSearchParams({ phone: number, text: message });
   return `https://api.whatsapp.com/send?${params.toString()}`;
 }
 
-/** Normalizes a human-typed Brazilian phone (e.g. "(62) 99999-9999") into the
- *  digits-only, country-code-prefixed format WhatsApp's API expects. */
+/** Normaliza um telefone brasileiro digitado por humano (ex.: "(62) 99999-9999")
+ *  para o formato só-dígitos com DDI que a API do WhatsApp espera. */
 export function toWhatsAppNumber(phone: string): string {
   const digits = phone.replace(/\D/g, "");
   return digits.startsWith("55") ? digits : `55${digits}`;
 }
 
-export function propertyInquiryMessage(property: Property): string {
-  const price = formatPrice(property.price, property.purpose);
-  const url = `${SITE.url}/imovel/${property.slug}`;
+export function imovelInquiryMessage(imovel: Imovel): string {
+  const price = formatPrice(imovel.price, imovel.purpose);
+  const url = `${SITE.url}/imovel/${imovel.slug}`;
   return [
     `Olá! Tenho interesse no imóvel:`,
-    `${property.title} — ${property.neighborhood}, ${property.city}/${property.state}`,
-    `Ref.: ${property.ref} · ${price}`,
+    `${imovel.title} — ${imovel.neighborhood}, ${imovel.city}/${imovel.state}`,
+    `Ref.: ${imovel.ref} · ${price}`,
     url,
   ].join("\n");
 }

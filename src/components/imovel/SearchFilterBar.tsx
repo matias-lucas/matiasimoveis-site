@@ -5,7 +5,7 @@ import { Search, MapPin } from "lucide-react";
 import { Select } from "@/components/ui/Select";
 import { PRICE_BANDS } from "@/lib/price-bands";
 import { KIND_OPTIONS } from "@/lib/admin/labels";
-import type { PropertyPurpose } from "@/lib/types";
+import type { ImovelPurpose } from "@/lib/types";
 
 const BEDROOM_OPTIONS = [
   { value: "1", label: "1+" },
@@ -15,7 +15,7 @@ const BEDROOM_OPTIONS = [
 ];
 
 interface SearchFilterBarProps {
-  defaultPurpose?: PropertyPurpose;
+  defaultPurpose?: ImovelPurpose;
   defaultNeighborhood?: string;
 }
 
@@ -23,7 +23,7 @@ export function SearchFilterBar({
   defaultPurpose = "locacao",
   defaultNeighborhood,
 }: SearchFilterBarProps) {
-  const [purpose, setPurpose] = useState<PropertyPurpose>(defaultPurpose);
+  const [purpose, setPurpose] = useState<ImovelPurpose>(defaultPurpose);
 
   return (
     <form

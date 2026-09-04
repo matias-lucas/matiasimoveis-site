@@ -8,6 +8,7 @@ import { z } from "zod";
 import { LogIn } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import { FieldError } from "@/components/ui/FieldError";
 import { createClient } from "@/lib/supabase/client";
 import { USERNAME_PATTERN, usernameToEmail } from "@/lib/admin/auth";
 
@@ -75,14 +76,5 @@ export function LoginForm() {
         Entrar
       </Button>
     </form>
-  );
-}
-
-function FieldError({ message }: { message?: string }) {
-  if (!message) return null;
-  return (
-    <p className="text-red-600" style={{ font: "var(--text-caption)" }}>
-      {message}
-    </p>
   );
 }

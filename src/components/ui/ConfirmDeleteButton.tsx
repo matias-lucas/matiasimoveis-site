@@ -3,13 +3,14 @@
 import { useState, useTransition } from "react";
 import { Trash2 } from "lucide-react";
 
-interface DeleteBrokerButtonProps {
+interface ConfirmDeleteButtonProps {
   action: () => Promise<void>;
-  name: string;
+  confirmMessage: string;
+  label?: string;
   className?: string;
 }
 
-export function DeleteBrokerButton({ action, name, className }: DeleteBrokerButtonProps) {
+export function ConfirmDeleteButton({ action, confirmMessage, label, className }: ConfirmDeleteButtonProps) {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -20,7 +21,7 @@ export function DeleteBrokerButton({ action, name, className }: DeleteBrokerButt
         disabled={pending}
         aria-label="Excluir"
         onClick={() => {
-          if (!window.confirm(`Excluir "${name}"? Essa ação não pode ser desfeita.`)) return;
+          if (!window.confirm(confirmMessage)) return;
           setError(null);
           startTransition(() => {
             action().catch((e) => setError(e instanceof Error ? e.message : "Falha ao excluir."));
@@ -33,7 +34,7 @@ export function DeleteBrokerButton({ action, name, className }: DeleteBrokerButt
         style={{ font: "var(--text-body-sm)" }}
       >
         <Trash2 className="w-3.5 h-3.5" />
-        Excluir
+        {label}
       </button>
       {error && (
         <p className="text-red-600 text-right max-w-[240px]" style={{ font: "var(--text-caption)" }}>

@@ -1,17 +1,17 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { PropertyForm } from "@/components/admin/PropertyForm";
-import { listBrokers } from "@/lib/admin/queries";
-import { createProperty } from "../actions";
+import { ImovelForm } from "@/components/admin/imovel-form";
+import { listCorretores } from "@/lib/admin/queries";
+import { createImovel } from "../actions/imoveis";
 
 export const metadata: Metadata = {
   title: "Novo imóvel",
   robots: { index: false, follow: false },
 };
 
-export default async function NewPropertyPage() {
-  const brokers = await listBrokers();
+export default async function NewImovelPage() {
+  const corretores = await listCorretores();
 
   return (
     <div className="max-w-[1080px] mx-auto px-8 py-8">
@@ -35,7 +35,7 @@ export default async function NewPropertyPage() {
         como rascunho até você publicá-lo na lista.
       </p>
 
-      <PropertyForm brokers={brokers} action={createProperty} submitLabel="Salvar e continuar" />
+      <ImovelForm corretores={corretores} action={createImovel} submitLabel="Salvar e continuar" />
     </div>
   );
 }

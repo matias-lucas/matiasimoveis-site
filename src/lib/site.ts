@@ -1,6 +1,6 @@
 /**
- * Central place for identity/contact facts that show up across the site.
- * Change values here, not in components — see CLAUDE.md > "Site data".
+ * Local central dos dados de identidade/contato usados em todo o site.
+ * Altere os valores aqui, não nos componentes — ver CLAUDE.md.
  */
 
 export const SITE = {
@@ -30,7 +30,7 @@ export const SITE = {
 
   // Corretor padrão usado nas fichas de imóvel do mock, até o painel
   // admin permitir atribuir um corretor por imóvel.
-  defaultBroker: {
+  defaultCorretor: {
     name: "Divino Matias",
     creci: "CRECI-GO 9155",
   },

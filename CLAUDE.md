@@ -77,34 +77,46 @@ SEO/sitemap pass (Fase 9 in the plan doc).
 ```
 src/lib/site.ts             Single source for phone/WhatsApp/address/CJ/CRECI/nav+footer links.
                             Edit here, not in components. Has a TODO on the address (see below).
-src/lib/types.ts            Property/Broker/PropertyPhotoRecord shape — kept in sync with the
-                            live Supabase schema (src/lib/supabase/database.types.ts is the
-                            generated source of truth; types.ts is the app-facing shape mapped
-                            from it in lib/queries.ts).
-src/lib/queries.ts          Public read layer — searchProperties()/getPropertyBySlug()/
-                            getFeaturedProperties()/getAllPublishedSlugs(), all async, backed by
+src/lib/types.ts            Imovel/Corretor/ImovelPhotoRecord shape — kept in sync with the live
+                            Supabase schema (src/lib/supabase/database.types.ts is the generated
+                            source of truth; types.ts is the app-facing shape mapped from it in
+                            lib/queries.ts). Domain type names are Portuguese (Imovel, Corretor,
+                            ImovelPurpose/Kind/Status) — see "Domain vocabulary" below; the
+                            underlying Supabase tables/columns stay English (properties, brokers,
+                            broker_id...), since renaming those needs a live migration.
+src/lib/queries.ts          Public read layer — searchImoveis()/getImovelBySlug()/
+                            getFeaturedImoveis()/getAllPublishedSlugs(), all async, backed by
                             Supabase (replaced mock-properties.ts wholesale; call sites just
                             gained `await`). RLS restricts these to `published = true` rows.
+src/lib/format.ts           formatPrice/formatArea/pluralize/slugify — small display/string
+                            helpers with no Supabase dependency, used across app/ and components/.
 src/lib/price-bands.ts      Purpose-dependent price filter buckets (see "Fixed bugs" below).
-src/lib/whatsapp.ts         buildWhatsAppUrl() + the 3 message builders (property inquiry,
-                            sell form, contact form). All lead capture goes through here.
+src/lib/whatsapp.ts         buildWhatsAppUrl() + the 3 message builders (imovelInquiryMessage,
+                            sellInquiryMessage, contactInquiryMessage). All lead capture goes
+                            through here.
 src/lib/services.ts         The 3 "Compra e venda / Locação segura / Administração" service
                             items — shared by Home and Empresa.
 src/lib/image-compression.ts Client-only canvas resize/re-encode (max 1600px, JPEG q0.82) run
                             before every admin photo upload — phone photos land at 4-5MB raw.
-src/lib/supabase/           env.ts (URL/anon key/bucket name/publicStorageUrl()), public.ts
-                            (cookie-less client for public reads — keeps site pages statically
-                            renderable/ISR'd), client.ts (browser client, admin login + direct
-                            Storage uploads), server.ts (cookie-aware client for admin server
-                            components/actions — RLS then applies the "admin full access"
-                            policies), database.types.ts (generated, see Supabase project note
-                            above — don't hand-edit).
-src/lib/admin/              queries.ts (admin reads: listProperties, getPropertyById,
-                            getCurrentUserEmail — all bypass the published-only RLS filter for
-                            an authenticated admin), labels.ts (PropertyKind/PropertyStatus
-                            <-> PT-BR label maps, shared by the admin form and list), auth.ts
-                            (username <-> synthetic-e-mail mapping for login — see "Decisions
-                            already made" below).
+src/lib/supabase/           env.ts (URL/anon key, IMOVEL_PHOTOS_BUCKET/IMOVEL_VIDEOS_BUCKET/
+                            CORRETOR_PHOTOS_BUCKET bucket-name constants, publicStorageUrl() —
+                            the constant names are Portuguese but their string values are the
+                            actual Supabase Storage bucket names and stay English, e.g.
+                            IMOVEL_PHOTOS_BUCKET = "property-photos"; renaming buckets is a live
+                            infra change, not done here), public.ts (cookie-less client for
+                            public reads — keeps site pages statically renderable/ISR'd),
+                            client.ts (browser client, admin login + direct Storage uploads),
+                            server.ts (cookie-aware client for admin server components/actions —
+                            RLS then applies the "admin full access" policies), database.types.ts
+                            (generated, see Supabase project note above — don't hand-edit; this
+                            file is the one place table/column names stay exactly as Supabase
+                            generated them, snake_case and English).
+src/lib/admin/              queries.ts (admin reads: listImoveis, getImovelById, listCorretores,
+                            getCorretorById, getCurrentUserEmail — all bypass the published-only
+                            RLS filter for an authenticated admin), labels.ts (ImovelKind/
+                            ImovelStatus <-> PT-BR label maps, shared by the admin form and
+                            list), auth.ts (username <-> synthetic-e-mail mapping for login —
+                            see "Decisions already made" below).
 src/proxy.ts                Next 16 renamed "middleware" to "proxy" (same mechanism, new file/
                             export name — see the deprecation note this repo's `next dev`
                             appends below). Refreshes the Supabase session cookie on every
@@ -115,38 +127,102 @@ src/styles/tokens/          Verbatim copies of handoff/project/ds/tokens/*.css. 
                             Fonts @import stripped (next/font handles loading — see
                             src/app/layout.tsx and the note at the top of globals.css).
 
-src/components/ui/          Design-system primitives ported from the handoff's _ds_bundle.js:
-                            Button, Badge, Input, Select, Checkbox, SegmentedControl, Textarea
-                            (new, not in the handoff), WhatsAppLink.
-src/components/property/    PropertyCard, SearchFilterBar (native GET form, client component
-                            only because the price-band options depend on the Alugar/Comprar
-                            toggle — see below), PropertyPhoto (shared image-or-placeholder slot,
-                            now also used for real Supabase Storage photos, not just mock data).
+src/components/ui/          Design-system primitives ported from the handoff's _ds_bundle.js —
+                            Button, Badge, Input, Select, Checkbox, SegmentedControl, Textarea,
+                            WhatsAppLink (none in the original handoff) — plus two small
+                            cross-cutting helpers pulled out of duplicated call sites:
+                            ConfirmDeleteButton (window.confirm() + useTransition() around a
+                            bound server action; used by both the imóvel and corretor delete
+                            flows) and FieldError (react-hook-form error line, used by every
+                            form). These stay English-named — generic UI vocabulary, not this
+                            business's domain — see "Domain vocabulary" below.
+src/components/imovel/      ImovelCard, SearchFilterBar (native GET form, client component only
+                            because the price-band options depend on the Alugar/Comprar toggle —
+                            see below), ImovelPhoto (shared image-or-placeholder slot, now also
+                            used for real Supabase Storage photos, not just mock data).
+                            Public-facing only — admin equivalents live under components/admin/.
 src/components/layout/      Navbar, Footer, WhatsAppFab, Container. Wired into
                             src/app/(site)/layout.tsx — NOT the root layout, see routing note
                             below — so every public page gets them automatically.
 src/components/forms/       SellForm, ContactForm — client components, react-hook-form + zod,
                             build a WhatsApp message on submit via lib/whatsapp.ts and
                             window.open() it. No email/database backend exists for these yet.
-src/components/admin/       LoginForm (client, Supabase signInWithPassword), AdminHeader (logo +
-                            user email + Sair), PropertyForm (server-renderable — plain
-                            `<form action={serverAction}>`, no client JS needed for the field
-                            grid itself, matching the "native HTML" convention below), PhotoManager
-                            (client — upload/compress/reorder/set-cover/delete),
-                            DeletePropertyButton (client, wraps a bound server action in a
-                            window.confirm()).
+src/components/admin/       AdminHeader (logo + user email + Sair, shared by both admin sections)
+                            and LoginForm (client, Supabase signInWithPassword) sit flat here;
+                            everything else is grouped by which admin feature it belongs to:
+  admin/corretor/              CorretorCard (grid tile that flips into an inline edit <form>) and
+                              CorretorForm (plain create/edit form) — re-exported from index.ts,
+                              so callers do `import { CorretorCard } from "@/components/admin/corretor"`.
+  admin/imovel-form/           Everything that exists only to build the imóvel create/edit form.
+                              ImovelForm.tsx is the orchestrator (left column of always-visible
+                              fields + the 3-tab right column); CharacteristicsPanel.tsx,
+                              AnnouncementPanel.tsx and CorretorPanel.tsx are those three tabs, one
+                              file each; FormField.tsx holds the tiny FormField/SubLabel layout
+                              helpers shared between them. AreaM2Input/CityStateField/
+                              QuantityStepper are form-only inputs used exclusively inside these
+                              panels. PhotoManager/VideoManager/ImovelQuickActions are client
+                              components the edit page (app/admin/imoveis/[id]/page.tsx) renders
+                              and passes into ImovelForm as `photoManager`/`videoManager`/
+                              `quickActions` props — grouped here because they're conceptually
+                              "the imóvel editor", even though the edit page imports them
+                              directly rather than through ImovelForm. index.ts re-exports the
+                              4 pieces external code actually imports (ImovelForm, PhotoManager,
+                              VideoManager, ImovelQuickActions); the rest are this folder's
+                              private implementation detail — import them only from within it.
 
 src/app/layout.tsx          Minimal root shell (html/body/fonts/metadata) only — intentionally
                             has no Navbar/Footer/WhatsAppFab so /admin/* doesn't inherit them.
 src/app/(site)/             Route group holding every public page (Home, /imoveis, /imovel/
                             [slug], /anuncie, /contato, /empresa) plus its own layout.tsx that
                             adds the public chrome. The group folder doesn't affect URLs.
-src/app/admin/              page.tsx = login (route "/admin"). imoveis/actions.ts = every
-                            Server Action (create/update/delete/publish/feature/photo CRUD/
-                            signOut) — colocated here rather than in lib/ since they're tightly
-                            bound to this one route's forms. imoveis/layout.tsx = the
-                            authenticated chrome (AdminHeader) for imoveis/{page,novo,[id]}.
+src/app/admin/              page.tsx = login (route "/admin"). actions.ts = signOut — the one
+                            admin Server Action used by both imoveis/ and corretores/ (AdminHeader
+                            posts to it), so it lives at this shared level instead of under either
+                            subsection. corretores/actions.ts = corretor CRUD (createCorretor/
+                            updateCorretor/deleteCorretor) — small enough to stay one file.
+                            imoveis/actions/ = every imóvel-related Server Action, split by what
+                            it operates on rather than kept as one file: imoveis.ts (slug
+                            generation, form-field parsing, createImovel/updateImovel/
+                            setPublished/setFeatured/deleteImovel), photos.ts (add/delete/
+                            setCover/move), videos.ts (add/delete/move) — PhotoManager and
+                            VideoManager import straight from photos.ts/videos.ts respectively,
+                            pages import from imoveis.ts. imoveis/layout.tsx and
+                            corretores/layout.tsx both render the shared AdminHeader chrome for
+                            their subsection's routes.
 ```
+
+### Domain vocabulary: Portuguese, not English
+
+Types, functions, components, props and file names that name a concept of *this business*
+(imóvel, corretor) are in Portuguese — `Imovel`, `Corretor`, `ImovelCard`, `getImovelBySlug`,
+`listCorretores`, `ImovelForm.tsx` — not their English translations (`Property`, `Broker`,
+`PropertyCard`...). This was a deliberate rename, done in one pass across the whole `src/`
+TypeScript/React layer; the user's own words: comments and identifiers alike should "reflect"
+that they speak Portuguese, not just the UI strings.
+
+**What stayed English, and why:**
+- Generic framework/engineering vocabulary that isn't specific to this business — design-system
+  primitives (`Button`, `Select`, `ConfirmDeleteButton`), React/Next.js APIs (`children`,
+  `ReactNode`, `useState`, Server Actions), third-party library exports. The line is domain noun
+  vs. generic engineering noun.
+- The Supabase schema — table names (`properties`, `brokers`, `property_photos`,
+  `property_videos`) and column names (`property_id`, `broker_id`, `storage_path`...) are
+  unchanged. Renaming those needs a migration applied to the live production project via
+  `apply_migration` — a materially different, harder-to-reverse kind of change than an in-repo
+  rename, kept as a distinct future decision rather than bundled into this one. Concretely: app
+  code still calls `.from("properties")` / `.from("brokers")`, destructures DB rows as
+  `property_photos`/`broker_id`/etc. exactly as Supabase returns them, and `database.types.ts`
+  (regenerated, never hand-edited) still reflects those English names. Only the *identifiers I
+  control* around that boundary changed — e.g. `getPropertyById` → `getImovelById`, but the
+  `.from("properties")` call inside it didn't; the `<Select name="brokerId">` field posted a
+  `broker_id`-shaped update, and both the field's `name` and the local variable reading it were
+  renamed to `corretorId` since that's a request contract I own, not a DB column.
+- Storage bucket *values* are unchanged for the same reason (`"property-photos"`,
+  `"broker-photos"` are real bucket names); only the JS constants pointing at them were renamed
+  (`IMOVEL_PHOTOS_BUCKET`, `CORRETOR_PHOTOS_BUCKET`).
+- CLAUDE.md/PRODUCT.md/DESIGN.md/docs/ are meta-documentation for AI-assisted development, not
+  "code" — they reference the current (Portuguese) identifiers by name where accuracy matters,
+  but aren't required to be written in Portuguese themselves.
 
 ## Decisions already made (don't re-litigate without new input)
 
@@ -154,8 +230,8 @@ From the user, during implementation:
 - **Address**: placeholder text in `site.ts` (marked with a `TODO(cliente)` comment) — the
   handoff's two source files disagreed ("Alfredo Nasser" vs "Alfredo Nascer") and the user said
   to leave it, they'll correct it later. Don't guess a third spelling.
-- **Broker vs. company**: "Divino Matias · CRECI-GO 9155" is a specific broker (shown as the
-  default `broker` on property listings); "Matias Imóveis · CJ-40079" is the company's own
+- **Corretor vs. company**: "Divino Matias · CRECI-GO 9155" is a specific corretor (shown as
+  `SITE.defaultCorretor` on the Empresa page); "Matias Imóveis · CJ-40079" is the company's own
   juridical registration (footer, company-level mentions). These are different things — don't
   conflate them. Both live in `SITE` (`site.ts`).
 - **Phone/WhatsApp**: `(62) 3375-3330` for both — confirmed by the user, used as-is even though
@@ -166,10 +242,21 @@ From the user, during implementation:
   preference and deferred to this call.
 - **Forms → WhatsApp, not email/database**: user's explicit choice. No leads are stored anywhere
   yet — if that's ever wanted, it's a `leads` table + server action, additive to the current flow.
-- **`properties.price`/`condo_price`/`iptu_price` are `numeric` reais, not `price_cents`.**
-  `docs/PLANO-IMPLEMENTACAO.md` §3 specced cents; the app's `formatPrice()` already rendered
-  whole reais with no decimals, so cents would only add conversion bugs for no display benefit.
-  Code (this schema) is the source of truth over that doc section now.
+- **`properties.price` is `numeric` reais, not `price_cents`.** `docs/PLANO-IMPLEMENTACAO.md` §3
+  specced cents; the app's `formatPrice()` already rendered whole reais with no decimals, so
+  cents would only add conversion bugs for no display benefit. Code (this schema) is the source
+  of truth over that doc section now.
+- **`condo_price`/`iptu_price` columns exist in the DB but nothing in the app reads or writes
+  them.** They shipped with inputs already commented out in the imóvel form from the very first
+  commit that added them — half-finished, never actually usable from the admin UI — so the dead
+  JSX plus the matching plumbing in `types.ts`/`queries.ts`/`imoveis/actions/imoveis.ts` were
+  removed. The DB columns themselves were left alone (dropping them needs a migration against the
+  live Supabase project, a separate, more deliberate step). If Condomínio/IPTU display is wanted
+  later, it's a small re-add: two `<Input>`s in `CharacteristicsPanel.tsx` (or a new panel) plus
+  the corresponding fields back in those three files — not a schema change.
+- **Code comments are in Portuguese; domain identifiers (types/functions/components/file names
+  for imóvel/corretor concepts) are in Portuguese too; generic engineering vocabulary stays
+  English.** See "Domain vocabulary" above for the full rationale and the DB-schema boundary.
 - **No public signup; every admin is `role = 'admin'`.** Matches the plan doc's threat model (one
   small brokerage, a handful of trusted staff) — there's no owner/editor distinction. A DB trigger
   (`handle_new_user`) auto-inserts a `profiles` row for any new `auth.users` row, so account
@@ -204,7 +291,7 @@ From the user, during implementation:
   had one fixed sale-oriented price scale (hundreds of thousands) applied regardless of
   Alugar/Comprar — meaningless for rent prices (hundreds/month). `SearchFilterBar` is a client
   component specifically so the "Faixa de preço" options can react to the purpose toggle.
-- **`PropertyPhoto` never reuses the one real handoff photo across listings.** The handoff bundle
+- **`ImovelPhoto` never reuses the one real handoff photo across listings.** The handoff bundle
   had exactly one real stock photo (a house exterior, embedded in `.image-slots.state.json`),
   repeated across every image slot in the prototype. Reusing it across 6 different fake listings
   would misrepresent which property it's a photo of — actively misleading, not just "placeholder-
@@ -233,7 +320,7 @@ From the user, during implementation:
   `/imoveis`. If you add a new public top-level page, it goes under `app/(site)/`, not `app/`.
 - **`next.config.ts` needs `images.remotePatterns` for the Supabase project's storage host**
   (`oaztinevexlzbpyuizfx.supabase.co`) — every `next/image` use that renders a real photo
-  (PropertyPhoto, PhotoManager thumbnails) 404s/errors without it. If the Supabase project is ever
+  (ImovelPhoto, PhotoManager thumbnails) 404s/errors without it. If the Supabase project is ever
   recreated (new ref), update both this file and `src/lib/supabase/env.ts`'s URL.
 - **`middleware.ts` → `proxy.ts`.** Next 16 deprecated the `middleware` file convention in favor
   of `proxy` (same request-interception mechanism); the exported function must be named `proxy`,
@@ -247,7 +334,7 @@ From the user, during implementation:
 - Colors/spacing/radius/shadow via Tailwind utilities bound to the tokens (`bg-brand-primary`,
   `rounded-lg`, `shadow-md`, `p-4`...) — see the `@theme inline` block in `globals.css` for the
   full generated-name list before assuming a utility doesn't exist.
-- `SITE` constant (`lib/site.ts`) is the only place contact/address/broker facts should be
+- `SITE` constant (`lib/site.ts`) is the only place contact/address/corretor facts should be
   written — never hardcode a phone number or address string in a component.
 
 <!-- BEGIN:nextjs-agent-rules -->

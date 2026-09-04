@@ -1,10 +1,10 @@
 interface SegmentedOption {
   value: string;
   label: string;
-  /** Tailwind class applied to this option's pill when checked, e.g.
-   *  "peer-checked:bg-brand-secondary". Defaults to DEFAULT_ACTIVE (red) —
-   *  pass this explicitly whenever options carry their own semantic color
-   *  (e.g. Locação = blue, Venda = red; see DESIGN.md). */
+  /** Classe Tailwind aplicada à pílula desta opção quando marcada, ex.:
+   *  "peer-checked:bg-brand-secondary". Padrão: DEFAULT_ACTIVE (vermelho) —
+   *  passe isso explicitamente sempre que as opções tiverem cor semântica
+   *  própria (ex.: Locação = azul, Venda = vermelho; ver DESIGN.md). */
   activeClassName?: string;
 }
 

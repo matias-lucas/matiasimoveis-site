@@ -1,9 +1,10 @@
 /**
- * Supabase Auth always needs an email under the hood, but the admin login
- * screen only asks for a username — there's no self-service "forgot
- * password" flow here anyway (accounts are created manually in the
- * Supabase dashboard, see CLAUDE.md), so a real mailbox buys nothing.
- * Usernames are mapped to `<username>@ADMIN_LOGIN_DOMAIN` and back.
+ * O Supabase Auth sempre precisa de um e-mail por baixo dos panos, mas a
+ * tela de login do admin só pede um usuário — não há fluxo self-service de
+ * "esqueci a senha" aqui de qualquer forma (contas são criadas manualmente
+ * no dashboard do Supabase, ver CLAUDE.md), então uma caixa de e-mail real
+ * não traria benefício algum. Usuários são mapeados para
+ * `<username>@ADMIN_LOGIN_DOMAIN` e de volta.
  */
 export const ADMIN_LOGIN_DOMAIN = "login.matiasimoveisgo.com.br";
 
@@ -13,7 +14,7 @@ export function usernameToEmail(username: string): string {
   return `${username.trim().toLowerCase()}@${ADMIN_LOGIN_DOMAIN}`;
 }
 
-/** Strips the synthetic domain back off for display — falls back to the raw value for any account that isn't using it (e.g. created before this convention). */
+/** Remove o domínio sintético para exibição — retorna o valor bruto para qualquer conta que não o utilize (ex.: criada antes desta convenção). */
 export function emailToUsername(email: string): string {
   const suffix = `@${ADMIN_LOGIN_DOMAIN}`;
   return email.endsWith(suffix) ? email.slice(0, -suffix.length) : email;

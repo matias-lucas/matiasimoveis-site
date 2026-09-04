@@ -49,7 +49,7 @@ export function QuantityStepper({ name, label, defaultValue, min = 0, size = "co
             type="button"
             onClick={() => step(1)}
             aria-label="Aumentar"
-            className="pf-stepper-plus inline-flex items-center justify-center w-9 h-9 rounded-full border-2 border-brand-secondary bg-brand-secondary text-white hover:bg-brand-secondary-hover transition-colors duration-150 ease-out"
+            className="inline-flex items-center justify-center w-9 h-9 rounded-full border-2 border-brand-secondary bg-brand-secondary text-white hover:bg-brand-secondary-hover transition-colors duration-150 ease-out"
           >
             <Plus className="w-4 h-4" />
           </button>

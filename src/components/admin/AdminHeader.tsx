@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { LogOut } from "lucide-react";
 import { Container } from "@/components/layout/Container";
-import { signOut } from "@/app/admin/imoveis/actions";
+import { signOut } from "@/app/admin/actions";
 import { SITE } from "@/lib/site";
 
 const NAV_LINKS = [

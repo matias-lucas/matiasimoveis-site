@@ -5,14 +5,14 @@ import Image from "next/image";
 import { Pencil, Camera, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
-import { DeleteBrokerButton } from "@/components/admin/DeleteBrokerButton";
+import { ConfirmDeleteButton } from "@/components/ui/ConfirmDeleteButton";
 import { createClient } from "@/lib/supabase/client";
-import { BROKER_PHOTOS_BUCKET, publicStorageUrl } from "@/lib/supabase/env";
+import { CORRETOR_PHOTOS_BUCKET, publicStorageUrl } from "@/lib/supabase/env";
 import { compressImage } from "@/lib/image-compression";
-import type { BrokerRow } from "@/lib/admin/queries";
+import type { CorretorRow } from "@/lib/admin/queries";
 
-interface BrokerCardProps {
-  broker: BrokerRow;
+interface CorretorCardProps {
+  corretor: CorretorRow;
   updateAction: (formData: FormData) => void;
   deleteAction: () => Promise<void>;
 }
@@ -24,9 +24,9 @@ function initials(name: string) {
   return (first + last).toUpperCase();
 }
 
-export function BrokerCard({ broker, updateAction, deleteAction }: BrokerCardProps) {
+export function CorretorCard({ corretor, updateAction, deleteAction }: CorretorCardProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [photoPath, setPhotoPath] = useState(broker.photo_path);
+  const [photoPath, setPhotoPath] = useState(corretor.photo_path);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
@@ -35,10 +35,10 @@ export function BrokerCard({ broker, updateAction, deleteAction }: BrokerCardPro
     setUploading(true);
     try {
       const compressed = await compressImage(file);
-      const path = `${broker.id}/${crypto.randomUUID()}.jpg`;
+      const path = `${corretor.id}/${crypto.randomUUID()}.jpg`;
       const supabase = createClient();
       const { error } = await supabase.storage
-        .from(BROKER_PHOTOS_BUCKET)
+        .from(CORRETOR_PHOTOS_BUCKET)
         .upload(path, compressed, { contentType: "image/jpeg" });
       if (error) throw error;
       setPhotoPath(path);
@@ -61,7 +61,7 @@ export function BrokerCard({ broker, updateAction, deleteAction }: BrokerCardPro
           <div className="w-20 h-20 rounded-full bg-bg-sunken border border-border-1 flex items-center justify-center text-text-2 overflow-hidden">
             {photoPath ? (
               <Image
-                src={publicStorageUrl(photoPath, BROKER_PHOTOS_BUCKET)}
+                src={publicStorageUrl(photoPath, CORRETOR_PHOTOS_BUCKET)}
                 alt=""
                 width={80}
                 height={80}
@@ -69,7 +69,7 @@ export function BrokerCard({ broker, updateAction, deleteAction }: BrokerCardPro
               />
             ) : (
               <span style={{ font: "var(--text-display-sm)", fontFamily: "var(--font-display)" }}>
-                {initials(broker.name)}
+                {initials(corretor.name)}
               </span>
             )}
           </div>
@@ -95,9 +95,9 @@ export function BrokerCard({ broker, updateAction, deleteAction }: BrokerCardPro
         )}
 
         <div className="flex flex-col gap-3 w-full">
-          <Input label="Nome" name="name" defaultValue={broker.name} required />
-          <Input label="CRECI" name="creci" defaultValue={broker.creci} required />
-          <Input label="Contato" name="contact" defaultValue={broker.contact} required />
+          <Input label="Nome" name="name" defaultValue={corretor.name} required />
+          <Input label="CRECI" name="creci" defaultValue={corretor.creci} required />
+          <Input label="Contato" name="contact" defaultValue={corretor.contact} required />
         </div>
         <div className="flex items-center justify-between gap-2 w-full">
           <div className="flex items-center gap-2">
@@ -113,7 +113,10 @@ export function BrokerCard({ broker, updateAction, deleteAction }: BrokerCardPro
               Cancelar
             </button>
           </div>
-          <DeleteBrokerButton action={deleteAction} name={broker.name} />
+          <ConfirmDeleteButton
+            action={deleteAction}
+            confirmMessage={`Excluir "${corretor.name}"? Essa ação não pode ser desfeita.`}
+          />
         </div>
       </form>
     );
@@ -121,10 +124,10 @@ export function BrokerCard({ broker, updateAction, deleteAction }: BrokerCardPro
 
   return (
     <div className="group relative aspect-[4/5] w-full overflow-hidden rounded-lg bg-bg-sunken border border-border-1">
-      {broker.photo_path ? (
+      {corretor.photo_path ? (
         <Image
-          src={publicStorageUrl(broker.photo_path, BROKER_PHOTOS_BUCKET)}
-          alt={broker.name}
+          src={publicStorageUrl(corretor.photo_path, CORRETOR_PHOTOS_BUCKET)}
+          alt={corretor.name}
           fill
           sizes="(min-width: 1024px) 33vw, 50vw"
           className="object-cover"
@@ -134,7 +137,7 @@ export function BrokerCard({ broker, updateAction, deleteAction }: BrokerCardPro
           className="absolute inset-0 flex items-center justify-center text-text-2"
           style={{ font: "var(--text-display-lg)", fontFamily: "var(--font-display)" }}
         >
-          {initials(broker.name)}
+          {initials(corretor.name)}
         </div>
       )}
 
@@ -145,13 +148,13 @@ export function BrokerCard({ broker, updateAction, deleteAction }: BrokerCardPro
 
       <div className="absolute bottom-0 inset-x-0 p-4 text-left">
         <div className="text-white font-semibold" style={{ font: "var(--text-body-md)" }}>
-          {broker.name}
+          {corretor.name}
         </div>
         <div className="text-white/80" style={{ font: "var(--text-body-sm)" }}>
-          {broker.creci}
+          {corretor.creci}
         </div>
         <div className="text-white/80" style={{ font: "var(--text-body-sm)" }}>
-          {broker.contact}
+          {corretor.contact}
         </div>
       </div>
 

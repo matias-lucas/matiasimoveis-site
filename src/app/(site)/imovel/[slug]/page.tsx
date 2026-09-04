@@ -4,15 +4,15 @@ import Link from "next/link";
 import { ArrowLeft, MapPin, BedDouble, Bath, Car, Ruler, Phone } from "lucide-react";
 import { Container } from "@/components/layout/Container";
 import { Badge } from "@/components/ui/Badge";
-import { PropertyPhoto } from "@/components/property/PropertyPhoto";
+import { ImovelPhoto } from "@/components/imovel/ImovelPhoto";
 import { WhatsAppLink } from "@/components/ui/WhatsAppLink";
 import { Button } from "@/components/ui/Button";
-import { getAllPublishedSlugs, getPropertyBySlug } from "@/lib/queries";
+import { getAllPublishedSlugs, getImovelBySlug } from "@/lib/queries";
 import { formatArea, formatPrice, pluralize } from "@/lib/format";
-import { propertyInquiryMessage, toWhatsAppNumber } from "@/lib/whatsapp";
+import { imovelInquiryMessage, toWhatsAppNumber } from "@/lib/whatsapp";
 import { SITE } from "@/lib/site";
 
-interface PropertyDetailPageProps {
+interface ImovelDetailPageProps {
   params: Promise<{ slug: string }>;
 }
 
@@ -25,21 +25,21 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({
   params,
-}: PropertyDetailPageProps): Promise<Metadata> {
+}: ImovelDetailPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const property = await getPropertyBySlug(slug);
-  if (!property) return {};
+  const imovel = await getImovelBySlug(slug);
+  if (!imovel) return {};
 
   return {
-    title: `${property.title} no ${property.neighborhood}, ${property.city}/${property.state}`,
-    description: property.description,
+    title: `${imovel.title} no ${imovel.neighborhood}, ${imovel.city}/${imovel.state}`,
+    description: imovel.description,
   };
 }
 
-export default async function PropertyDetailPage({ params }: PropertyDetailPageProps) {
+export default async function ImovelDetailPage({ params }: ImovelDetailPageProps) {
   const { slug } = await params;
-  const property = await getPropertyBySlug(slug);
-  if (!property) notFound();
+  const imovel = await getImovelBySlug(slug);
+  if (!imovel) notFound();
 
   const {
     purpose,
@@ -54,15 +54,15 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
     areaM2,
     description,
     price,
-    broker,
-  } = property;
+    corretor,
+  } = imovel;
 
-  // Venda listings route contact straight to the responsible broker; locação
-  // (and venda without a broker assigned) falls back to the company line.
-  const directBroker = purpose === "venda" ? broker : undefined;
-  const contactWhatsAppNumber = directBroker ? toWhatsAppNumber(directBroker.contact) : undefined;
-  const contactPhoneHref = directBroker ? `tel:+${toWhatsAppNumber(directBroker.contact)}` : SITE.phoneHref;
-  const contactPhoneLabel = directBroker ? directBroker.contact : SITE.phone;
+  // Anúncios de venda direcionam o contato direto ao corretor responsável;
+  // locação (e venda sem corretor atribuído) cai para o telefone da empresa.
+  const corretorDireto = purpose === "venda" ? corretor : undefined;
+  const contactWhatsAppNumber = corretorDireto ? toWhatsAppNumber(corretorDireto.contact) : undefined;
+  const contactPhoneHref = corretorDireto ? `tel:+${toWhatsAppNumber(corretorDireto.contact)}` : SITE.phoneHref;
+  const contactPhoneLabel = corretorDireto ? corretorDireto.contact : SITE.phone;
 
   return (
     <Container className="py-8">
@@ -78,14 +78,14 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
       <div className="grid grid-cols-[2fr_1fr] gap-8">
         <div>
           <div className="relative h-[380px] bg-bg-sunken rounded-lg overflow-hidden mb-3">
-            <PropertyPhoto src={property.coverImage} alt={title} iconClassName="w-12 h-12" />
+            <ImovelPhoto src={imovel.coverImage} alt={title} iconClassName="w-12 h-12" />
           </div>
           <div className="flex gap-2.5">
             {Array.from({ length: 4 }).map((_, i) => {
-              const thumb = property.photos?.filter((p) => !p.isCover)[i];
+              const thumb = imovel.photos?.filter((p) => !p.isCover)[i];
               return (
                 <div key={i} className="relative flex-1 h-[72px] bg-bg-sunken rounded-sm overflow-hidden">
-                  <PropertyPhoto src={thumb?.url} alt={thumb?.alt || title} iconClassName="w-5 h-5" />
+                  <ImovelPhoto src={thumb?.url} alt={thumb?.alt || title} iconClassName="w-5 h-5" />
                 </div>
               );
             })}
@@ -139,7 +139,7 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
               {description}
             </p>
 
-            {property.videos && property.videos.length > 0 && (
+            {imovel.videos && imovel.videos.length > 0 && (
               <div className="mt-7">
                 <h2
                   className="text-text-1 mb-3"
@@ -148,7 +148,7 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
                   Vídeos
                 </h2>
                 <div className="flex flex-col gap-4">
-                  {property.videos.map((video) => (
+                  {imovel.videos.map((video) => (
                     <video
                       key={video.id}
                       src={video.url}
@@ -168,7 +168,7 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
             {formatPrice(price, purpose)}
           </div>
           <WhatsAppLink
-            message={propertyInquiryMessage(property)}
+            message={imovelInquiryMessage(imovel)}
             number={contactWhatsAppNumber}
             className="w-full"
           >
@@ -177,9 +177,9 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
           <Button variant="outline" href={contactPhoneHref} icon={<Phone className="w-4 h-4" />} className="w-full">
             {contactPhoneLabel}
           </Button>
-          {directBroker && (
+          {corretorDireto && (
             <div className="text-text-3" style={{ font: "var(--text-caption)" }}>
-              Corretor responsável: {directBroker.name} · {directBroker.creci}
+              Corretor responsável: {corretorDireto.name} · {corretorDireto.creci}
             </div>
           )}
         </div>

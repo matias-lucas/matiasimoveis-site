@@ -58,7 +58,7 @@ export default function EmpresaPage() {
               Corretor responsável
             </div>
             <div className="text-text-2" style={{ font: "var(--text-body-sm)" }}>
-              {SITE.defaultBroker.name} · {SITE.defaultBroker.creci}
+              {SITE.defaultCorretor.name} · {SITE.defaultCorretor.creci}
             </div>
             <div className="text-text-3 mt-3" style={{ font: "var(--text-caption)" }}>
               Registro jurídico da imobiliária: {SITE.cj}

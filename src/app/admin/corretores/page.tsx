@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { Plus } from "lucide-react";
 import { Container } from "@/components/layout/Container";
 import { Button } from "@/components/ui/Button";
-import { BrokerCard } from "@/components/admin/BrokerCard";
-import { listBrokers } from "@/lib/admin/queries";
-import { updateBroker, deleteBroker } from "./actions";
+import { CorretorCard } from "@/components/admin/corretor";
+import { listCorretores } from "@/lib/admin/queries";
+import { updateCorretor, deleteCorretor } from "./actions";
 
 export const metadata: Metadata = {
   title: "Corretores",
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 };
 
 export default async function AdminCorretoresPage() {
-  const brokers = await listBrokers();
+  const corretores = await listCorretores();
 
   return (
     <Container className="py-8">
@@ -28,7 +28,7 @@ export default async function AdminCorretoresPage() {
         </Button>
       </div>
 
-      {brokers.length === 0 ? (
+      {corretores.length === 0 ? (
         <div className="flex flex-col items-center text-center gap-2 py-20 px-8 bg-bg-surface border border-border-1 rounded-lg">
           <p className="text-text-1" style={{ font: "var(--text-body-md)" }}>
             Nenhum corretor cadastrado.
@@ -36,12 +36,12 @@ export default async function AdminCorretoresPage() {
         </div>
       ) : (
         <div className="grid grid-cols-3 gap-5">
-          {brokers.map((broker) => (
-            <BrokerCard
-              key={broker.id}
-              broker={broker}
-              updateAction={updateBroker.bind(null, broker.id)}
-              deleteAction={deleteBroker.bind(null, broker.id)}
+          {corretores.map((corretor) => (
+            <CorretorCard
+              key={corretor.id}
+              corretor={corretor}
+              updateAction={updateCorretor.bind(null, corretor.id)}
+              deleteAction={deleteCorretor.bind(null, corretor.id)}
             />
           ))}
         </div>

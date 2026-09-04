@@ -3,24 +3,24 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { Container } from "@/components/layout/Container";
-import { BrokerForm } from "@/components/admin/BrokerForm";
-import { DeleteBrokerButton } from "@/components/admin/DeleteBrokerButton";
-import { getBrokerById } from "@/lib/admin/queries";
-import { updateBroker, deleteBroker } from "../actions";
+import { CorretorForm } from "@/components/admin/corretor";
+import { ConfirmDeleteButton } from "@/components/ui/ConfirmDeleteButton";
+import { getCorretorById } from "@/lib/admin/queries";
+import { updateCorretor, deleteCorretor } from "../actions";
 
 export const metadata: Metadata = {
   title: "Editar corretor",
   robots: { index: false, follow: false },
 };
 
-interface EditBrokerPageProps {
+interface EditCorretorPageProps {
   params: Promise<{ id: string }>;
 }
 
-export default async function EditBrokerPage({ params }: EditBrokerPageProps) {
+export default async function EditCorretorPage({ params }: EditCorretorPageProps) {
   const { id } = await params;
-  const broker = await getBrokerById(id);
-  if (!broker) notFound();
+  const corretor = await getCorretorById(id);
+  if (!corretor) notFound();
 
   return (
     <Container className="py-8 max-w-[560px]">
@@ -38,12 +38,15 @@ export default async function EditBrokerPage({ params }: EditBrokerPageProps) {
           className="text-text-1"
           style={{ font: "var(--text-display-sm)", fontFamily: "var(--font-display)" }}
         >
-          {broker.name}
+          {corretor.name}
         </h1>
-        <DeleteBrokerButton action={deleteBroker.bind(null, broker.id)} name={broker.name} />
+        <ConfirmDeleteButton
+          action={deleteCorretor.bind(null, corretor.id)}
+          confirmMessage={`Excluir "${corretor.name}"? Essa ação não pode ser desfeita.`}
+        />
       </div>
 
-      <BrokerForm broker={broker} action={updateBroker.bind(null, broker.id)} submitLabel="Salvar alterações" />
+      <CorretorForm corretor={corretor} action={updateCorretor.bind(null, corretor.id)} submitLabel="Salvar alterações" />
     </Container>
   );
 }

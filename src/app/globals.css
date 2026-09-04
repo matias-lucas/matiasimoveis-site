@@ -4,19 +4,18 @@
 @import "../styles/tokens/spacing.css";
 
 /*
- * Tokens above are copied verbatim from the Claude Design handoff
- * (handoff/project/ds/tokens/*.css) — do not hand-edit values here,
- * edit the source tokens and re-copy. See CLAUDE.md > Design system.
+ * Os tokens acima são copiados literalmente do handoff do Claude Design
+ * (handoff/project/ds/tokens/*.css) — não edite os valores aqui à mão,
+ * edite os tokens de origem e recopie. Ver CLAUDE.md > Design system.
  */
 
 /*
- * typography.css ships a Google Fonts @import for Poppins/Inter; that
- * import is stripped at copy time (see CLAUDE.md) and the fonts are
- * loaded instead via next/font/google in src/app/layout.tsx, which
- * exposes them as --font-poppins/--font-inter on <html>. Point the
- * design-system's --font-display/--font-body at those here so every
- * component that already uses the tokens picks up the self-hosted fonts
- * for free.
+ * typography.css traz um @import do Google Fonts para Poppins/Inter; esse
+ * import é removido no momento da cópia (ver CLAUDE.md) e as fontes são
+ * carregadas via next/font/google em src/app/layout.tsx, que as expõe como
+ * --font-poppins/--font-inter no <html>. Aponte aqui as variáveis
+ * --font-display/--font-body do design system para essas, para que todo
+ * componente que já usa os tokens ganhe as fontes self-hosted de graça.
  */
 :root {
   --font-display: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
@@ -119,12 +118,13 @@
 }
 
 /*
- * Layered deliberately: Tailwind's own rules live inside @layer
- * (theme/base/components/utilities) via the @import above, and layered
- * CSS always loses to *unlayered* CSS regardless of specificity. Without
- * this @layer wrapper, these defaults would beat every Tailwind utility
- * class (e.g. text-white on a link), not just get overridden by them as
- * intended — bit us once already on the hero's outline button text.
+ * Colocado em camada (@layer) de propósito: as próprias regras do Tailwind
+ * vivem dentro de @layer (theme/base/components/utilities) via o @import
+ * acima, e CSS em camada sempre perde para CSS *sem camada*, não importa a
+ * especificidade. Sem este @layer, esses padrões venceriam qualquer classe
+ * utilitária do Tailwind (ex.: text-white num link), em vez de serem
+ * sobrescritos por elas como deveria — já nos mordeu uma vez no texto do
+ * botão outline do hero.
  */
 @layer base {
   body {
@@ -146,27 +146,28 @@
 }
 
 /*
- * PropertyForm's characteristics/location/photos tabs (src/components/admin/
- * PropertyForm.tsx). Deliberately unlayered like the block above: the
- * pf-panel rule needs to beat the .h-11/.gap-4 Tailwind utilities still
- * present on individual fields, which a @layer components rule couldn't do
- * against Tailwind's own @layer utilities. Class names are pf-* namespaced
- * so nothing else on the site is affected. Visibility is driven by
- * .pf-tabs:has(#pfTabN:checked) rather than a #pfTabN:checked ~ sibling
- * combinator, since the radios and the panel they control aren't always
- * direct siblings (any wrapper in between breaks ~).
+ * Abas de características/localização/fotos do PropertyForm
+ * (src/components/admin/PropertyForm.tsx). Deliberadamente sem @layer, como
+ * o bloco acima: a regra pf-panel precisa vencer as utilities .h-11/.gap-4
+ * do Tailwind ainda presentes nos campos individuais, o que uma regra em
+ * @layer components não conseguiria contra as próprias @layer utilities do
+ * Tailwind. Os nomes de classe têm o namespace pf-* para não afetar mais
+ * nada no site. A visibilidade é controlada por .pf-tabs:has(#pfTabN:checked)
+ * em vez de um combinador irmão #pfTabN:checked ~, já que os radios e o
+ * painel que controlam nem sempre são irmãos diretos (qualquer wrapper no
+ * meio quebra o ~).
  *
- * The 3 panels scroll internally instead of growing the page: pf-panel-wrap
- * holds all three positioned absolutely (inset: 0), which removes them from
- * normal flow so they contribute no height to .pf-tabs — .pf-tabs's own
- * height then comes only from the tabnav (auto) + pf-panel-wrap's flex-grow
- * share of whatever height .pf-tabs is given. .pf-tabs itself is stretched
- * (form's items-stretch) to match the left sidebar column's height exactly,
- * since that column is always the taller of the two grid items. Net effect:
- * both columns render at the same height, the active panel fills the
- * remaining space below the tabnav and scrolls its own overflow, and the
- * page never grows past that — no page-level scroll, no magic-number
- * max-height, no JS.
+ * Os 3 painéis rolam internamente em vez de fazer a página crescer:
+ * pf-panel-wrap mantém os três posicionados absolutamente (inset: 0), o que
+ * os remove do fluxo normal para que não contribuam altura a .pf-tabs — a
+ * altura de .pf-tabs vem então só da tabnav (auto) + a fatia de flex-grow
+ * de pf-panel-wrap dentro da altura que .pf-tabs recebe. O próprio .pf-tabs
+ * é esticado (items-stretch do form) para casar exatamente com a altura da
+ * coluna da barra lateral esquerda, já que essa coluna é sempre a mais alta
+ * dos dois itens do grid. Resultado: as duas colunas renderizam com a
+ * mesma altura, o painel ativo preenche o espaço restante abaixo da tabnav
+ * e rola seu próprio overflow, e a página nunca cresce além disso — sem
+ * scroll de página, sem max-height de número mágico, sem JS.
  */
 .pf-tabnav {
   display: inline-flex;
@@ -235,10 +236,10 @@ form:has(input[name="purpose"][value="venda"]:checked) .pf-tab-corretor {
 }
 
 /*
- * Shared thin, brand-colored scrollbar — used by the pf-panel tabs above and
- * by ui/Select.tsx's custom dropdown menu (a native <select> popup can't be
- * themed in any browser, so that component renders its own listbox and
- * needs this same look).
+ * Barra de rolagem fina e colorida com a marca, compartilhada — usada pelas
+ * abas pf-panel acima e pelo menu dropdown customizado do ui/Select.tsx (um
+ * popup nativo de <select> não pode ser estilizado em nenhum navegador,
+ * então esse componente renderiza sua própria listbox e precisa do mesmo visual).
  */
 .pf-panel-scroll,
 .ui-select-menu {

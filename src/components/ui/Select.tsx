@@ -28,14 +28,15 @@ function mergeRefs<T>(...refs: Array<Ref<T> | undefined>) {
 }
 
 /**
- * Renders a real (visually hidden) native <select> to stay compatible with
- * plain <form>/FormData submits, react-hook-form's register() (ref/onChange/
- * onBlur all land on it) and the group-has-[option...] CSS trick in
- * PropertyForm — and a custom-styled trigger + portal-rendered listbox on
- * top, since a native option-list popup can't be themed in any browser.
- * Selecting an option updates the hidden select via the native value setter
- * (bypasses React's tracked-value shortcut) and dispatches a real "change"
- * event, so both plain onChange props and react-hook-form keep working.
+ * Renderiza um <select> nativo real (visualmente oculto) para continuar
+ * compatível com submits simples de <form>/FormData, com o register() do
+ * react-hook-form (ref/onChange/onBlur caem todos nele) e com o truque CSS
+ * group-has-[option...] do ImovelForm — e por cima um gatilho com estilo
+ * próprio + listbox renderizada via portal, já que o popup nativo de opções
+ * não pode ser estilizado em nenhum navegador. Selecionar uma opção atualiza
+ * o select oculto via o setter nativo de value (contorna o atalho de valor
+ * rastreado do React) e dispara um evento "change" de verdade, para que
+ * tanto props onChange simples quanto o react-hook-form continuem funcionando.
  */
 export function Select({
   label,
@@ -66,8 +67,9 @@ export function Select({
   const [activeIndex, setActiveIndex] = useState(0);
   const [menuRect, setMenuRect] = useState<{ top: number; left: number; width: number } | null>(null);
 
-  // Native <select> auto-resets selection when its <option> children change
-  // (e.g. SearchFilterBar swaps price bands on Alugar/Comprar) — resync.
+  // O <select> nativo reseta a seleção sozinho quando seus <option> filhos
+  // mudam (ex.: SearchFilterBar troca as faixas de preço em Alugar/Comprar) —
+  // resincroniza.
   useEffect(() => {
     if (nativeRef.current) setCurrent(nativeRef.current.value);
   }, [options]);

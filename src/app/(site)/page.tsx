@@ -3,16 +3,16 @@ import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { Container } from "@/components/layout/Container";
 import { Button } from "@/components/ui/Button";
-import { PropertyCard } from "@/components/property/PropertyCard";
-import { SearchFilterBar } from "@/components/property/SearchFilterBar";
-import { getFeaturedProperties } from "@/lib/queries";
+import { ImovelCard } from "@/components/imovel/ImovelCard";
+import { SearchFilterBar } from "@/components/imovel/SearchFilterBar";
+import { getFeaturedImoveis } from "@/lib/queries";
 import { SERVICES } from "@/lib/services";
 import { SITE } from "@/lib/site";
 
 export const revalidate = 60;
 
 export default async function HomePage() {
-  const featured = await getFeaturedProperties();
+  const featured = await getFeaturedImoveis();
 
   return (
     <div>
@@ -88,8 +88,8 @@ export default async function HomePage() {
           </Button>
         </div>
         <div className="flex gap-5 flex-wrap">
-          {featured.map((property) => (
-            <PropertyCard key={property.id} property={property} />
+          {featured.map((imovel) => (
+            <ImovelCard key={imovel.id} imovel={imovel} />
           ))}
         </div>
       </Container>

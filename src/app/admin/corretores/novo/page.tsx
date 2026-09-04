@@ -2,15 +2,15 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Container } from "@/components/layout/Container";
-import { BrokerForm } from "@/components/admin/BrokerForm";
-import { createBroker } from "../actions";
+import { CorretorForm } from "@/components/admin/corretor";
+import { createCorretor } from "../actions";
 
 export const metadata: Metadata = {
   title: "Novo corretor",
   robots: { index: false, follow: false },
 };
 
-export default function NewBrokerPage() {
+export default function NewCorretorPage() {
   return (
     <Container className="py-8 max-w-[560px]">
       <Link
@@ -29,7 +29,7 @@ export default function NewBrokerPage() {
         Novo corretor
       </h1>
 
-      <BrokerForm action={createBroker} submitLabel="Salvar corretor" />
+      <CorretorForm action={createCorretor} submitLabel="Salvar corretor" />
     </Container>
   );
 }

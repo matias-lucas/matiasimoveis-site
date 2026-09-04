@@ -5,11 +5,11 @@ import { Plus, Eye, EyeOff, Star, Pencil } from "lucide-react";
 import { Container } from "@/components/layout/Container";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { PropertyPhoto } from "@/components/property/PropertyPhoto";
-import { listProperties, type PublishFilter } from "@/lib/admin/queries";
+import { ImovelPhoto } from "@/components/imovel/ImovelPhoto";
+import { listImoveis, type PublishFilter } from "@/lib/admin/queries";
 import { KIND_LABELS, LEGACY_KIND_LABELS, STATUS_LABELS } from "@/lib/admin/labels";
 import { formatPrice } from "@/lib/format";
-import { setPublished, setFeatured } from "./actions";
+import { setPublished, setFeatured } from "./actions/imoveis";
 
 export const metadata: Metadata = {
   title: "Imóveis",
@@ -29,7 +29,7 @@ interface AdminImoveisPageProps {
 export default async function AdminImoveisPage({ searchParams }: AdminImoveisPageProps) {
   const { status } = await searchParams;
   const filter: PublishFilter = status === "published" || status === "draft" ? status : "all";
-  const properties = await listProperties(filter);
+  const imoveis = await listImoveis(filter);
 
   return (
     <Container className="py-8">
@@ -61,87 +61,87 @@ export default async function AdminImoveisPage({ searchParams }: AdminImoveisPag
         ))}
       </div>
 
-      {properties.length === 0 ? (
+      {imoveis.length === 0 ? (
         <div className="flex flex-col items-center text-center gap-2 py-20 px-8 bg-bg-surface border border-border-1 rounded-lg">
           <p className="text-text-1" style={{ font: "var(--text-body-md)" }}>
             Nenhum imóvel encontrado.
           </p>
         </div>
       ) : (
-        <div className="pg-grid grid gap-[13.6px]" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))" }}>
-          {properties.map((property) => (
+        <div className="grid gap-[13.6px]" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))" }}>
+          {imoveis.map((imovel) => (
             <div
-              key={property.id}
-              className="pg-card flex flex-col bg-bg-surface border border-border-1 rounded-lg overflow-hidden"
+              key={imovel.id}
+              className="flex flex-col bg-bg-surface border border-border-1 rounded-lg overflow-hidden"
             >
               <div className="relative w-full aspect-[4/3] bg-bg-sunken">
-                <PropertyPhoto
-                  src={property.coverImage}
-                  alt={property.title}
+                <ImovelPhoto
+                  src={imovel.coverImage}
+                  alt={imovel.title}
                   sizes="(max-width: 768px) 100vw, 33vw"
                   iconClassName="w-6 h-6"
                 />
                 <div className="absolute top-3 left-3">
-                  <Badge tone={property.purpose === "locacao" ? "locacao" : "venda"}>
-                    {property.purpose === "locacao" ? "Locação" : "Venda"}
+                  <Badge tone={imovel.purpose === "locacao" ? "locacao" : "venda"}>
+                    {imovel.purpose === "locacao" ? "Locação" : "Venda"}
                   </Badge>
                 </div>
               </div>
 
-              <div className="pg-card-body flex flex-col p-[13.6px] gap-[6.8px]">
+              <div className="flex flex-col p-[13.6px] gap-[6.8px]">
                 <span className="text-text-3" style={{ font: "var(--text-caption)" }}>
-                  {property.kind === "outros" && property.kind_other
-                    ? property.kind_other
-                    : (KIND_LABELS[property.kind] ?? LEGACY_KIND_LABELS[property.kind])}{" "}
-                  · Ref.: {property.ref}
+                  {imovel.kind === "outros" && imovel.kind_other
+                    ? imovel.kind_other
+                    : (KIND_LABELS[imovel.kind] ?? LEGACY_KIND_LABELS[imovel.kind])}{" "}
+                  · Ref.: {imovel.ref}
                 </span>
                 <div className="text-text-1 font-semibold truncate" style={{ font: "var(--text-body-md)" }}>
-                  {property.title}
+                  {imovel.title}
                 </div>
                 <div className="flex items-center gap-1 min-w-0" style={{ font: "var(--text-body-sm)" }}>
                   <span className="text-text-2 truncate min-w-0">
-                    {property.neighborhood}
+                    {imovel.neighborhood}
                   </span>
-                  <span className="text-text-2 shrink-0">· {STATUS_LABELS[property.status]}</span>
+                  <span className="text-text-2 shrink-0">· {STATUS_LABELS[imovel.status]}</span>
                 </div>
                 <div className="text-text-1" style={{ font: "var(--text-price)", fontSize: 18 }}>
-                  {formatPrice(Number(property.price), property.purpose)}
+                  {formatPrice(Number(imovel.price), imovel.purpose)}
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2 mt-1">
-                  <form action={setFeatured.bind(null, property.id, !property.featured)}>
+                  <form action={setFeatured.bind(null, imovel.id, !imovel.featured)}>
                     <button
                       type="submit"
-                      title={property.featured ? "Remover destaque" : "Destacar na home"}
+                      title={imovel.featured ? "Remover destaque" : "Destacar na home"}
                       className={clsx(
                         "flex items-center justify-center w-9 h-9 rounded-md border transition-colors duration-150 ease-out cursor-pointer",
-                        property.featured
+                        imovel.featured
                           ? "bg-amber-100 border-amber-500 text-amber-500"
                           : "bg-transparent border-border-2 text-text-3 hover:text-text-1"
                       )}
                     >
-                      <Star className="w-4 h-4" fill={property.featured ? "currentColor" : "none"} />
+                      <Star className="w-4 h-4" fill={imovel.featured ? "currentColor" : "none"} />
                     </button>
                   </form>
 
-                  <form action={setPublished.bind(null, property.id, !property.published)}>
+                  <form action={setPublished.bind(null, imovel.id, !imovel.published)}>
                     <button
                       type="submit"
                       className={clsx(
                         "inline-flex items-center gap-1.5 rounded-md border px-3 py-2 cursor-pointer transition-colors duration-150 ease-out",
-                        property.published
+                        imovel.published
                           ? "bg-status-success-bg text-status-success-fg border-transparent hover:opacity-80"
                           : "bg-status-warning-bg text-status-warning-fg border-transparent hover:opacity-80"
                       )}
                       style={{ font: "var(--text-body-sm)" }}
                     >
-                      {property.published ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-                      {property.published ? "Visível" : "Oculto"}
+                      {imovel.published ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                      {imovel.published ? "Visível" : "Oculto"}
                     </button>
                   </form>
 
                   <Button
-                    href={`/admin/imoveis/${property.id}`}
+                    href={`/admin/imoveis/${imovel.id}`}
                     variant="outline"
                     size="sm"
                     icon={<Pencil className="w-3.5 h-3.5" />}

@@ -2,7 +2,7 @@ import Image from "next/image";
 import { ImageOff } from "lucide-react";
 import { clsx } from "clsx";
 
-interface PropertyPhotoProps {
+interface ImovelPhotoProps {
   src?: string;
   alt: string;
   className?: string;
@@ -12,18 +12,19 @@ interface PropertyPhotoProps {
 }
 
 /**
- * Shared image slot for cards, galleries and thumbnails. Falls back to an
- * honest "sem foto ainda" state instead of reusing a stock photo across
- * unrelated mock listings — see docs/PLANO-IMPLEMENTACAO.md section 5.
+ * Slot de imagem compartilhado por cards, galerias e miniaturas. Cai para um
+ * estado honesto de "sem foto ainda" em vez de reaproveitar uma foto de
+ * banco de imagens entre anúncios fictícios sem relação — ver
+ * docs/PLANO-IMPLEMENTACAO.md seção 5.
  */
-export function PropertyPhoto({
+export function ImovelPhoto({
   src,
   alt,
   className,
   priority,
   sizes,
   iconClassName = "w-8 h-8",
-}: PropertyPhotoProps) {
+}: ImovelPhotoProps) {
   if (src) {
     return (
       <Image

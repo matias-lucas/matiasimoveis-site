@@ -3,9 +3,9 @@
 import { useTransition } from "react";
 import { clsx } from "clsx";
 import { Star, Eye, EyeOff } from "lucide-react";
-import { DeletePropertyButton } from "@/components/admin/DeletePropertyButton";
+import { ConfirmDeleteButton } from "@/components/ui/ConfirmDeleteButton";
 
-interface PropertyQuickActionsProps {
+interface ImovelQuickActionsProps {
   featured: boolean;
   published: boolean;
   title: string;
@@ -14,18 +14,18 @@ interface PropertyQuickActionsProps {
   onDelete: () => Promise<void>;
 }
 
-/** Destacar/Publicar/Excluir as direct server-action calls (no <form>) —
- *  this renders inside PropertyForm's own <form>, and nested <form>
- *  elements are invalid HTML and break hydration. Same pattern as
- *  DeletePropertyButton. */
-export function PropertyQuickActions({
+/** Destacar/Publicar/Excluir chamam server actions diretamente (sem <form>) —
+ *  isso renderiza dentro do próprio <form> do ImovelForm, e elementos
+ *  <form> aninhados são HTML inválido e quebram a hidratação. Mesmo padrão
+ *  usado pelo ConfirmDeleteButton. */
+export function ImovelQuickActions({
   featured,
   published,
   title,
   onToggleFeatured,
   onTogglePublished,
   onDelete,
-}: PropertyQuickActionsProps) {
+}: ImovelQuickActionsProps) {
   const [featuredPending, startFeaturedTransition] = useTransition();
   const [publishedPending, startPublishedTransition] = useTransition();
 
@@ -62,7 +62,11 @@ export function PropertyQuickActions({
         {published ? "Visível" : "Oculto"}
       </button>
 
-      <DeletePropertyButton action={onDelete} title={title} />
+      <ConfirmDeleteButton
+        action={onDelete}
+        confirmMessage={`Excluir "${title}"? Essa ação não pode ser desfeita.`}
+        label="Excluir"
+      />
     </div>
   );
 }

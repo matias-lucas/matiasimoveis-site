@@ -1,15 +1,15 @@
 import Link from "next/link";
 import { BedDouble, Bath, Car, Ruler, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
-import { PropertyPhoto } from "./PropertyPhoto";
+import { ImovelPhoto } from "./ImovelPhoto";
 import { formatArea, formatPrice } from "@/lib/format";
-import type { Property } from "@/lib/types";
+import type { Imovel } from "@/lib/types";
 
-interface PropertyCardProps {
-  property: Property;
+interface ImovelCardProps {
+  imovel: Imovel;
 }
 
-export function PropertyCard({ property }: PropertyCardProps) {
+export function ImovelCard({ imovel }: ImovelCardProps) {
   const {
     slug,
     purpose,
@@ -22,7 +22,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
     areaM2,
     ref,
     coverImage,
-  } = property;
+  } = imovel;
 
   return (
     <Link
@@ -30,7 +30,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
       className="group block w-[280px] bg-bg-surface rounded-lg overflow-hidden shadow-md transition-shadow duration-150 ease-out hover:shadow-lg font-body"
     >
       <div className="relative h-[180px] bg-bg-sunken">
-        <PropertyPhoto src={coverImage} alt={title} />
+        <ImovelPhoto src={coverImage} alt={title} />
         <Badge
           tone={purpose === "locacao" ? "locacao" : "venda"}
           solid

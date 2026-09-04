@@ -1,4 +1,4 @@
-import type { PropertyPurpose } from "./types";
+import type { ImovelPurpose } from "./types";
 
 const currencyFormatter = new Intl.NumberFormat("pt-BR", {
   style: "currency",
@@ -6,8 +6,8 @@ const currencyFormatter = new Intl.NumberFormat("pt-BR", {
   maximumFractionDigits: 0,
 });
 
-/** R$ 320.000 for sale, R$ 900/mês for rent. */
-export function formatPrice(price: number, purpose: PropertyPurpose): string {
+/** R$ 320.000 para venda, R$ 900/mês para locação. */
+export function formatPrice(price: number, purpose: ImovelPurpose): string {
   const value = currencyFormatter.format(price);
   return purpose === "locacao" ? `${value}/mês` : value;
 }

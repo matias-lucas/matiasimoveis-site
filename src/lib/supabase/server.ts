@@ -4,10 +4,11 @@ import type { Database } from "./database.types";
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from "./env";
 
 /**
- * Cookie-aware client for the admin panel's server components/actions —
- * session-bound, so RLS's "admin full access" policies apply. Not used by
- * the public site (see lib/supabase/public.ts) so those pages don't get
- * forced into dynamic rendering by the cookies() call here.
+ * Client ciente de cookies, para os server components/actions do painel
+ * admin — vinculado à sessão, então as políticas "admin full access" do RLS
+ * se aplicam. Não é usado pelo site público (ver lib/supabase/public.ts),
+ * então aquelas páginas não são forçadas a renderização dinâmica pela
+ * chamada a cookies() aqui.
  */
 export async function createClient() {
   const cookieStore = await cookies();
@@ -23,8 +24,8 @@ export async function createClient() {
             cookieStore.set(name, value, options);
           }
         } catch {
-          // Called from a Server Component render — middleware refreshes
-          // the session cookie on the next request instead.
+          // Chamado a partir da renderização de um Server Component — o
+          // middleware renova o cookie de sessão na próxima request.
         }
       },
     },

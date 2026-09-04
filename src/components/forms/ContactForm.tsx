@@ -6,6 +6,7 @@ import { z } from "zod";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { Button } from "@/components/ui/Button";
+import { FieldError } from "@/components/ui/FieldError";
 import { buildWhatsAppUrl, contactInquiryMessage } from "@/lib/whatsapp";
 
 const schema = z.object({
@@ -36,28 +37,19 @@ export function ContactForm() {
     >
       <div>
         <Input label="Nome" placeholder="Seu nome" {...register("name")} />
-        {errors.name && <FieldError message={errors.name.message} />}
+        {errors.name && <FieldError message={errors.name.message} className="mt-1" />}
       </div>
       <div>
         <Input label="E-mail" placeholder="voce@email.com" {...register("email")} />
-        {errors.email && <FieldError message={errors.email.message} />}
+        {errors.email && <FieldError message={errors.email.message} className="mt-1" />}
       </div>
       <div>
         <Textarea label="Mensagem" rows={4} placeholder="Como podemos ajudar?" {...register("message")} />
-        {errors.message && <FieldError message={errors.message.message} />}
+        {errors.message && <FieldError message={errors.message.message} className="mt-1" />}
       </div>
       <Button type="submit" variant="primary" disabled={isSubmitting} className="w-full">
         Enviar mensagem
       </Button>
     </form>
-  );
-}
-
-function FieldError({ message }: { message?: string }) {
-  if (!message) return null;
-  return (
-    <p className="text-red-600 mt-1" style={{ font: "var(--text-caption)" }}>
-      {message}
-    </p>
   );
 }

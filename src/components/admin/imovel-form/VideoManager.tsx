@@ -3,10 +3,10 @@
 import { useRef, useState, useTransition } from "react";
 import { Upload, Trash2, ChevronUp, ChevronDown, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { PROPERTY_VIDEOS_BUCKET, publicStorageUrl } from "@/lib/supabase/env";
-import { addVideo, deleteVideo, moveVideo } from "@/app/admin/imoveis/actions";
+import { IMOVEL_VIDEOS_BUCKET, publicStorageUrl } from "@/lib/supabase/env";
+import { addVideo, deleteVideo, moveVideo } from "@/app/admin/imoveis/actions/videos";
 
-const MAX_FILE_BYTES = 100 * 1024 * 1024; // matches the property-videos bucket's file_size_limit
+const MAX_FILE_BYTES = 100 * 1024 * 1024; // corresponde ao file_size_limit do bucket property-videos
 const ALLOWED_TYPES = ["video/mp4", "video/webm", "video/quicktime"];
 
 interface Video {
@@ -18,12 +18,12 @@ interface Video {
 }
 
 interface VideoManagerProps {
-  propertyId: string;
-  propertyTitle: string;
+  imovelId: string;
+  imovelTitle: string;
   initialVideos: Video[];
 }
 
-export function VideoManager({ propertyId, propertyTitle, initialVideos }: VideoManagerProps) {
+export function VideoManager({ imovelId, imovelTitle, initialVideos }: VideoManagerProps) {
   const [videos, setVideos] = useState<Video[]>(
     [...initialVideos].sort((a, b) => a.position - b.position)
   );
@@ -47,18 +47,18 @@ export function VideoManager({ propertyId, propertyTitle, initialVideos }: Video
         }
 
         const extension = file.name.split(".").pop()?.toLowerCase() || "mp4";
-        const path = `${propertyId}/${crypto.randomUUID()}.${extension}`;
+        const path = `${imovelId}/${crypto.randomUUID()}.${extension}`;
         const { error: uploadError } = await supabase.storage
-          .from(PROPERTY_VIDEOS_BUCKET)
+          .from(IMOVEL_VIDEOS_BUCKET)
           .upload(path, file, { contentType: file.type });
         if (uploadError) throw uploadError;
 
-        const row = await addVideo(propertyId, path, propertyTitle);
+        const row = await addVideo(imovelId, path, imovelTitle);
         setVideos((prev) => [
           ...prev,
           {
             id: row.id,
-            url: publicStorageUrl(row.storage_path, PROPERTY_VIDEOS_BUCKET),
+            url: publicStorageUrl(row.storage_path, IMOVEL_VIDEOS_BUCKET),
             label: row.label,
             position: row.position,
             storage_path: row.storage_path,
@@ -76,7 +76,7 @@ export function VideoManager({ propertyId, propertyTitle, initialVideos }: Video
   function handleDelete(video: Video) {
     setVideos((prev) => prev.filter((v) => v.id !== video.id));
     startTransition(() => {
-      deleteVideo(video.id, propertyId, video.storage_path);
+      deleteVideo(video.id, imovelId, video.storage_path);
     });
   }
 
@@ -90,7 +90,7 @@ export function VideoManager({ propertyId, propertyTitle, initialVideos }: Video
       return next;
     });
     startTransition(() => {
-      moveVideo(propertyId, video.id, direction);
+      moveVideo(imovelId, video.id, direction);
     });
   }
 

@@ -3,26 +3,23 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
-import { PropertyForm } from "@/components/admin/PropertyForm";
-import { PhotoManager } from "@/components/admin/PhotoManager";
-import { VideoManager } from "@/components/admin/VideoManager";
-import { PropertyQuickActions } from "@/components/admin/PropertyQuickActions";
-import { getPropertyById, listBrokers } from "@/lib/admin/queries";
-import { updateProperty, setPublished, setFeatured, deleteProperty } from "../actions";
+import { ImovelForm, PhotoManager, VideoManager, ImovelQuickActions } from "@/components/admin/imovel-form";
+import { getImovelById, listCorretores } from "@/lib/admin/queries";
+import { updateImovel, setPublished, setFeatured, deleteImovel } from "../actions/imoveis";
 
 export const metadata: Metadata = {
   title: "Editar imóvel",
   robots: { index: false, follow: false },
 };
 
-interface EditPropertyPageProps {
+interface EditImovelPageProps {
   params: Promise<{ id: string }>;
 }
 
-export default async function EditPropertyPage({ params }: EditPropertyPageProps) {
+export default async function EditImovelPage({ params }: EditImovelPageProps) {
   const { id } = await params;
-  const [property, brokers] = await Promise.all([getPropertyById(id), listBrokers()]);
-  if (!property) notFound();
+  const [imovel, corretores] = await Promise.all([getImovelById(id), listCorretores()]);
+  if (!imovel) notFound();
 
   return (
     <div className="max-w-[1080px] mx-auto px-8 py-8">
@@ -38,25 +35,25 @@ export default async function EditPropertyPage({ params }: EditPropertyPageProps
       <div className="flex items-start justify-between gap-4 mb-6">
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <Badge tone={property.published ? "success" : "warning"}>
-              {property.published ? "Visível" : "Oculto"}
+            <Badge tone={imovel.published ? "success" : "warning"}>
+              {imovel.published ? "Visível" : "Oculto"}
             </Badge>
             <span className="text-text-3" style={{ font: "var(--text-caption)" }}>
-              Ref.: {property.ref}
+              Ref.: {imovel.ref}
             </span>
           </div>
           <h1
             className="text-text-1"
             style={{ font: "var(--text-display-sm)", fontFamily: "var(--font-display)" }}
           >
-            {property.title}
+            {imovel.title}
           </h1>
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
-          {property.published && (
+          {imovel.published && (
             <Link
-              href={`/imovel/${property.slug}`}
+              href={`/imovel/${imovel.slug}`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 text-text-1 bg-transparent border border-border-2 rounded-md px-3 py-2 no-underline transition-colors duration-150 ease-out hover:bg-bg-sunken"
@@ -69,25 +66,25 @@ export default async function EditPropertyPage({ params }: EditPropertyPageProps
         </div>
       </div>
 
-      <PropertyForm
-        property={property}
-        brokers={brokers}
+      <ImovelForm
+        imovel={imovel}
+        corretores={corretores}
         photoManager={
-          <PhotoManager propertyId={property.id} propertyTitle={property.title} initialPhotos={property.photos} />
+          <PhotoManager imovelId={imovel.id} imovelTitle={imovel.title} initialPhotos={imovel.photos} />
         }
         videoManager={
-          <VideoManager propertyId={property.id} propertyTitle={property.title} initialVideos={property.videos} />
+          <VideoManager imovelId={imovel.id} imovelTitle={imovel.title} initialVideos={imovel.videos} />
         }
-        action={updateProperty.bind(null, property.id)}
+        action={updateImovel.bind(null, imovel.id)}
         submitLabel="Salvar alterações"
         quickActions={
-          <PropertyQuickActions
-            featured={property.featured}
-            published={property.published}
-            title={property.title}
-            onToggleFeatured={setFeatured.bind(null, property.id, !property.featured)}
-            onTogglePublished={setPublished.bind(null, property.id, !property.published)}
-            onDelete={deleteProperty.bind(null, property.id)}
+          <ImovelQuickActions
+            featured={imovel.featured}
+            published={imovel.published}
+            title={imovel.title}
+            onToggleFeatured={setFeatured.bind(null, imovel.id, !imovel.featured)}
+            onTogglePublished={setPublished.bind(null, imovel.id, !imovel.published)}
+            onDelete={deleteImovel.bind(null, imovel.id)}
           />
         }
       />

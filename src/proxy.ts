@@ -3,9 +3,9 @@ import { NextResponse, type NextRequest } from "next/server";
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from "@/lib/supabase/env";
 
 /**
- * Protects /admin/*: refreshes the Supabase session cookie on every
- * request, redirects unauthenticated visitors to the /admin login page,
- * and redirects already-logged-in visitors away from it.
+ * Protege /admin/*: renova o cookie de sessão do Supabase a cada request,
+ * redireciona visitantes não autenticados para a página de login /admin,
+ * e afasta dela visitantes já logados.
  */
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });

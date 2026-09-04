@@ -5,13 +5,14 @@ import { clsx } from "clsx";
 export type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "whatsapp";
 export type ButtonSize = "sm" | "md" | "lg";
 
-const sizeClasses: Record<ButtonSize, string> = {
+/** Compartilhado com WhatsAppLink, que usa o mesmo dimensionamento de botão. */
+export const sizeClasses: Record<ButtonSize, string> = {
   sm: "gap-1.5 px-4 py-2",
   md: "gap-2 px-[22px] py-[11px]",
   lg: "gap-2.5 px-7 py-[15px]",
 };
 
-const sizeFont: Record<ButtonSize, string> = {
+export const sizeFont: Record<ButtonSize, string> = {
   sm: "var(--text-body-sm)",
   md: "var(--text-label)",
   lg: "var(--text-display-sm)",

@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { SearchX } from "lucide-react";
 import { Container } from "@/components/layout/Container";
-import { SearchFilterBar } from "@/components/property/SearchFilterBar";
-import { PropertyCard } from "@/components/property/PropertyCard";
+import { SearchFilterBar } from "@/components/imovel/SearchFilterBar";
+import { ImovelCard } from "@/components/imovel/ImovelCard";
 import { WhatsAppLink } from "@/components/ui/WhatsAppLink";
-import { searchProperties } from "@/lib/queries";
+import { searchImoveis } from "@/lib/queries";
 import { parsePriceBand } from "@/lib/price-bands";
-import type { PropertyKind, PropertyPurpose } from "@/lib/types";
+import type { ImovelKind, ImovelPurpose } from "@/lib/types";
 
 export const metadata: Metadata = {
   title: "Buscar imóveis",
@@ -27,13 +27,13 @@ interface ImoveisPageProps {
 
 export default async function ImoveisPage({ searchParams }: ImoveisPageProps) {
   const params = await searchParams;
-  const purpose = params.finalidade as PropertyPurpose | undefined;
+  const purpose = params.finalidade as ImovelPurpose | undefined;
   const { min: minPrice, max: maxPrice } = parsePriceBand(params.preco);
 
-  const results = await searchProperties({
+  const results = await searchImoveis({
     purpose,
     neighborhood: params.bairro,
-    kind: params.tipo as PropertyKind | undefined,
+    kind: params.tipo as ImovelKind | undefined,
     minBedrooms: params.quartos ? Number(params.quartos) : undefined,
     minPrice,
     maxPrice,
@@ -57,8 +57,8 @@ export default async function ImoveisPage({ searchParams }: ImoveisPageProps) {
 
       {results.length > 0 ? (
         <div className="flex gap-5 flex-wrap">
-          {results.map((property) => (
-            <PropertyCard key={property.id} property={property} />
+          {results.map((imovel) => (
+            <ImovelCard key={imovel.id} imovel={imovel} />
           ))}
         </div>
       ) : (

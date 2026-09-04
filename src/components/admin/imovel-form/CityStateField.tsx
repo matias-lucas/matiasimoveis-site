@@ -51,7 +51,7 @@ export function CityStateField({ cityName, stateName, defaultCity = "Itaberaí",
   }
 
   return (
-    <div className="pf-citystate-collapsed flex items-center gap-1.5 -mt-2">
+    <div className="flex items-center gap-1.5 -mt-2">
       <button
         type="button"
         onClick={() => setEditing(true)}

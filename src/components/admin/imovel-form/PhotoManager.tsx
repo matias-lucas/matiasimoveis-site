@@ -5,9 +5,9 @@ import Image from "next/image";
 import { clsx } from "clsx";
 import { Upload, Star, Trash2, ChevronUp, ChevronDown, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { PROPERTY_PHOTOS_BUCKET, publicStorageUrl } from "@/lib/supabase/env";
+import { IMOVEL_PHOTOS_BUCKET, publicStorageUrl } from "@/lib/supabase/env";
 import { compressImage } from "@/lib/image-compression";
-import { addPhoto, deletePhoto, setCoverPhoto, movePhoto } from "@/app/admin/imoveis/actions";
+import { addPhoto, deletePhoto, setCoverPhoto, movePhoto } from "@/app/admin/imoveis/actions/photos";
 
 interface Photo {
   id: string;
@@ -19,12 +19,12 @@ interface Photo {
 }
 
 interface PhotoManagerProps {
-  propertyId: string;
-  propertyTitle: string;
+  imovelId: string;
+  imovelTitle: string;
   initialPhotos: Photo[];
 }
 
-export function PhotoManager({ propertyId, propertyTitle, initialPhotos }: PhotoManagerProps) {
+export function PhotoManager({ imovelId, imovelTitle, initialPhotos }: PhotoManagerProps) {
   const [photos, setPhotos] = useState<Photo[]>(
     [...initialPhotos].sort((a, b) => a.position - b.position)
   );
@@ -41,13 +41,13 @@ export function PhotoManager({ propertyId, propertyTitle, initialPhotos }: Photo
     for (const rawFile of Array.from(fileList)) {
       try {
         const file = await compressImage(rawFile);
-        const path = `${propertyId}/${crypto.randomUUID()}.jpg`;
+        const path = `${imovelId}/${crypto.randomUUID()}.jpg`;
         const { error: uploadError } = await supabase.storage
-          .from(PROPERTY_PHOTOS_BUCKET)
+          .from(IMOVEL_PHOTOS_BUCKET)
           .upload(path, file, { contentType: "image/jpeg" });
         if (uploadError) throw uploadError;
 
-        const row = await addPhoto(propertyId, path, propertyTitle);
+        const row = await addPhoto(imovelId, path, imovelTitle);
         setPhotos((prev) => [
           ...prev,
           {
@@ -71,14 +71,14 @@ export function PhotoManager({ propertyId, propertyTitle, initialPhotos }: Photo
   function handleDelete(photo: Photo) {
     setPhotos((prev) => prev.filter((p) => p.id !== photo.id));
     startTransition(() => {
-      deletePhoto(photo.id, propertyId, photo.storage_path);
+      deletePhoto(photo.id, imovelId, photo.storage_path);
     });
   }
 
   function handleSetCover(photo: Photo) {
     setPhotos((prev) => prev.map((p) => ({ ...p, is_cover: p.id === photo.id })));
     startTransition(() => {
-      setCoverPhoto(photo.id, propertyId);
+      setCoverPhoto(photo.id, imovelId);
     });
   }
 
@@ -92,7 +92,7 @@ export function PhotoManager({ propertyId, propertyTitle, initialPhotos }: Photo
       return next;
     });
     startTransition(() => {
-      movePhoto(propertyId, photo.id, direction);
+      movePhoto(imovelId, photo.id, direction);
     });
   }
 

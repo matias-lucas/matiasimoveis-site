@@ -1,4 +1,4 @@
-import type { PropertyPurpose } from "./types";
+import type { ImovelPurpose } from "./types";
 
 export interface PriceBand {
   value: string;
@@ -8,12 +8,13 @@ export interface PriceBand {
 }
 
 /**
- * Sale and rent prices differ by orders of magnitude, so the "faixa de
- * preço" options must depend on which mode (Comprar/Alugar) is selected —
- * the handoff prototype used one fixed sale-oriented scale for both, which
- * would make every rental fall outside every band. See SearchFilterBar.
+ * Preços de venda e locação diferem por ordens de grandeza, então as opções
+ * de "faixa de preço" precisam depender de qual modo (Comprar/Alugar) está
+ * selecionado — o protótipo do handoff usava uma única escala fixa voltada
+ * para venda em ambos os casos, o que faria toda locação cair fora de
+ * qualquer faixa. Ver SearchFilterBar.
  */
-export const PRICE_BANDS: Record<PropertyPurpose, PriceBand[]> = {
+export const PRICE_BANDS: Record<ImovelPurpose, PriceBand[]> = {
   locacao: [
     { value: "0-800", label: "Até R$800/mês", max: 800 },
     { value: "800-1500", label: "R$800 – R$1.500/mês", min: 800, max: 1500 },

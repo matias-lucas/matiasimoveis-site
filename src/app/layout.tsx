@@ -28,9 +28,10 @@ export const metadata: Metadata = {
 };
 
 /**
- * Minimal shell shared by the public site and the admin panel. The public
- * chrome (Navbar/Footer/WhatsAppFab) lives in app/(site)/layout.tsx instead
- * of here so /admin/* renders its own chrome — see admin/layout.tsx.
+ * Casca mínima compartilhada pelo site público e pelo painel admin. O
+ * "chrome" público (Navbar/Footer/WhatsAppFab) fica em app/(site)/layout.tsx
+ * em vez de aqui, para que /admin/* renderize seu próprio chrome — ver
+ * admin/layout.tsx.
  */
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (

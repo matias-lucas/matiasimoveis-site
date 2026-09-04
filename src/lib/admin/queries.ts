@@ -1,24 +1,24 @@
 import { createClient } from "@/lib/supabase/server";
-import { publicStorageUrl, PROPERTY_VIDEOS_BUCKET } from "@/lib/supabase/env";
+import { publicStorageUrl, IMOVEL_VIDEOS_BUCKET } from "@/lib/supabase/env";
 import type { Database } from "@/lib/supabase/database.types";
 
-export type AdminPropertyRow = Database["public"]["Tables"]["properties"]["Row"];
+export type AdminImovelRow = Database["public"]["Tables"]["properties"]["Row"];
 export type AdminPhotoRow = Database["public"]["Tables"]["property_photos"]["Row"];
 export type AdminVideoRow = Database["public"]["Tables"]["property_videos"]["Row"];
-export type BrokerRow = Database["public"]["Tables"]["brokers"]["Row"];
+export type CorretorRow = Database["public"]["Tables"]["brokers"]["Row"];
 
-export interface AdminProperty extends AdminPropertyRow {
+export interface AdminImovel extends AdminImovelRow {
   photos: (AdminPhotoRow & { url: string })[];
   videos: (AdminVideoRow & { url: string })[];
 }
 
-export interface AdminPropertyListItem extends AdminPropertyRow {
+export interface AdminImovelListItem extends AdminImovelRow {
   coverImage?: string;
 }
 
 export type PublishFilter = "all" | "published" | "draft";
 
-export async function listProperties(filter: PublishFilter = "all"): Promise<AdminPropertyListItem[]> {
+export async function listImoveis(filter: PublishFilter = "all"): Promise<AdminImovelListItem[]> {
   const supabase = await createClient();
   let query = supabase
     .from("properties")
@@ -37,7 +37,7 @@ export async function listProperties(filter: PublishFilter = "all"): Promise<Adm
   });
 }
 
-export async function getPropertyById(id: string): Promise<AdminProperty | null> {
+export async function getImovelById(id: string): Promise<AdminImovel | null> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("properties")
@@ -56,18 +56,18 @@ export async function getPropertyById(id: string): Promise<AdminProperty | null>
       .map((p) => ({ ...p, url: publicStorageUrl(p.storage_path) })),
     videos: [...property_videos]
       .sort((a, b) => a.position - b.position)
-      .map((v) => ({ ...v, url: publicStorageUrl(v.storage_path, PROPERTY_VIDEOS_BUCKET) })),
+      .map((v) => ({ ...v, url: publicStorageUrl(v.storage_path, IMOVEL_VIDEOS_BUCKET) })),
   };
 }
 
-export async function listBrokers(): Promise<BrokerRow[]> {
+export async function listCorretores(): Promise<CorretorRow[]> {
   const supabase = await createClient();
   const { data, error } = await supabase.from("brokers").select("*").order("name");
   if (error) throw new Error(error.message);
   return data ?? [];
 }
 
-export async function getBrokerById(id: string): Promise<BrokerRow | null> {
+export async function getCorretorById(id: string): Promise<CorretorRow | null> {
   const supabase = await createClient();
   const { data, error } = await supabase.from("brokers").select("*").eq("id", id).maybeSingle();
   if (error) throw new Error(error.message);

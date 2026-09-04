@@ -1,29 +1,30 @@
 import { createPublicClient } from "./supabase/public";
-import { publicStorageUrl, PROPERTY_VIDEOS_BUCKET } from "./supabase/env";
+import { publicStorageUrl, IMOVEL_VIDEOS_BUCKET } from "./supabase/env";
 import type { Database } from "./supabase/database.types";
-import type { Property, PropertyKind, PropertyPurpose } from "./types";
+import type { Imovel, ImovelKind, ImovelPurpose } from "./types";
 
 /**
- * Public read layer, backed by Supabase (RLS restricts these to
- * `published = true` rows — see the "public read..." policies applied via
- * the Supabase MCP migrations). Replaces the old mock-properties.ts;
- * callers didn't need to change shape, only to `await` these now.
+ * Camada de leitura pública, apoiada no Supabase (RLS restringe estas
+ * consultas a linhas com `published = true` — ver as políticas "public
+ * read..." aplicadas via as migrations do Supabase MCP). Substitui o antigo
+ * mock-properties.ts; os call sites não precisaram mudar de formato, só
+ * passaram a usar `await`.
  */
 
-type PropertyRow = Database["public"]["Tables"]["properties"]["Row"];
+type ImovelRow = Database["public"]["Tables"]["properties"]["Row"];
 type PhotoRow = Database["public"]["Tables"]["property_photos"]["Row"];
 type VideoRow = Database["public"]["Tables"]["property_videos"]["Row"];
-type BrokerRow = Database["public"]["Tables"]["brokers"]["Row"];
-type RowWithPhotos = PropertyRow & {
+type CorretorRow = Database["public"]["Tables"]["brokers"]["Row"];
+type RowWithPhotos = ImovelRow & {
   property_photos: PhotoRow[];
   property_videos: VideoRow[];
-  brokers: BrokerRow | null;
+  brokers: CorretorRow | null;
 };
 
-const PROPERTY_SELECT =
+const IMOVEL_SELECT =
   "*, property_photos(id, storage_path, alt, is_cover, position), property_videos(id, storage_path, label, position), brokers(id, name, creci, contact)";
 
-function mapRow(row: RowWithPhotos): Property {
+function mapRow(row: RowWithPhotos): Imovel {
   const photos = [...row.property_photos].sort((a, b) => a.position - b.position);
   const cover = photos.find((p) => p.is_cover) ?? photos[0];
   const videos = [...row.property_videos].sort((a, b) => a.position - b.position);
@@ -41,8 +42,6 @@ function mapRow(row: RowWithPhotos): Property {
     city: row.city,
     state: row.state,
     price: Number(row.price),
-    condoPrice: row.condo_price != null ? Number(row.condo_price) : undefined,
-    iptuPrice: row.iptu_price != null ? Number(row.iptu_price) : undefined,
     bedrooms: row.bedrooms ?? undefined,
     bathrooms: row.bathrooms ?? undefined,
     parking: row.parking ?? undefined,
@@ -52,7 +51,7 @@ function mapRow(row: RowWithPhotos): Property {
     features: row.features.length ? row.features : undefined,
     status: row.status,
     featured: row.featured,
-    broker: row.brokers
+    corretor: row.brokers
       ? { id: row.brokers.id, name: row.brokers.name, creci: row.brokers.creci, contact: row.brokers.contact }
       : undefined,
     photos: photos.map((p) => ({
@@ -65,18 +64,18 @@ function mapRow(row: RowWithPhotos): Property {
     coverImage: cover ? publicStorageUrl(cover.storage_path) : undefined,
     videos: videos.map((v) => ({
       id: v.id,
-      url: publicStorageUrl(v.storage_path, PROPERTY_VIDEOS_BUCKET),
+      url: publicStorageUrl(v.storage_path, IMOVEL_VIDEOS_BUCKET),
       label: v.label,
       position: v.position,
     })),
   };
 }
 
-export async function getFeaturedProperties(): Promise<Property[]> {
+export async function getFeaturedImoveis(): Promise<Imovel[]> {
   const supabase = createPublicClient();
   const { data, error } = await supabase
     .from("properties")
-    .select(PROPERTY_SELECT)
+    .select(IMOVEL_SELECT)
     .eq("published", true)
     .eq("featured", true)
     .order("published_at", { ascending: false })
@@ -86,11 +85,11 @@ export async function getFeaturedProperties(): Promise<Property[]> {
   return (data ?? []).map((row) => mapRow(row as RowWithPhotos));
 }
 
-export async function getPropertyBySlug(slug: string): Promise<Property | undefined> {
+export async function getImovelBySlug(slug: string): Promise<Imovel | undefined> {
   const supabase = createPublicClient();
   const { data, error } = await supabase
     .from("properties")
-    .select(PROPERTY_SELECT)
+    .select(IMOVEL_SELECT)
     .eq("slug", slug)
     .eq("published", true)
     .maybeSingle();
@@ -106,20 +105,20 @@ export async function getAllPublishedSlugs(): Promise<string[]> {
   return (data ?? []).map((row) => row.slug);
 }
 
-export interface PropertyFilters {
-  purpose?: PropertyPurpose;
+export interface ImovelFilters {
+  purpose?: ImovelPurpose;
   neighborhood?: string;
-  kind?: PropertyKind;
+  kind?: ImovelKind;
   minBedrooms?: number;
   minPrice?: number;
   maxPrice?: number;
 }
 
-export async function searchProperties(filters: PropertyFilters): Promise<Property[]> {
+export async function searchImoveis(filters: ImovelFilters): Promise<Imovel[]> {
   const supabase = createPublicClient();
   let query = supabase
     .from("properties")
-    .select(PROPERTY_SELECT)
+    .select(IMOVEL_SELECT)
     .eq("published", true)
     .order("published_at", { ascending: false });
 

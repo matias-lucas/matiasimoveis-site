@@ -10,8 +10,8 @@ const toneClasses: Record<BadgeTone, string> = {
   warning: "bg-status-warning-bg text-status-warning-fg",
 };
 
-/** Solid variant for photo overlays (property card), where a tonal pill
- * would sit too close in value to the pale placeholder background. */
+/** Variante sólida para sobrepor fotos (card de imóvel), onde uma pílula
+ * tonal ficaria com contraste baixo demais sobre o fundo pálido do placeholder. */
 const toneClassesSolid: Record<BadgeTone, string> = {
   venda: "bg-red-500 text-white",
   locacao: "bg-blue-500 text-white",

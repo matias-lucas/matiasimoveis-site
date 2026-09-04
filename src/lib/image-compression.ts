@@ -1,7 +1,8 @@
 /**
- * Client-only canvas resize/re-encode before upload — phone photos land at
- * 4-5MB raw and would tank the admin form and page loads if stored as-is
- * (see docs/PLANO-IMPLEMENTACAO.md Fase 8). No extra dependency needed.
+ * Redimensiona/reencoda via canvas, só no client, antes do upload — fotos de
+ * celular chegam com 4-5MB brutos e prejudicariam o formulário admin e o
+ * carregamento das páginas se armazenadas assim (ver docs/PLANO-IMPLEMENTACAO.md
+ * Fase 8). Não precisa de dependência extra.
  */
 export async function compressImage(
   file: File,

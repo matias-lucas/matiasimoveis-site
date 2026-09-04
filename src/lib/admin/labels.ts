@@ -1,6 +1,6 @@
-import type { PropertyKind, PropertyStatus } from "@/lib/types";
+import type { ImovelKind, ImovelStatus } from "@/lib/types";
 
-export const KIND_OPTIONS: { value: PropertyKind; label: string }[] = [
+export const KIND_OPTIONS: { value: ImovelKind; label: string }[] = [
   { value: "casa", label: "Casa" },
   { value: "kitnet", label: "Kitnet" },
   { value: "apartamento", label: "Apartamento" },
@@ -11,28 +11,29 @@ export const KIND_OPTIONS: { value: PropertyKind; label: string }[] = [
 ];
 
 /**
- * "sobrado" was dropped from the selectable options (client's call — this
- * property type is folded into "Casa"/"Outros" now), but the DB enum and one
- * existing seed row (`ref: "4"`) still use it, and can't be safely renamed
- * without direct DB access. Kept only so PropertyForm can show it as a
- * read-only-ish fallback option when editing that specific legacy row,
- * instead of the <select> silently coercing it to a different kind on save.
+ * "sobrado" foi removido das opções selecionáveis (decisão do cliente — esse
+ * tipo de imóvel agora entra em "Casa"/"Outros"), mas o enum do banco e uma
+ * linha de exemplo já existente (`ref: "4"`) ainda usam esse valor, e não dá
+ * para renomear com segurança sem acesso direto ao banco. Mantido só para o
+ * ImovelForm mostrar como opção de fallback (quase somente leitura) ao
+ * editar essa linha legada específica, em vez do <select> trocar
+ * silenciosamente para outro tipo ao salvar.
  */
-export const LEGACY_KIND_LABELS: Partial<Record<PropertyKind, string>> = {
+export const LEGACY_KIND_LABELS: Partial<Record<ImovelKind, string>> = {
   sobrado: "Sobrado (descontinuado)",
 };
 
-export const KIND_LABELS: Record<PropertyKind, string> = Object.fromEntries(
+export const KIND_LABELS: Record<ImovelKind, string> = Object.fromEntries(
   KIND_OPTIONS.map((o) => [o.value, o.label])
-) as Record<PropertyKind, string>;
+) as Record<ImovelKind, string>;
 
-export const STATUS_OPTIONS: { value: PropertyStatus; label: string }[] = [
+export const STATUS_OPTIONS: { value: ImovelStatus; label: string }[] = [
   { value: "disponivel", label: "Disponível" },
   { value: "em_negociacao", label: "Em negociação" },
   { value: "vendido", label: "Vendido" },
   { value: "alugado", label: "Alugado" },
 ];
 
-export const STATUS_LABELS: Record<PropertyStatus, string> = Object.fromEntries(
+export const STATUS_LABELS: Record<ImovelStatus, string> = Object.fromEntries(
   STATUS_OPTIONS.map((o) => [o.value, o.label])
-) as Record<PropertyStatus, string>;
+) as Record<ImovelStatus, string>;

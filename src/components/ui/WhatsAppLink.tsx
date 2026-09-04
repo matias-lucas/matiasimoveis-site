@@ -1,28 +1,16 @@
 import { MessageCircle } from "lucide-react";
 import { clsx } from "clsx";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
-import type { ButtonSize } from "./Button";
+import { sizeClasses, sizeFont, type ButtonSize } from "./Button";
 
 interface WhatsAppLinkProps {
   message: string;
-  /** Overrides the destination number (digits, country-code prefixed). Defaults to SITE.whatsappNumber. */
+  /** Sobrescreve o número de destino (só dígitos, com DDI). Padrão: SITE.whatsappNumber. */
   number?: string;
   children: React.ReactNode;
   size?: ButtonSize;
   className?: string;
 }
-
-const sizeClasses: Record<ButtonSize, string> = {
-  sm: "gap-1.5 px-4 py-2",
-  md: "gap-2 px-[22px] py-[11px]",
-  lg: "gap-2.5 px-7 py-[15px]",
-};
-
-const sizeFont: Record<ButtonSize, string> = {
-  sm: "var(--text-body-sm)",
-  md: "var(--text-label)",
-  lg: "var(--text-display-sm)",
-};
 
 export function WhatsAppLink({ message, number, children, size = "md", className }: WhatsAppLinkProps) {
   return (

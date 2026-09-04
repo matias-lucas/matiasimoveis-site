@@ -14,7 +14,7 @@ function fieldsFromForm(formData: FormData) {
   };
 }
 
-export async function createBroker(formData: FormData) {
+export async function createCorretor(formData: FormData) {
   const supabase = await createClient();
   const fields = fieldsFromForm(formData);
 
@@ -25,7 +25,7 @@ export async function createBroker(formData: FormData) {
   redirect("/admin/corretores");
 }
 
-export async function updateBroker(id: string, formData: FormData) {
+export async function updateCorretor(id: string, formData: FormData) {
   const supabase = await createClient();
   const fields = fieldsFromForm(formData);
 
@@ -36,7 +36,7 @@ export async function updateBroker(id: string, formData: FormData) {
   redirect("/admin/corretores");
 }
 
-export async function deleteBroker(id: string) {
+export async function deleteCorretor(id: string) {
   const supabase = await createClient();
   const { error } = await supabase.from("brokers").delete().eq("id", id);
 
