@@ -1,10 +1,16 @@
 # Design
 
-Visual system for the Matias Imóveis site. Source of truth for tokens is
-`handoff/project/ds/tokens/*.css`, copied verbatim into
-`src/styles/tokens/`. Don't hand-edit values here or in the copies — edit
-the handoff source and re-copy, then update this file if the meaning
-changed. See `CLAUDE.md` for where things live in the codebase.
+Visual system for the Matias Imóveis site.
+
+**This file describes the pre-redesign system.** A visual redesign is
+underway on branch `redesign/editorial` — see `docs/REDESIGN-PLANO.md`,
+which takes precedence over everything below, and `docs/REDESIGN-BRIEF.md`
+(written during the redesign's Fase 1), which will become the new source
+of truth for tokens once it exists. The old rule — that
+`handoff/project/ds/tokens/*.css` is the frozen source of truth for
+`src/styles/tokens/*.css`, copied verbatim and never hand-edited — is
+**revoked**: those token files are editable directly now. See `CLAUDE.md`
+for where things live in the codebase.
 
 ## Theme
 
@@ -45,6 +51,11 @@ reads better as a page-level label.
 
 ## Typography
 
+**Revoked by the visual redesign** (see `docs/REDESIGN-PLANO.md`) — the
+pairing below is being redefined there; don't reintroduce Poppins/Inter
+as a default going forward. Pre-redesign state, for reference until
+`docs/REDESIGN-BRIEF.md` replaces it:
+
 Poppins (display/headings/prices/CTAs) + Inter (body/forms/labels),
 loaded via `next/font/google` in `src/app/layout.tsx` (self-hosted, no
 render-blocking Google Fonts request) and pointed at by
@@ -60,13 +71,13 @@ combinations. Tailwind's `font-display`/`font-body` utilities exist for
 the family only (used inside `<Button>`, etc. where the shorthand isn't
 practical).
 
-Sizes are fixed px (via the token shorthand), not fluid `clamp()` — a
+Sizes were fixed px (via the token shorthand), not fluid `clamp()` — a
 deliberate deviation from generally-preferred fluid marketing type,
-because the tokens are an inherited, approved-pixel-perfect contract
-(desktop-only phase; see `docs/PLANO-IMPLEMENTACAO.md` §4 phase 4). When
-the mobile-responsive pass happens, expect to either add breakpoint
-overrides or move the display sizes to `clamp()` bounded by these same
-px values as the max.
+because the tokens were an inherited, approved-pixel-perfect contract
+during the desktop-only phase. **That phase is over** — the visual
+redesign (`docs/REDESIGN-PLANO.md`) ships mobile-first, so expect
+breakpoint overrides or `clamp()`-bounded sizes as part of it rather than
+as a future follow-up.
 
 ## Spacing, radius, shadow
 
@@ -108,11 +119,12 @@ for a specific fake listing (see `CLAUDE.md` for why).
 
 Centered `max-width: 1200px` container (`Container.tsx`), non-fixed
 navbar (scrolls with the page, matches the handoff and the old site's
-low-chrome feel), search bar overlapping the hero by `-72px`. Desktop-
-only right now — no responsive breakpoints yet; see
-`docs/PLANO-IMPLEMENTACAO.md` phase 4 for the planned mobile pass
-(stacked hero, full-width search fields, sticky bottom price+WhatsApp bar
-on the property detail page, drawer nav).
+low-chrome feel), search bar overlapping the hero by `-72px`. Was
+desktop-only (no responsive breakpoints) as a deliberate phased choice —
+**that's revoked**: the visual redesign (`docs/REDESIGN-PLANO.md`) ships
+mobile-first from the start (stacked hero, full-width search fields,
+sticky bottom price+WhatsApp bar on the property detail page, drawer
+nav), superseding the old phase-4 plan in `docs/PLANO-IMPLEMENTACAO.md`.
 
 ## Icons
 
