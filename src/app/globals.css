@@ -29,6 +29,9 @@
   --color-bg-surface: var(--bg-surface);
   --color-bg-sunken: var(--bg-sunken);
   --color-bg-inverse: var(--bg-inverse);
+  --color-paper-50: var(--paper-50);
+  --color-sand-100: var(--sand-100);
+  --color-bg-warm-subtle: var(--bg-warm-subtle);
 
   /* text */
   --color-text-1: var(--text-1);
@@ -43,6 +46,7 @@
   --color-border-1: var(--border-1);
   --color-border-2: var(--border-2);
   --color-border-focus: var(--border-focus);
+  --color-border-warm: var(--border-warm);
 
   /* status */
   --color-status-venda-bg: var(--status-venda-bg);
