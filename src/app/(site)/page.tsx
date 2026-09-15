@@ -16,61 +16,58 @@ export default async function HomePage() {
 
   return (
     <div>
-      <section
-        className="pt-[72px] px-8 pb-[104px] text-white"
-        style={{ background: "linear-gradient(135deg, var(--bg-inverse), var(--blue-700))" }}
-      >
-        <Container className="grid grid-cols-[1.1fr_1fr] gap-12 items-center !px-0">
-          <div>
-            <div
-              className="uppercase opacity-75 mb-3"
-              style={{
-                font: "var(--text-eyebrow)",
-                letterSpacing: "var(--tracking-eyebrow)",
-              }}
-            >
-              Itaberaí e região · {SITE.cj}
-            </div>
-            <h1
-              className="max-w-[420px] mb-3.5"
-              style={{ font: "var(--text-display-lg)", fontFamily: "var(--font-display)" }}
-            >
-              O imóvel certo, no lugar certo
-            </h1>
-            <p className="max-w-[420px] mb-6 opacity-85" style={{ font: "var(--text-body-lg)" }}>
-              {SITE.description}
-            </p>
-            <div className="flex gap-3">
-              <Link
-                href="/imoveis"
-                className="inline-flex items-center rounded-md bg-white text-brand-primary px-[22px] py-[11px] hover:bg-white/90 transition-colors duration-150 ease-out"
-                style={{ font: "var(--text-label)", fontFamily: "var(--font-display)" }}
-              >
-                Buscar imóveis
-              </Link>
-              <Link
-                href="/anuncie"
-                className="inline-flex items-center rounded-md border border-white/50 text-white px-[22px] py-[11px] hover:bg-white/10 transition-colors duration-150 ease-out"
-                style={{ font: "var(--text-label)", fontFamily: "var(--font-display)" }}
-              >
-                Anuncie seu imóvel
-              </Link>
-            </div>
+      <section className="relative min-h-[520px] flex items-end pb-20 pt-[calc(72px+var(--space-16))] text-white overflow-hidden">
+        <Image
+          src="/images/hero-house.webp"
+          alt="Fachada de um imóvel em Itaberaí/GO"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover -z-10"
+        />
+        <div
+          className="absolute inset-0 -z-10"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(22,20,48,0.35) 0%, rgba(22,20,48,0.55) 55%, rgba(22,20,48,0.92) 100%)",
+          }}
+        />
+        <Container>
+          <div
+            className="uppercase opacity-90 mb-3"
+            style={{ font: "var(--text-eyebrow)", letterSpacing: "var(--tracking-eyebrow)" }}
+          >
+            Itaberaí e região · {SITE.cj}
           </div>
-          <div className="relative w-full h-[260px] rounded-lg overflow-hidden">
-            <Image
-              src="/images/hero-house.webp"
-              alt="Fachada de um imóvel em Itaberaí/GO"
-              fill
-              priority
-              sizes="(min-width: 1024px) 500px, 100vw"
-              className="object-cover"
-            />
+          <h1
+            className="max-w-[620px] mb-3.5"
+            style={{ font: "var(--text-display-xl)", fontFamily: "var(--font-display)" }}
+          >
+            O imóvel certo, no lugar certo
+          </h1>
+          <p className="max-w-[480px] mb-7 opacity-90" style={{ font: "var(--text-body-lg)" }}>
+            {SITE.description}
+          </p>
+          <div className="flex gap-3">
+            <Link
+              href="/imoveis"
+              className="inline-flex items-center rounded-md bg-white text-brand-primary px-[22px] py-[11px] hover:bg-white/90 transition-colors duration-150 ease-out"
+              style={{ font: "var(--text-label)", fontFamily: "var(--font-display)" }}
+            >
+              Buscar imóveis
+            </Link>
+            <Link
+              href="/anuncie"
+              className="inline-flex items-center rounded-md border border-white/50 text-white px-[22px] py-[11px] hover:bg-white/10 transition-colors duration-150 ease-out"
+              style={{ font: "var(--text-label)", fontFamily: "var(--font-display)" }}
+            >
+              Anuncie seu imóvel
+            </Link>
           </div>
         </Container>
       </section>
 
-      <Container className="-mt-[72px] !max-w-[960px]">
+      <Container className="-mt-10 sm:-mt-16 lg:-mt-[72px] !max-w-[960px]">
         <SearchFilterBar ranges={ranges} />
       </Container>
 
