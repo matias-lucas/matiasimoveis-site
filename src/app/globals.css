@@ -4,22 +4,15 @@
 @import "../styles/tokens/spacing.css";
 
 /*
- * Os tokens acima são copiados literalmente do handoff do Claude Design
- * (handoff/project/ds/tokens/*.css) — não edite os valores aqui à mão,
- * edite os tokens de origem e recopie. Ver CLAUDE.md > Design system.
- */
-
-/*
- * typography.css traz um @import do Google Fonts para Poppins/Inter; esse
- * import é removido no momento da cópia (ver CLAUDE.md) e as fontes são
- * carregadas via next/font/google em src/app/layout.tsx, que as expõe como
- * --font-poppins/--font-inter no <html>. Aponte aqui as variáveis
- * --font-display/--font-body do design system para essas, para que todo
- * componente que já usa os tokens ganhe as fontes self-hosted de graça.
+ * typography.css define --font-display/--font-body em termos de família de
+ * fontes; essas variáveis são carregadas via next/font/google em
+ * src/app/layout.tsx como --font-fraunces/--font-instrument-sans, expostas
+ * no <html>. Aponte aqui as variáveis do design system para essas, para que
+ * todo componente que já usa os tokens ganhe as fontes self-hosted de graça.
  */
 :root {
-  --font-display: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
-  --font-body: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
+  --font-body: var(--font-instrument-sans), ui-sans-serif, system-ui, sans-serif;
 }
 
 @theme inline {
