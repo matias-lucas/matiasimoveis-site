@@ -71,6 +71,35 @@ export default async function HomePage() {
         <SearchFilterBar ranges={ranges} />
       </Container>
 
+      <Container className="py-10">
+        <div className="flex flex-wrap gap-x-10 gap-y-4 justify-center items-center text-center border-y border-border-warm py-6">
+          <div>
+            <div style={{ font: "var(--text-display-sm)", fontFamily: "var(--font-display)" }} className="text-text-1">
+              {SITE.cj}
+            </div>
+            <div className="text-text-3" style={{ font: "var(--text-caption)" }}>
+              Registro da imobiliária
+            </div>
+          </div>
+          <div>
+            <div style={{ font: "var(--text-display-sm)", fontFamily: "var(--font-display)" }} className="text-text-1">
+              {SITE.defaultCorretor.creci}
+            </div>
+            <div className="text-text-3" style={{ font: "var(--text-caption)" }}>
+              {SITE.defaultCorretor.name}
+            </div>
+          </div>
+          <div>
+            <div style={{ font: "var(--text-display-sm)", fontFamily: "var(--font-display)" }} className="text-text-1">
+              {SITE.address.city}/{SITE.address.state}
+            </div>
+            <div className="text-text-3" style={{ font: "var(--text-caption)" }}>
+              Atuação local
+            </div>
+          </div>
+        </div>
+      </Container>
+
       <Container className="my-16">
         <div className="flex justify-between items-baseline mb-6">
           <h2
