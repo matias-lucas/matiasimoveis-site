@@ -120,22 +120,26 @@ export default async function HomePage() {
         </div>
       </Container>
 
-      <section className="bg-bg-surface py-14 px-8 border-t border-border-1">
-        <Container className="grid grid-cols-3 gap-8 text-center !px-0">
-          {SERVICES.map(({ icon: Icon, title, description }) => (
-            <div key={title}>
-              <Icon className="w-8 h-8 text-brand-primary mx-auto" />
-              <div
-                className="text-text-1 mt-3 mb-1.5"
-                style={{ font: "var(--text-display-sm)", fontFamily: "var(--font-display)" }}
-              >
-                {title}
+      <section className="bg-bg-surface py-16 border-t border-border-1">
+        <Container>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 lg:gap-12">
+            {SERVICES.map(({ title, description }, index) => (
+              <div key={title} className="flex flex-col gap-2 pt-5 border-t-2 border-border-warm">
+                <span className="text-text-3" style={{ font: "var(--text-caption)" }}>
+                  0{index + 1}
+                </span>
+                <div
+                  className="text-text-1"
+                  style={{ font: "var(--text-display-sm)", fontFamily: "var(--font-display)" }}
+                >
+                  {title}
+                </div>
+                <div className="text-text-2" style={{ font: "var(--text-body-sm)" }}>
+                  {description}
+                </div>
               </div>
-              <div className="text-text-2" style={{ font: "var(--text-body-sm)" }}>
-                {description}
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </Container>
       </section>
     </div>
