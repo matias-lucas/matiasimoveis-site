@@ -43,7 +43,7 @@ export function Footer() {
       </div>
 
       <div
-        className="text-center mt-8 pt-5 border-t border-white/15 opacity-60"
+        className="text-center mt-8 pt-5 border-t border-white/10 opacity-60"
         style={{ font: "var(--text-caption)" }}
       >
         © {new Date().getFullYear()} {SITE.name} · {SITE.cj} · Todos os direitos reservados.
