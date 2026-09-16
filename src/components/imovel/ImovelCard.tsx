@@ -27,10 +27,10 @@ export function ImovelCard({ imovel }: ImovelCardProps) {
   return (
     <Link
       href={`/imovel/${slug}`}
-      className="group block w-[280px] bg-bg-surface rounded-lg overflow-hidden shadow-md transition-shadow duration-150 ease-out hover:shadow-lg font-body"
+      className="group block w-full bg-bg-surface rounded-lg overflow-hidden shadow-md transition-shadow duration-150 ease-out hover:shadow-lg font-body"
     >
-      <div className="relative h-[180px] bg-bg-sunken">
-        <ImovelPhoto src={coverImage} alt={title} />
+      <div className="relative aspect-[4/3] bg-bg-sunken">
+        <ImovelPhoto src={coverImage} alt={title} sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" />
         <Badge
           tone={purpose === "locacao" ? "locacao" : "venda"}
           solid
