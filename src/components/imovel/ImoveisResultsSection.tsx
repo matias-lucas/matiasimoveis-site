@@ -51,13 +51,13 @@ export function ImoveisResultsSection({
       </div>
 
       {isPending ? (
-        <div className="flex gap-5 flex-wrap">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {Array.from({ length: Math.max(results.length, 4) }).map((_, index) => (
             <ImovelCardSkeleton key={index} />
           ))}
         </div>
       ) : results.length > 0 ? (
-        <div className="flex gap-5 flex-wrap">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {results.map((imovel) => (
             <ImovelCard key={imovel.id} imovel={imovel} />
           ))}
