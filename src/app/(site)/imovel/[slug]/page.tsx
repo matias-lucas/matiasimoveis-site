@@ -5,6 +5,7 @@ import { ArrowLeft, MapPin, BedDouble, Bath, Car, Ruler, Phone } from "lucide-re
 import { Container } from "@/components/layout/Container";
 import { Badge } from "@/components/ui/Badge";
 import { ImovelGallery } from "@/components/imovel/ImovelGallery";
+import { ImovelMobilePriceBar } from "@/components/imovel/ImovelMobilePriceBar";
 import { WhatsAppLink } from "@/components/ui/WhatsAppLink";
 import { Button } from "@/components/ui/Button";
 import { getAllPublishedSlugs, getImovelBySlug } from "@/lib/queries";
@@ -75,7 +76,7 @@ export default async function ImovelDetailPage({ params }: ImovelDetailPageProps
         Voltar para a busca
       </Link>
 
-      <div className="grid grid-cols-[2fr_1fr] gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-8 pb-20 lg:pb-0">
         <div>
           <ImovelGallery photos={imovel.photos ?? []} coverImage={imovel.coverImage} title={title} />
 
@@ -151,7 +152,7 @@ export default async function ImovelDetailPage({ params }: ImovelDetailPageProps
           </div>
         </div>
 
-        <div className="self-start sticky top-6 bg-bg-surface border border-border-1 rounded-lg shadow-md p-6 flex flex-col gap-4">
+        <div className="hidden lg:flex self-start sticky top-6 bg-bg-surface border border-border-1 rounded-lg shadow-md p-6 flex-col gap-4">
           <div className="text-brand-primary" style={{ font: "var(--text-price)", fontSize: 32 }}>
             {formatPrice(price, purpose)}
           </div>
@@ -172,6 +173,13 @@ export default async function ImovelDetailPage({ params }: ImovelDetailPageProps
           )}
         </div>
       </div>
+
+      <ImovelMobilePriceBar
+        price={price}
+        purpose={purpose}
+        whatsappMessage={imovelInquiryMessage(imovel)}
+        whatsappNumber={contactWhatsAppNumber}
+      />
     </Container>
   );
 }
