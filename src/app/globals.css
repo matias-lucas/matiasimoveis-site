@@ -286,8 +286,13 @@ form:has(input[name="purpose"][value="venda"]:checked) .pf-tab-corretor {
  * entre os dois thumbs) ficam por trás, puramente decorativos.
  */
 .sfb-form {
-  padding: 28px;
+  padding: 18px;
   gap: 20px;
+}
+@media (min-width: 640px) {
+  .sfb-form {
+    padding: 28px;
+  }
 }
 .sfb-top {
   gap: 16px;

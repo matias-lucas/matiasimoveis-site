@@ -269,7 +269,7 @@ export function SearchFilterBar({
       onSubmit={handleFormSubmit}
       className="sfb-form bg-bg-surface rounded-lg shadow-lg flex flex-col font-body"
     >
-      <div className="sfb-top flex items-end justify-between">
+      <div className="sfb-top flex flex-col sm:flex-row sm:items-end sm:justify-between">
         <div className="inline-flex self-start bg-bg-sunken rounded-pill p-1 gap-1 font-display">
           {(["locacao", "venda"] as const).map((option) => (
             <label key={option} className="cursor-pointer">
@@ -300,7 +300,7 @@ export function SearchFilterBar({
           ))}
         </div>
 
-        <label className="flex flex-col gap-1.5 flex-1">
+        <label className="flex flex-col gap-1.5 flex-1 mt-4 sm:mt-0">
           <span className="text-text-1" style={{ font: "var(--text-label)" }}>
             Bairro
           </span>
@@ -349,7 +349,7 @@ export function SearchFilterBar({
         </div>
       </div>
 
-      <div className="sfb-ranges grid grid-cols-2">
+      <div className="sfb-ranges grid grid-cols-1 sm:grid-cols-2">
         <DualRangeSlider
           key={`quartos-${purpose}`}
           label="Quartos"
