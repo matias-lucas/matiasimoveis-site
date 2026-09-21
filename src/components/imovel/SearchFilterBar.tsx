@@ -15,8 +15,7 @@ import {
   Ellipsis,
   type LucideIcon,
 } from "lucide-react";
-import { KIND_OPTIONS } from "@/lib/admin/labels";
-import { KIND_CATEGORIES, type ImovelKindCategory } from "@/lib/imovel-kind-categories";
+import { KIND_OPTIONS, KIND_CATEGORIES, type ImovelKindCategory } from "@/lib/imovel-kind-categories";
 import type { ImovelRangesByPurpose } from "@/lib/queries";
 import type { ImovelKind, ImovelPurpose } from "@/lib/types";
 
