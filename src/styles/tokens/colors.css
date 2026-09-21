@@ -3,6 +3,7 @@
 --red-50:#fdecec;--red-100:#fad0d0;--red-300:#ed7a7c;--red-500:#e6383d;--red-600:#d42328;--red-700:#ad1a1e;--red-900:#5e0f11;
 --blue-50:#eceaf6;--blue-100:#c9c4e6;--blue-300:#7d76b9;--blue-500:#413e8c;--blue-600:#332f75;--blue-700:#28255c;--blue-900:#161430;
 --gray-0:#ffffff;--gray-50:#f7f7f9;--gray-100:#eef0f3;--gray-200:#dfe2e7;--gray-300:#c7cbd3;--gray-400:#9ea4b0;--gray-500:#727888;--gray-600:#525768;--gray-700:#3a3e4c;--gray-800:#262933;--gray-900:#15161c;
+--paper-50:#faf7f2;--sand-100:#e9e2d6;
 --green-500:#1f9d55;--green-100:#d8f3e2;
 --amber-500:#e0952f;--amber-100:#faead0;
 
@@ -14,7 +15,9 @@
 --brand-secondary-hover:var(--blue-600);
 --brand-secondary-active:var(--blue-700);
 
---bg-page:var(--gray-50);
+--bg-page:var(--paper-50);
+--bg-warm-subtle:var(--sand-100);
+--border-warm:var(--sand-100);
 --bg-surface:var(--gray-0);
 --bg-sunken:var(--gray-100);
 --bg-inverse:var(--blue-900);

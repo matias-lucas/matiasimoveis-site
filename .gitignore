@@ -47,3 +47,6 @@ next-env.d.ts
 # supabase local
 supabase/.branches
 supabase/.temp
+
+# superpowers brainstorm companion
+/.superpowers/

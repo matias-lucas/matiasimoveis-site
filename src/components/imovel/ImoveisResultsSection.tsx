@@ -5,6 +5,7 @@ import { SearchX } from "lucide-react";
 import { SearchFilterBar } from "./SearchFilterBar";
 import { ImovelCard } from "./ImovelCard";
 import { ImovelCardSkeleton } from "./ImovelCardSkeleton";
+import { FadeInWhenVisible } from "@/components/motion/FadeInWhenVisible";
 import { WhatsAppLink } from "@/components/ui/WhatsAppLink";
 import type { ImovelRangesByPurpose } from "@/lib/queries";
 import type { Imovel, ImovelPurpose } from "@/lib/types";
@@ -51,17 +52,19 @@ export function ImoveisResultsSection({
       </div>
 
       {isPending ? (
-        <div className="flex gap-5 flex-wrap">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {Array.from({ length: Math.max(results.length, 4) }).map((_, index) => (
             <ImovelCardSkeleton key={index} />
           ))}
         </div>
       ) : results.length > 0 ? (
-        <div className="flex gap-5 flex-wrap">
-          {results.map((imovel) => (
-            <ImovelCard key={imovel.id} imovel={imovel} />
-          ))}
-        </div>
+        <FadeInWhenVisible>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {results.map((imovel) => (
+              <ImovelCard key={imovel.id} imovel={imovel} />
+            ))}
+          </div>
+        </FadeInWhenVisible>
       ) : (
         <div className="flex flex-col items-center text-center gap-4 py-20 px-8 bg-bg-surface border border-border-1 rounded-lg">
           <SearchX className="w-10 h-10 text-text-3" />

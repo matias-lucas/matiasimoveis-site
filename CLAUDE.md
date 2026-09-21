@@ -26,29 +26,69 @@ at the top of that file).
 
 ## Read these first
 
+- **`docs/REDESIGN-PLANO.md`** — master plan for the visual redesign
+  currently underway on branch `redesign/editorial`: what already
+  existed, the design direction, which tool enters at which phase, and
+  the copy-paste prompts for each phase. **Takes precedence over
+  `DESIGN.md` and over the "frozen tokens" note below** — see "Design
+  direction" further down.
 - **`PRODUCT.md`** — register (brand), users, brand personality,
-  anti-references, design principles. Strategic "who/what/why".
+  anti-references, design principles. Strategic "who/what/why". Still
+  the product ruler during the redesign — only the *visual* system is
+  being redone, not who the site is for or why.
 - **`DESIGN.md`** — the visual system as actually implemented: color
   semantics, typography, spacing/radius/shadow, component list, layout,
-  icons, motion. Read before touching any styling.
+  icons, motion. Read before touching any styling. **Superseded during
+  the redesign** by `docs/REDESIGN-BRIEF.md` (written during the
+  redesign's Fase 1) once that file exists; until then, treat this file
+  as describing the pre-redesign system only.
 - **`docs/PLANO-IMPLEMENTACAO.md`** — the full phased implementation
   plan (PT-BR), including every divergence found in the handoff bundle
   and how each was resolved (§2), the Supabase data model (§3), and what
   still needs client input (§5).
 - **`handoff/`** — the original Claude Design bundle (gitignored, kept
   locally for reference). `Matias Imóveis - Site.dc.html` is the primary
-  design source; wins on any conflict with the other handoff files.
+  design source for the *pre-redesign* system; wins on any conflict with
+  the other handoff files for that era. The visual redesign supersedes
+  it going forward — see `docs/REDESIGN-PLANO.md`.
+
+## Design direction (visual redesign in progress)
+
+A full visual redesign of the public site is underway — see
+`docs/REDESIGN-PLANO.md` for the full brief, phases, and tool mapping.
+Two prior decisions are **revoked** by this redesign:
+
+- **Frozen handoff tokens.** `src/styles/tokens/*.css` were previously
+  "verbatim copies of the handoff, don't hand-edit." That freeze is
+  lifted: the tokens are now editable directly. `docs/REDESIGN-BRIEF.md`
+  (to be written during the redesign's Fase 1) plus the code itself are
+  the new source of truth for the design system, not the handoff.
+- **"Poppins + Inter" fonts.** See the "Decisions already made" bullet
+  below — the font pairing is being redefined by the redesign.
+- **"Desktop-only, mobile later."** See "Current phase" below — the
+  redesign ships mobile-first from the start instead.
+
+Everything else in "Decisions already made" (address, phone, WhatsApp
+flow, admin, Supabase, Portuguese vocabulary, etc.) still holds; the
+redesign only touches the public site's visual layer
+(`src/app/(site)`, `src/components/{layout,imovel,forms,ui}`,
+`src/styles`, `globals.css`) — not `/admin`, Supabase, queries, or the
+WhatsApp lead flow.
 
 ## Current phase
 
-**Built:** full public site backed by Supabase, desktop-only (no
-responsive breakpoints yet — deliberate, user's explicit instruction:
-ship desktop end-to-end first, mobile is a separate later pass since
-~70-80% of real traffic will be mobile and deserves its own dedicated
-pass, not a rushed afterthought). Home, Buscar imóveis (`/imoveis`,
-filtered search), Detalhe do imóvel (`/imovel/[slug]`), Anuncie seu
-imóvel (`/anuncie`), Contato (`/contato`), Empresa (`/empresa`) — plus a
-full admin panel at `/admin` (auth-gated CRUD for listings + photos).
+**Built:** full public site backed by Supabase. It originally shipped
+desktop-only (no responsive breakpoints — deliberate, user's explicit
+instruction at the time: ship desktop end-to-end first, mobile as a
+dedicated later pass since ~70-80% of real traffic is mobile and
+deserves its own pass, not a rushed afterthought). **That call is now
+revoked**: a visual redesign is underway on branch `redesign/editorial`
+(see `docs/REDESIGN-PLANO.md`) that ships mobile-first from the start,
+folding the mobile pass into the redesign rather than doing it
+separately. Home, Buscar imóveis (`/imoveis`, filtered search), Detalhe
+do imóvel (`/imovel/[slug]`), Anuncie seu imóvel (`/anuncie`), Contato
+(`/contato`), Empresa (`/empresa`) — plus a full admin panel at `/admin`
+(auth-gated CRUD for listings + photos).
 
 **One manual step left, by design:** there's no public sign-up (see
 "Decisions already made"). To get a working login, create the first
@@ -68,9 +108,11 @@ writing directly into `auth.users` is a credential-store operation,
 correctly outside what an agent should do unprompted; it needs a
 password only the client knows.)
 
-**Not built yet:** mobile responsive pass, real property photos/content
-(the broker uploads these themselves via the admin panel now), deploy,
-SEO/sitemap pass (Fase 9 in the plan doc).
+**Not built yet:** real property photos/content (the broker uploads
+these themselves via the admin panel now), deploy, SEO/sitemap pass
+(Fase 9 in the plan doc). The mobile responsive pass is no longer a
+separate future item — it's folded into the ongoing visual redesign,
+see `docs/REDESIGN-PLANO.md`.
 
 ## Where things live
 
@@ -125,10 +167,13 @@ src/proxy.ts                Next 16 renamed "middleware" to "proxy" (same mechan
                             appends below). Refreshes the Supabase session cookie on every
                             request and gates /admin/*.
 
-src/styles/tokens/          Verbatim copies of handoff/project/ds/tokens/*.css. Don't hand-edit;
-                            edit the handoff source and re-copy. typography.css has its Google
-                            Fonts @import stripped (next/font handles loading — see
-                            src/app/layout.tsx and the note at the top of globals.css).
+src/styles/tokens/          Were verbatim copies of handoff/project/ds/tokens/*.css (edit-the-
+                            handoff-and-re-copy, don't-hand-edit era). UNFROZEN by the visual
+                            redesign (see "Design direction" above and docs/REDESIGN-PLANO.md) —
+                            edit these files directly now; the handoff is no longer the source of
+                            truth for them. typography.css has its Google Fonts @import stripped
+                            (next/font handles loading — see src/app/layout.tsx and the note at
+                            the top of globals.css).
 
 src/components/ui/          Design-system primitives ported from the handoff's _ds_bundle.js —
                             Button, Badge, Input, Select, Checkbox, SegmentedControl, Textarea,
@@ -247,7 +292,9 @@ From the user, during implementation:
 - **Footer links**: "Trabalhe conosco" and "Simule um financiamento" (present in the old site's
   nav) were dropped — user said remove, not stub.
 - **Fonts**: Poppins + Inter kept as the handoff's design system chose them; user had no
-  preference and deferred to this call.
+  preference and deferred to this call. **Revoked** by the visual redesign (see
+  `docs/REDESIGN-PLANO.md`) — the pairing is being redefined there; don't reintroduce
+  Poppins/Inter as a default going forward.
 - **Forms → WhatsApp, not email/database**: user's explicit choice. No leads are stored anywhere
   yet — if that's ever wanted, it's a `leads` table + server action, additive to the current flow.
 - **`properties.price` is `numeric` reais, not `price_cents`.** `docs/PLANO-IMPLEMENTACAO.md` §3

@@ -15,10 +15,10 @@ export default function ContatoPage() {
   const mapSrc = `https://www.google.com/maps?q=${encodeURIComponent(fullAddress)}&output=embed`;
 
   return (
-    <Container className="py-12 grid grid-cols-2 gap-12">
+    <Container className="py-20 lg:py-24 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
       <div>
         <div
-          className="uppercase text-brand-primary mb-2"
+          className="uppercase text-red-600 mb-2"
           style={{ font: "var(--text-eyebrow)", letterSpacing: "var(--tracking-eyebrow)" }}
         >
           Contato
@@ -44,7 +44,7 @@ export default function ContatoPage() {
           </div>
         </div>
         <WhatsAppLink message={SITE.whatsappDefaultMessage}>Falar no WhatsApp agora</WhatsAppLink>
-        <div className="h-[220px] rounded-lg mt-7 overflow-hidden border border-border-1">
+        <div className="h-[180px] lg:h-[220px] rounded-lg mt-7 overflow-hidden border border-border-1">
           <iframe
             src={mapSrc}
             title={`Mapa: ${fullAddress}`}

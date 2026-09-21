@@ -1,25 +1,23 @@
 @import "tailwindcss";
+/* Liga as utilities data-open:animate-in/data-closed:animate-out usadas por
+   dialog.tsx/drawer.tsx (shadcn) — estava nas dependências mas nunca
+   importado, então o lightbox e o drawer abriam/fechavam sem transição
+   nenhuma. Achado da revisão final da branch. */
+@import "tw-animate-css";
 @import "../styles/tokens/colors.css";
 @import "../styles/tokens/typography.css";
 @import "../styles/tokens/spacing.css";
 
 /*
- * Os tokens acima são copiados literalmente do handoff do Claude Design
- * (handoff/project/ds/tokens/*.css) — não edite os valores aqui à mão,
- * edite os tokens de origem e recopie. Ver CLAUDE.md > Design system.
- */
-
-/*
- * typography.css traz um @import do Google Fonts para Poppins/Inter; esse
- * import é removido no momento da cópia (ver CLAUDE.md) e as fontes são
- * carregadas via next/font/google em src/app/layout.tsx, que as expõe como
- * --font-poppins/--font-inter no <html>. Aponte aqui as variáveis
- * --font-display/--font-body do design system para essas, para que todo
- * componente que já usa os tokens ganhe as fontes self-hosted de graça.
+ * typography.css define --font-display/--font-body em termos de família de
+ * fontes; essas variáveis são carregadas via next/font/google em
+ * src/app/layout.tsx como --font-fraunces/--font-instrument-sans, expostas
+ * no <html>. Aponte aqui as variáveis do design system para essas, para que
+ * todo componente que já usa os tokens ganhe as fontes self-hosted de graça.
  */
 :root {
-  --font-display: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
-  --font-body: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
+  --font-body: var(--font-instrument-sans), ui-sans-serif, system-ui, sans-serif;
 }
 
 @theme inline {
@@ -36,6 +34,9 @@
   --color-bg-surface: var(--bg-surface);
   --color-bg-sunken: var(--bg-sunken);
   --color-bg-inverse: var(--bg-inverse);
+  --color-paper-50: var(--paper-50);
+  --color-sand-100: var(--sand-100);
+  --color-bg-warm-subtle: var(--bg-warm-subtle);
 
   /* text */
   --color-text-1: var(--text-1);
@@ -50,6 +51,7 @@
   --color-border-1: var(--border-1);
   --color-border-2: var(--border-2);
   --color-border-focus: var(--border-focus);
+  --color-border-warm: var(--border-warm);
 
   /* status */
   --color-status-venda-bg: var(--status-venda-bg);
@@ -115,6 +117,22 @@
 
   /* container */
   --container-max: var(--container-max);
+
+  /*
+   * Apelidos para os nomes de cor que o shadcn CLI gerou em dialog.tsx/
+   * drawer.tsx (bg-popover, text-foreground, bg-muted...) — nenhum desses
+   * tinha --color-* correspondente neste projeto, então em Tailwind v4 uma
+   * cor não definida não gera CSS nenhum (as classes ficavam inertes, só não
+   * quebravam porque os dois call sites atuais, Navbar.tsx e
+   * ImovelGallery.tsx, sempre passam seu próprio background/texto por cima).
+   * Apontam para os tokens já existentes deste projeto, não cores novas —
+   * achado da revisão final da branch.
+   */
+  --color-popover: var(--bg-surface);
+  --color-popover-foreground: var(--text-1);
+  --color-foreground: var(--text-1);
+  --color-muted: var(--bg-sunken);
+  --color-muted-foreground: var(--text-2);
 }
 
 /*
@@ -289,8 +307,13 @@ form:has(input[name="purpose"][value="venda"]:checked) .pf-tab-corretor {
  * entre os dois thumbs) ficam por trás, puramente decorativos.
  */
 .sfb-form {
-  padding: 28px;
+  padding: 18px;
   gap: 20px;
+}
+@media (min-width: 640px) {
+  .sfb-form {
+    padding: 28px;
+  }
 }
 .sfb-top {
   gap: 16px;

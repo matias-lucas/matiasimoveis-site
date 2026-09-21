@@ -11,9 +11,12 @@ const toneClasses: Record<BadgeTone, string> = {
 };
 
 /** Variante sólida para sobrepor fotos (card de imóvel), onde uma pílula
- * tonal ficaria com contraste baixo demais sobre o fundo pálido do placeholder. */
+ * tonal ficaria com contraste baixo demais sobre o fundo pálido do placeholder.
+ * venda usa --red-600 (não --red-500/--brand-primary): branco sobre --red-500
+ * dá ~4.2:1 no --text-caption em negrito (12px), abaixo do AA (4.5:1) —
+ * auditoria estática da Etapa 8. --red-600 resolve para ~5.16:1. */
 const toneClassesSolid: Record<BadgeTone, string> = {
-  venda: "bg-red-500 text-white",
+  venda: "bg-red-600 text-white",
   locacao: "bg-blue-500 text-white",
   success: "bg-green-500 text-white",
   warning: "bg-amber-500 text-white",

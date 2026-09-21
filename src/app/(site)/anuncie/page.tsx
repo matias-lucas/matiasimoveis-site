@@ -9,9 +9,9 @@ export const metadata: Metadata = {
 
 export default function AnunciePage() {
   return (
-    <div className="max-w-[720px] mx-auto px-8 py-12">
+    <div className="max-w-[720px] mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-24">
       <div
-        className="uppercase text-brand-primary mb-2"
+        className="uppercase text-red-600 mb-2"
         style={{ font: "var(--text-eyebrow)", letterSpacing: "var(--tracking-eyebrow)" }}
       >
         Seu imóvel

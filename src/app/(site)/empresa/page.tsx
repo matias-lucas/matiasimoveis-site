@@ -13,7 +13,7 @@ export default function EmpresaPage() {
   return (
     <div>
       <section
-        className="py-16 px-8 text-white"
+        className="py-20 lg:py-24 px-8 text-white"
         style={{ background: "linear-gradient(135deg, var(--bg-inverse), var(--blue-700))" }}
       >
         <Container className="!px-0">
@@ -38,8 +38,8 @@ export default function EmpresaPage() {
         </Container>
       </section>
 
-      <Container className="py-14">
-        <div className="grid grid-cols-2 gap-12 items-start">
+      <Container className="py-20 lg:py-24">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
           <div>
             <h2
               className="text-text-1 mb-3"
@@ -67,8 +67,8 @@ export default function EmpresaPage() {
         </div>
       </Container>
 
-      <section className="bg-bg-surface py-14 px-8 border-t border-border-1">
-        <Container className="grid grid-cols-3 gap-8 text-center !px-0">
+      <section className="bg-bg-surface py-20 lg:py-24 px-8 border-t border-border-1">
+        <Container className="grid grid-cols-1 sm:grid-cols-3 gap-8 text-center !px-0">
           {SERVICES.map(({ icon: Icon, title, description }) => (
             <div key={title}>
               <Icon className="w-8 h-8 text-brand-primary mx-auto" />
@@ -86,7 +86,7 @@ export default function EmpresaPage() {
         </Container>
       </section>
 
-      <Container className="py-14 text-center flex flex-col items-center gap-4">
+      <Container className="py-20 lg:py-24 text-center flex flex-col items-center gap-4">
         <h2
           className="text-text-1"
           style={{ font: "var(--text-display-md)", fontFamily: "var(--font-display)" }}

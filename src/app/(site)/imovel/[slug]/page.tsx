@@ -4,7 +4,8 @@ import Link from "next/link";
 import { ArrowLeft, MapPin, BedDouble, Bath, Car, Ruler, Phone } from "lucide-react";
 import { Container } from "@/components/layout/Container";
 import { Badge } from "@/components/ui/Badge";
-import { ImovelPhoto } from "@/components/imovel/ImovelPhoto";
+import { ImovelGallery } from "@/components/imovel/ImovelGallery";
+import { ImovelMobilePriceBar } from "@/components/imovel/ImovelMobilePriceBar";
 import { WhatsAppLink } from "@/components/ui/WhatsAppLink";
 import { Button } from "@/components/ui/Button";
 import { getAllPublishedSlugs, getImovelBySlug } from "@/lib/queries";
@@ -75,21 +76,9 @@ export default async function ImovelDetailPage({ params }: ImovelDetailPageProps
         Voltar para a busca
       </Link>
 
-      <div className="grid grid-cols-[2fr_1fr] gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-8 pb-20 lg:pb-0">
         <div>
-          <div className="relative h-[380px] bg-bg-sunken rounded-lg overflow-hidden mb-3">
-            <ImovelPhoto src={imovel.coverImage} alt={title} iconClassName="w-12 h-12" />
-          </div>
-          <div className="flex gap-2.5">
-            {Array.from({ length: 4 }).map((_, i) => {
-              const thumb = imovel.photos?.filter((p) => !p.isCover)[i];
-              return (
-                <div key={i} className="relative flex-1 h-[72px] bg-bg-sunken rounded-sm overflow-hidden">
-                  <ImovelPhoto src={thumb?.url} alt={thumb?.alt || title} iconClassName="w-5 h-5" />
-                </div>
-              );
-            })}
-          </div>
+          <ImovelGallery photos={imovel.photos ?? []} coverImage={imovel.coverImage} title={title} />
 
           <div className="mt-7">
             <Badge tone={purpose === "locacao" ? "locacao" : "venda"}>
@@ -163,7 +152,7 @@ export default async function ImovelDetailPage({ params }: ImovelDetailPageProps
           </div>
         </div>
 
-        <div className="self-start sticky top-6 bg-bg-surface border border-border-1 rounded-lg shadow-md p-6 flex flex-col gap-4">
+        <div className="hidden lg:flex self-start sticky top-6 bg-bg-surface border border-border-1 rounded-lg shadow-md p-6 flex-col gap-4">
           <div className="text-brand-primary" style={{ font: "var(--text-price)", fontSize: 32 }}>
             {formatPrice(price, purpose)}
           </div>
@@ -184,6 +173,13 @@ export default async function ImovelDetailPage({ params }: ImovelDetailPageProps
           )}
         </div>
       </div>
+
+      <ImovelMobilePriceBar
+        price={price}
+        purpose={purpose}
+        whatsappMessage={imovelInquiryMessage(imovel)}
+        whatsappNumber={contactWhatsAppNumber}
+      />
     </Container>
   );
 }

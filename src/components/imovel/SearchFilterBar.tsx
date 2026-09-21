@@ -168,7 +168,13 @@ function TipoButton({
       <input type="radio" name="tipo" value={value} defaultChecked={checked} className="peer sr-only" />
       <span
         className={clsx(
-          "flex items-center border rounded-md border-border-1 bg-bg-surface text-text-2 cursor-pointer transition-colors duration-150 ease-out hover:border-border-2 peer-checked:bg-text-1 peer-checked:border-text-1 peer-checked:text-white peer-focus-visible:shadow-focus",
+          // min-h-11 (44px): sem isso, "md" rendia ~40.2px (py-2.5 + borda +
+          // linha de --text-label) e "sm" ~30.8px (py-1.5 + borda + linha de
+          // --text-caption) — abaixo do alvo mínimo de toque de 44px exigido
+          // pelo redesign (público de perfil mais velho). Achado da revisão
+          // final da branch. O padding horizontal continua controlando a
+          // largura da pílula, min-h só garante o piso vertical.
+          "flex items-center border rounded-md border-border-1 bg-bg-surface text-text-2 cursor-pointer transition-colors duration-150 ease-out hover:border-border-2 peer-checked:bg-text-1 peer-checked:border-text-1 peer-checked:text-white peer-focus-visible:shadow-focus min-h-11",
           size === "md" ? "gap-1.5 px-4 py-2.5" : "gap-1 px-3 py-1.5"
         )}
         style={{ font: size === "md" ? "var(--text-label)" : "var(--text-caption)" }}
@@ -269,7 +275,7 @@ export function SearchFilterBar({
       onSubmit={handleFormSubmit}
       className="sfb-form bg-bg-surface rounded-lg shadow-lg flex flex-col font-body"
     >
-      <div className="sfb-top flex items-end justify-between">
+      <div className="sfb-top flex flex-col sm:flex-row sm:items-end sm:justify-between">
         <div className="inline-flex self-start bg-bg-sunken rounded-pill p-1 gap-1 font-display">
           {(["locacao", "venda"] as const).map((option) => (
             <label key={option} className="cursor-pointer">
@@ -282,14 +288,25 @@ export function SearchFilterBar({
                 className="sr-only"
               />
               <span
-                className="block px-[22px] py-[9px] rounded-pill transition-colors duration-150 ease-out"
+                // min-h-11 (44px) + py-[13px] (era py-[9px], mesmo valor do
+                // "md" do Button.tsx): py-9 rendia ~36.2px (padding + linha
+                // de --text-label, sem borda aqui) — abaixo do alvo mínimo de
+                // toque de 44px. py-13 sozinho já fecha ~44.2px; min-h-11 fica
+                // como piso de segurança. Achado da revisão final da branch.
+                className="block px-[22px] py-[13px] min-h-11 rounded-pill transition-colors duration-150 ease-out"
                 style={{
                   font: "var(--text-label)",
                   background:
                     purpose === option
                       ? option === "locacao"
                         ? "var(--brand-secondary)"
-                        : "var(--brand-primary)"
+                        // --red-600 (não --brand-primary/--red-500): branco sobre
+                        // --red-500 dá ~4.20:1 em --text-label (14px/600), abaixo
+                        // do AA (4.5:1) — mesma falha já corrigida em Button.tsx e
+                        // Badge.tsx (achado da revisão final da branch). --red-600
+                        // resolve para ~5.16:1. Alugar (--brand-secondary/azul) já
+                        // passa (8.67:1) e não é tocado.
+                        : "var(--red-600)"
                       : "transparent",
                   color: purpose === option ? "#fff" : "var(--text-2)",
                 }}
@@ -300,7 +317,7 @@ export function SearchFilterBar({
           ))}
         </div>
 
-        <label className="flex flex-col gap-1.5 flex-1">
+        <label className="flex flex-col gap-1.5 flex-1 mt-4 sm:mt-0">
           <span className="text-text-1" style={{ font: "var(--text-label)" }}>
             Bairro
           </span>
@@ -349,7 +366,7 @@ export function SearchFilterBar({
         </div>
       </div>
 
-      <div className="sfb-ranges grid grid-cols-2">
+      <div className="sfb-ranges grid grid-cols-1 sm:grid-cols-2">
         <DualRangeSlider
           key={`quartos-${purpose}`}
           label="Quartos"
