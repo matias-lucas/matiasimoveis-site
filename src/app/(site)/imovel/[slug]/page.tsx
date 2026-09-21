@@ -42,7 +42,7 @@ export async function generateMetadata({
   const url = `${SITE.url}/imovel/${imovel.slug}`;
 
   return {
-    title,
+    title: { absolute: title },
     description,
     alternates: { canonical: url },
     openGraph: {

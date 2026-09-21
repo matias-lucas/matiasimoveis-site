@@ -55,6 +55,13 @@ export const LEGACY_KIND_LABELS: Partial<Record<ImovelKind, string>> = {
   sobrado: "Sobrado (descontinuado)",
 };
 
-export const KIND_LABELS: Record<ImovelKind, string> = Object.fromEntries(
-  KIND_OPTIONS.map((o) => [o.value, o.label])
-) as Record<ImovelKind, string>;
+/**
+ * Rótulos para todos os valores possíveis de ImovelKind, incluindo tipos
+ * descontinuados (sobrado). Merge de KIND_OPTIONS + LEGACY_KIND_LABELS
+ * garante que nenhum kind resolve para undefined — importante para SEO
+ * (generateMetadata) e para evitar strings "undefined" em UIs.
+ */
+export const KIND_LABELS: Record<ImovelKind, string> = {
+  ...Object.fromEntries(KIND_OPTIONS.map((o) => [o.value, o.label])),
+  ...LEGACY_KIND_LABELS,
+} as Record<ImovelKind, string>;
