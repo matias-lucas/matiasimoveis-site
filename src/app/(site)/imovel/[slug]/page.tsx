@@ -9,6 +9,7 @@ import { ImovelMobilePriceBar } from "@/components/imovel/ImovelMobilePriceBar";
 import { WhatsAppLink } from "@/components/ui/WhatsAppLink";
 import { Button } from "@/components/ui/Button";
 import { getAllPublishedSlugs, getImovelBySlug } from "@/lib/queries";
+import { KIND_LABELS } from "@/lib/imovel-kind-categories";
 import { formatArea, formatPrice, pluralize } from "@/lib/format";
 import { imovelInquiryMessage, toWhatsAppNumber } from "@/lib/whatsapp";
 import { SITE } from "@/lib/site";
@@ -31,9 +32,26 @@ export async function generateMetadata({
   const imovel = await getImovelBySlug(slug);
   if (!imovel) return {};
 
+  const kindLabel =
+    imovel.kind === "outros" && imovel.kindOther ? imovel.kindOther : KIND_LABELS[imovel.kind];
+  const bedroomsFragment = imovel.bedrooms != null ? ` ${imovel.bedrooms} quartos` : "";
+  const price = formatPrice(imovel.price, imovel.purpose);
+  const title = `${kindLabel}${bedroomsFragment} no ${imovel.neighborhood}, ${imovel.city}/${imovel.state} — ${price} | ${SITE.name}`;
+  const description =
+    imovel.description.length > 160 ? `${imovel.description.slice(0, 157)}...` : imovel.description;
+  const url = `${SITE.url}/imovel/${imovel.slug}`;
+
   return {
-    title: `${imovel.title} no ${imovel.neighborhood}, ${imovel.city}/${imovel.state}`,
-    description: imovel.description,
+    title,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      title,
+      description,
+      url,
+      type: "website",
+      siteName: SITE.name,
+    },
   };
 }
 
