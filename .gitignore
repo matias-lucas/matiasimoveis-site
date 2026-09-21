@@ -50,3 +50,7 @@ supabase/.temp
 
 # superpowers brainstorm companion
 /.superpowers/
+
+# estado local de sessão do Claude Code (worktrees e config pessoal, não do time)
+/.claude/worktrees/
+/.claude/settings.local.json
