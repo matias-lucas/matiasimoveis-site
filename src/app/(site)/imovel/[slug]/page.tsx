@@ -13,6 +13,21 @@ import { KIND_LABELS } from "@/lib/imovel-kind-categories";
 import { formatArea, formatPrice, pluralize } from "@/lib/format";
 import { imovelInquiryMessage, toWhatsAppNumber } from "@/lib/whatsapp";
 import { SITE } from "@/lib/site";
+import type { Imovel } from "@/lib/types";
+
+// Título e descrição usados tanto nos metadados (generateMetadata) quanto no
+// JSON-LD renderizado no corpo da página — extraídos aqui para não duplicar a lógica.
+function buildSeoTitle(imovel: Imovel): string {
+  const kindLabel =
+    imovel.kind === "outros" && imovel.kindOther ? imovel.kindOther : KIND_LABELS[imovel.kind];
+  const bedroomsFragment = imovel.bedrooms != null ? ` ${imovel.bedrooms} quartos` : "";
+  const price = formatPrice(imovel.price, imovel.purpose);
+  return `${kindLabel}${bedroomsFragment} no ${imovel.neighborhood}, ${imovel.city}/${imovel.state} — ${price} | ${SITE.name}`;
+}
+
+function buildSeoDescription(description: string): string {
+  return description.length > 160 ? `${description.slice(0, 157)}...` : description;
+}
 
 interface ImovelDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -32,13 +47,8 @@ export async function generateMetadata({
   const imovel = await getImovelBySlug(slug);
   if (!imovel) return {};
 
-  const kindLabel =
-    imovel.kind === "outros" && imovel.kindOther ? imovel.kindOther : KIND_LABELS[imovel.kind];
-  const bedroomsFragment = imovel.bedrooms != null ? ` ${imovel.bedrooms} quartos` : "";
-  const price = formatPrice(imovel.price, imovel.purpose);
-  const title = `${kindLabel}${bedroomsFragment} no ${imovel.neighborhood}, ${imovel.city}/${imovel.state} — ${price} | ${SITE.name}`;
-  const description =
-    imovel.description.length > 160 ? `${imovel.description.slice(0, 157)}...` : imovel.description;
+  const title = buildSeoTitle(imovel);
+  const description = buildSeoDescription(imovel.description);
   const url = `${SITE.url}/imovel/${imovel.slug}`;
 
   return {
@@ -76,6 +86,44 @@ export default async function ImovelDetailPage({ params }: ImovelDetailPageProps
     corretor,
   } = imovel;
 
+  // Nomeados seoTitle/seoDescription (não title/description) porque a
+  // desestruturação acima já usa esses nomes para o título e a descrição
+  // brutos do imóvel, exibidos no <h1>/<p> da página — são conceitos
+  // diferentes do título/descrição otimizados para SEO usados no JSON-LD.
+  const seoTitle = buildSeoTitle(imovel);
+  const seoDescription = buildSeoDescription(imovel.description);
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "RealEstateListing",
+        name: seoTitle,
+        description: seoDescription,
+        url: `${SITE.url}/imovel/${imovel.slug}`,
+        image: imovel.coverImage ? [imovel.coverImage] : undefined,
+        address: { "@type": "PostalAddress", addressLocality: city, addressRegion: state, addressCountry: "BR" },
+        offers: {
+          "@type": "Offer",
+          price: imovel.price,
+          priceCurrency: "BRL",
+          availability: "https://schema.org/InStock",
+        },
+        numberOfBedroomsTotal: bedrooms,
+        numberOfBathroomsTotal: bathrooms,
+        floorSize: { "@type": "QuantitativeValue", value: areaM2, unitCode: "MTK" },
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Início", item: SITE.url },
+          { "@type": "ListItem", position: 2, name: "Buscar imóveis", item: `${SITE.url}/imoveis` },
+          { "@type": "ListItem", position: 3, name: seoTitle, item: `${SITE.url}/imovel/${imovel.slug}` },
+        ],
+      },
+    ],
+  };
+
   // Anúncios de venda direcionam o contato direto ao corretor responsável;
   // locação (e venda sem corretor atribuído) cai para o telefone da empresa.
   const corretorDireto = purpose === "venda" ? corretor : undefined;
@@ -85,6 +133,10 @@ export default async function ImovelDetailPage({ params }: ImovelDetailPageProps
 
   return (
     <Container className="py-8">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <Link
         href="/imoveis"
         className="inline-flex items-center gap-1.5 text-text-2 no-underline mb-4 hover:text-text-1 transition-colors duration-150 ease-out"
