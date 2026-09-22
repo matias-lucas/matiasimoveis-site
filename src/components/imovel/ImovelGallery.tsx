@@ -42,7 +42,13 @@ export function ImovelGallery({ photos, coverImage, title }: ImovelGalleryProps)
         className="relative h-[380px] w-full bg-bg-sunken rounded-lg overflow-hidden mb-3 block"
         aria-label="Ampliar foto"
       >
-        <ImovelPhoto src={coverImage} alt={title} iconClassName="w-12 h-12" priority />
+        <ImovelPhoto
+          src={coverImage}
+          alt={title}
+          iconClassName="w-12 h-12"
+          priority
+          sizes="(min-width: 1024px) 66vw, 100vw"
+        />
       </button>
       <div className="flex gap-2.5">
         {Array.from({ length: 4 }).map((_, i) => {

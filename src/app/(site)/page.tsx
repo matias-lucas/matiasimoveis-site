@@ -10,6 +10,7 @@ import { FadeInWhenVisible } from "@/components/motion/FadeInWhenVisible";
 import { getFeaturedImoveis, getImovelRanges } from "@/lib/queries";
 import { SERVICES } from "@/lib/services";
 import { SITE } from "@/lib/site";
+import heroImage from "../../../public/images/hero-house.webp";
 
 export const revalidate = 60;
 
@@ -20,10 +21,11 @@ export default async function HomePage() {
     <div>
       <section className="relative min-h-[520px] flex items-end pb-20 pt-[calc(72px+var(--space-16))] text-white overflow-hidden">
         <Image
-          src="/images/hero-house.webp"
+          src={heroImage}
           alt="Fachada de um imóvel em Itaberaí/GO"
           fill
           priority
+          placeholder="blur"
           sizes="100vw"
           className="object-cover -z-10"
         />
