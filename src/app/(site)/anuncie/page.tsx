@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Container } from "@/components/layout/Container";
 import { SellForm } from "@/components/forms/SellForm";
 
 export const metadata: Metadata = {
@@ -9,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function AnunciePage() {
   return (
-    <div className="max-w-[720px] mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-24">
+    <Container className="!max-w-[720px] py-20 lg:py-24">
       <div
         className="uppercase text-red-600 mb-2"
         style={{ font: "var(--text-eyebrow)", letterSpacing: "var(--tracking-eyebrow)" }}
@@ -26,6 +27,6 @@ export default function AnunciePage() {
         Preencha os dados abaixo e nossa equipe entrará em contato para avaliar seu imóvel.
       </p>
       <SellForm />
-    </div>
+    </Container>
   );
 }

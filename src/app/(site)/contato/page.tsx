@@ -31,15 +31,15 @@ export default function ContatoPage() {
         </h1>
         <div className="flex flex-col gap-3.5 text-text-2 mb-7" style={{ font: "var(--text-body-md)" }}>
           <div className="flex gap-2.5 items-center">
-            <MapPin className="w-[18px] h-[18px] text-brand-primary shrink-0" />
+            <MapPin className="w-4 h-4 text-brand-primary shrink-0" />
             {fullAddress}
           </div>
           <div className="flex gap-2.5 items-center">
-            <Phone className="w-[18px] h-[18px] text-brand-primary shrink-0" />
+            <Phone className="w-4 h-4 text-brand-primary shrink-0" />
             {SITE.phone}
           </div>
           <div className="flex gap-2.5 items-center">
-            <MessageCircle className="w-[18px] h-[18px] text-brand-primary shrink-0" />
+            <MessageCircle className="w-4 h-4 text-brand-primary shrink-0" />
             {SITE.phone} (WhatsApp)
           </div>
         </div>

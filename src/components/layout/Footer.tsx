@@ -1,14 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
+import { Container } from "./Container";
 import { FOOTER_LINKS, SITE } from "@/lib/site";
 
 export function Footer() {
   return (
-    <footer className="bg-bg-inverse text-text-on-inverse py-10 px-8 font-body">
-      <div
-        className="mx-auto flex flex-wrap gap-8 justify-between"
-        style={{ maxWidth: "var(--container-max)" }}
-      >
+    <footer className="bg-bg-inverse text-text-on-inverse py-10 font-body">
+      <Container className="flex flex-wrap gap-8 justify-between">
         <div>
           <Image
             src="/images/logo.png"
@@ -40,14 +38,13 @@ export function Footer() {
             ))}
           </div>
         ))}
-      </div>
+      </Container>
 
-      <div
-        className="text-center mt-8 pt-5 border-t border-white/10 opacity-60"
-        style={{ font: "var(--text-caption)" }}
-      >
-        © {new Date().getFullYear()} {SITE.name} · {SITE.cj} · Todos os direitos reservados.
-      </div>
+      <Container className="text-center mt-8 pt-5 border-t border-white/10 opacity-60">
+        <span style={{ font: "var(--text-caption)" }}>
+          © {new Date().getFullYear()} {SITE.name} · {SITE.cj} · Todos os direitos reservados.
+        </span>
+      </Container>
     </footer>
   );
 }

@@ -16,7 +16,7 @@ export function Textarea({ label, id, className, ...rest }: TextareaProps) {
       <textarea
         id={textareaId}
         className={clsx(
-          "border border-border-1 rounded-md p-3 text-text-1 placeholder:text-text-3 resize-y outline-none transition-shadow duration-150 ease-out focus:border-border-focus focus:shadow-focus",
+          "border border-border-1 rounded-md px-3.5 py-3 text-text-1 placeholder:text-text-3 resize-y outline-none transition-shadow duration-150 ease-out focus:border-border-focus focus:shadow-focus",
           className
         )}
         style={{ font: "var(--text-body-md)" }}

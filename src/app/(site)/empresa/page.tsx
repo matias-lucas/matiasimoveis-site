@@ -13,10 +13,10 @@ export default function EmpresaPage() {
   return (
     <div>
       <section
-        className="py-20 lg:py-24 px-8 text-white"
+        className="py-20 lg:py-24 text-white"
         style={{ background: "linear-gradient(135deg, var(--bg-inverse), var(--blue-700))" }}
       >
-        <Container className="!px-0">
+        <Container>
           <div
             className="uppercase opacity-75 mb-3"
             style={{ font: "var(--text-eyebrow)", letterSpacing: "var(--tracking-eyebrow)" }}
@@ -67,8 +67,8 @@ export default function EmpresaPage() {
         </div>
       </Container>
 
-      <section className="bg-bg-surface py-20 lg:py-24 px-8 border-t border-border-1">
-        <Container className="grid grid-cols-1 sm:grid-cols-3 gap-8 text-center !px-0">
+      <section className="bg-bg-surface py-20 lg:py-24 border-t border-border-1">
+        <Container className="grid grid-cols-1 sm:grid-cols-3 gap-8 text-center">
           {SERVICES.map(({ icon: Icon, title, description }) => (
             <div key={title}>
               <Icon className="w-8 h-8 text-brand-primary mx-auto" />

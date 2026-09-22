@@ -56,14 +56,14 @@ export default async function HomePage() {
             <div className="flex gap-3">
               <Link
                 href="/imoveis"
-                className="inline-flex items-center rounded-md bg-white text-red-600 px-[22px] py-[11px] hover:bg-white/90 transition-colors duration-150 ease-out"
+                className="inline-flex items-center rounded-md border border-transparent bg-white text-red-600 px-[22px] py-[13px] hover:bg-white/90 transition-colors duration-150 ease-out"
                 style={{ font: "var(--text-label)", fontFamily: "var(--font-display)" }}
               >
                 Buscar imóveis
               </Link>
               <Link
                 href="/anuncie"
-                className="inline-flex items-center rounded-md border border-white/50 text-white px-[22px] py-[11px] hover:bg-white/10 transition-colors duration-150 ease-out"
+                className="inline-flex items-center rounded-md border border-white/50 text-white px-[22px] py-[13px] hover:bg-white/10 transition-colors duration-150 ease-out"
                 style={{ font: "var(--text-label)", fontFamily: "var(--font-display)" }}
               >
                 Anuncie seu imóvel

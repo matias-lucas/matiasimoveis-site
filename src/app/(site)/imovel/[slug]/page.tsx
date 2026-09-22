@@ -197,24 +197,24 @@ export default async function ImovelDetailPage({ params }: ImovelDetailPageProps
             >
               {bedrooms != null && (
                 <span className="flex items-center gap-1.5">
-                  <BedDouble className="w-[18px] h-[18px]" />
+                  <BedDouble className="w-4 h-4" />
                   {bedrooms} {pluralize(bedrooms, "quarto", "quartos")}
                 </span>
               )}
               {bathrooms != null && (
                 <span className="flex items-center gap-1.5">
-                  <Bath className="w-[18px] h-[18px]" />
+                  <Bath className="w-4 h-4" />
                   {bathrooms} {pluralize(bathrooms, "banheiro", "banheiros")}
                 </span>
               )}
               {parking != null && (
                 <span className="flex items-center gap-1.5">
-                  <Car className="w-[18px] h-[18px]" />
+                  <Car className="w-4 h-4" />
                   {parking} {pluralize(parking, "vaga", "vagas")}
                 </span>
               )}
               <span className="flex items-center gap-1.5">
-                <Ruler className="w-[18px] h-[18px]" />
+                <Ruler className="w-4 h-4" />
                 {formatArea(areaM2)}
               </span>
             </div>

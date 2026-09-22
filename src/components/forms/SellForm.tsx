@@ -54,7 +54,7 @@ export function SellForm() {
       className="flex flex-col gap-4 bg-bg-surface border border-border-1 rounded-lg p-7"
       noValidate
     >
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <Input label="Nome completo" placeholder="Seu nome" {...register("name")} />
           {errors.name && <FieldError message={errors.name.message} className="mt-1" />}
@@ -79,7 +79,7 @@ export function SellForm() {
         {errors.purpose && <FieldError message={errors.purpose.message} className="mt-1" />}
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <Select
             label="Tipo de imóvel"
