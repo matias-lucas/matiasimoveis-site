@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -47,6 +48,13 @@ export function ContactForm() {
         <Textarea label="Mensagem" rows={4} placeholder="Como podemos ajudar?" {...register("message")} />
         {errors.message && <FieldError message={errors.message.message} className="mt-1" />}
       </div>
+      <p className="text-text-3" style={{ font: "var(--text-caption)" }}>
+        Ao enviar, você será direcionado ao WhatsApp — não guardamos seus dados. Veja nossa{" "}
+        <Link href="/privacidade" className="text-brand-primary no-underline">
+          política de privacidade
+        </Link>
+        .
+      </p>
       <Button type="submit" variant="primary" disabled={isSubmitting} className="w-full">
         Enviar mensagem
       </Button>

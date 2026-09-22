@@ -50,6 +50,7 @@ export const FOOTER_LINKS = [
     links: [
       { href: "/empresa", label: "Quem somos" },
       { href: "/contato", label: "Contato" },
+      { href: "/privacidade", label: "Política de privacidade" },
     ],
   },
   {
