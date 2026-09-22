@@ -6,6 +6,7 @@ import { formatPrice } from "@/lib/format";
 export const alt = "Foto do imóvel";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
+export const revalidate = 60;
 
 interface Props {
   params: Promise<{ slug: string }>;

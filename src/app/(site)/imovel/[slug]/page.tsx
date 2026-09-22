@@ -29,6 +29,14 @@ function buildSeoDescription(description: string): string {
   return description.length > 160 ? `${description.slice(0, 157)}...` : description;
 }
 
+// disponivel/em_negociacao ainda podem ser reservados; vendido/alugado já saíram
+// do mercado — status ausente (imóveis antigos) é tratado como disponível.
+function resolveAvailability(status: Imovel["status"]): string {
+  return status === "vendido" || status === "alugado"
+    ? "https://schema.org/SoldOut"
+    : "https://schema.org/InStock";
+}
+
 interface ImovelDetailPageProps {
   params: Promise<{ slug: string }>;
 }
@@ -102,16 +110,32 @@ export default async function ImovelDetailPage({ params }: ImovelDetailPageProps
         description: seoDescription,
         url: `${SITE.url}/imovel/${imovel.slug}`,
         image: imovel.coverImage ? [imovel.coverImage] : undefined,
-        address: { "@type": "PostalAddress", addressLocality: city, addressRegion: state, addressCountry: "BR" },
-        offers: {
-          "@type": "Offer",
-          price: imovel.price,
-          priceCurrency: "BRL",
-          availability: "https://schema.org/InStock",
+        // Dados de acomodação (endereço, oferta, metragem, cômodos) não são
+        // propriedades de RealEstateListing (subtipo de WebPage) — ficam
+        // aninhados em mainEntity, que é a Accommodation em si.
+        mainEntity: {
+          "@type": "Accommodation",
+          address: { "@type": "PostalAddress", addressLocality: city, addressRegion: state, addressCountry: "BR" },
+          offers: {
+            "@type": "Offer",
+            price: imovel.price,
+            priceCurrency: "BRL",
+            availability: resolveAvailability(imovel.status),
+            // Preço de locação é mensal, não um valor único de venda — deixa isso
+            // explícito para leitores estruturados (equivalente ao "/mês" do formatPrice).
+            ...(purpose === "locacao" && {
+              priceSpecification: {
+                "@type": "UnitPriceSpecification",
+                price: imovel.price,
+                priceCurrency: "BRL",
+                unitCode: "MON",
+              },
+            }),
+          },
+          numberOfBedrooms: bedrooms,
+          numberOfBathroomsTotal: bathrooms,
+          floorSize: { "@type": "QuantitativeValue", value: areaM2, unitCode: "MTK" },
         },
-        numberOfBedroomsTotal: bedrooms,
-        numberOfBathroomsTotal: bathrooms,
-        floorSize: { "@type": "QuantitativeValue", value: areaM2, unitCode: "MTK" },
       },
       {
         "@type": "BreadcrumbList",
