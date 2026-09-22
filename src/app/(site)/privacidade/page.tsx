@@ -49,12 +49,23 @@ export default function PrivacidadePage() {
 
         <div>
           <h2 className="text-text-1 mb-2" style={{ font: "var(--text-display-sm)", fontFamily: "var(--font-display)" }}>
+            Mapa na página de Contato
+          </h2>
+          <p>
+            A página de Contato mostra um mapa do Google. Ao carregá-lo, o Google recebe seu
+            endereço IP e pode usar cookies próprios, conforme a política de privacidade do
+            Google — não a nossa.
+          </p>
+        </div>
+
+        <div>
+          <h2 className="text-text-1 mb-2" style={{ font: "var(--text-display-sm)", fontFamily: "var(--font-display)" }}>
             Dúvidas
           </h2>
           <p>
             Se tiver qualquer dúvida sobre como tratamos essas informações, fale com a gente
             pelo e-mail{" "}
-            <a href={`mailto:${SITE.email}`} className="text-brand-primary no-underline">
+            <a href={`mailto:${SITE.email}`} className="text-red-600 underline">
               {SITE.email}
             </a>{" "}
             ou pelo telefone {SITE.phone}.
