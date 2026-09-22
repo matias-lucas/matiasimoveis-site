@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function PrivacidadePage() {
   return (
-    <Container className="py-16 max-w-[720px]">
+    <Container className="py-16 !max-w-[720px]">
       <h1
         className="text-text-1 mb-6"
         style={{ font: "var(--text-display-md)", fontFamily: "var(--font-display)" }}
