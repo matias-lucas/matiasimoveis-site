@@ -1,6 +1,7 @@
+/// <reference types="react/canary" />
 "use client";
 
-import { useState } from "react";
+import { useState, ViewTransition } from "react";
 import { ImovelPhoto } from "./ImovelPhoto";
 import {
   Dialog,
@@ -17,6 +18,7 @@ import {
 import type { ImovelPhotoRecord } from "@/lib/types";
 
 interface ImovelGalleryProps {
+  slug: string;
   photos: ImovelPhotoRecord[];
   coverImage?: string;
   title: string;
@@ -26,7 +28,7 @@ interface ImovelGalleryProps {
 // abrindo um lightbox (Dialog + Carousel) posicionado na foto clicada. Sem
 // fotos reais, ImovelPhoto já cai para o estado "Foto em breve" sozinho — a
 // galeria não precisa de um caso especial pra isso.
-export function ImovelGallery({ photos, coverImage, title }: ImovelGalleryProps) {
+export function ImovelGallery({ slug, photos, coverImage, title }: ImovelGalleryProps) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const others = photos.filter((p) => !p.isCover).slice(0, 4);
   const allSlides = [
@@ -42,13 +44,15 @@ export function ImovelGallery({ photos, coverImage, title }: ImovelGalleryProps)
         className="relative h-[380px] w-full bg-bg-sunken rounded-lg overflow-hidden mb-3 block"
         aria-label="Ampliar foto"
       >
-        <ImovelPhoto
-          src={coverImage}
-          alt={title}
-          iconClassName="w-12 h-12"
-          priority
-          sizes="(min-width: 1024px) 66vw, 100vw"
-        />
+        <ViewTransition name={`imovel-photo-${slug}`} share="morph" default="none">
+          <ImovelPhoto
+            src={coverImage}
+            alt={title}
+            iconClassName="w-12 h-12"
+            priority
+            sizes="(min-width: 1024px) 66vw, 100vw"
+          />
+        </ViewTransition>
       </button>
       <div className="flex gap-2.5">
         {Array.from({ length: 4 }).map((_, i) => {

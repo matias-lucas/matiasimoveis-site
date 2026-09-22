@@ -416,3 +416,32 @@ form:has(input[name="purpose"][value="venda"]:checked) .pf-tab-corretor {
 .sfb-range-value {
   font-weight: 400;
 }
+
+/* Morph da foto entre o card da listagem e o hero da ficha do imóvel
+   (<ViewTransition name="imovel-photo-*" share="morph" default="none"> em
+   ImovelCard/ImovelGallery) — API nativa do React 19/Next 16, não a lib
+   `motion`. O blur no meio do voo disfarça artefatos de interpolação de
+   pixel entre as duas proporções (4:3 no card, altura fixa na ficha). */
+::view-transition-group(.morph) {
+  animation-duration: 400ms;
+}
+::view-transition-image-pair(.morph) {
+  animation-name: via-blur;
+}
+@keyframes via-blur {
+  30% {
+    filter: blur(3px);
+  }
+}
+
+/* prefers-reduced-motion cobre view transitions nativas também — a Motion
+   lib já respeita isso via useReducedMotion() nos componentes client, mas
+   essa API do browser não passa por ali. */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
+}

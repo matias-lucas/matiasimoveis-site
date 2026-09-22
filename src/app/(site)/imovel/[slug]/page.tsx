@@ -6,6 +6,7 @@ import { Container } from "@/components/layout/Container";
 import { Badge } from "@/components/ui/Badge";
 import { ImovelGallery } from "@/components/imovel/ImovelGallery";
 import { ImovelMobilePriceBar } from "@/components/imovel/ImovelMobilePriceBar";
+import { FadeInOnMount } from "@/components/motion/FadeInOnMount";
 import { WhatsAppLink } from "@/components/ui/WhatsAppLink";
 import { Button } from "@/components/ui/Button";
 import { getAllPublishedSlugs, getImovelBySlug } from "@/lib/queries";
@@ -161,20 +162,22 @@ export default async function ImovelDetailPage({ params }: ImovelDetailPageProps
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <Link
-        href="/imoveis"
-        className="inline-flex items-center gap-1.5 text-text-2 no-underline mb-4 hover:text-text-1 transition-colors duration-150 ease-out"
-        style={{ font: "var(--text-body-sm)" }}
-      >
-        <ArrowLeft className="w-4 h-4" />
-        Voltar para a busca
-      </Link>
+      <FadeInOnMount>
+        <Link
+          href="/imoveis"
+          className="inline-flex items-center gap-1.5 text-text-2 no-underline mb-4 hover:text-text-1 transition-colors duration-150 ease-out"
+          style={{ font: "var(--text-body-sm)" }}
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Voltar para a busca
+        </Link>
+      </FadeInOnMount>
 
       <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-8 pb-20 lg:pb-0">
         <div>
-          <ImovelGallery photos={imovel.photos ?? []} coverImage={imovel.coverImage} title={title} />
+          <ImovelGallery slug={imovel.slug} photos={imovel.photos ?? []} coverImage={imovel.coverImage} title={title} />
 
-          <div className="mt-7">
+          <FadeInOnMount className="mt-7">
             <Badge tone={purpose === "locacao" ? "locacao" : "venda"}>
               {purpose === "locacao" ? "Locação" : "Venda"}
             </Badge>
@@ -243,10 +246,10 @@ export default async function ImovelDetailPage({ params }: ImovelDetailPageProps
                 </div>
               </div>
             )}
-          </div>
+          </FadeInOnMount>
         </div>
 
-        <div className="hidden lg:flex self-start sticky top-6 bg-bg-surface border border-border-1 rounded-lg shadow-md p-6 flex-col gap-4">
+        <FadeInOnMount className="hidden lg:flex self-start sticky top-6 bg-bg-surface border border-border-1 rounded-lg shadow-md p-6 flex-col gap-4">
           <div className="text-brand-primary" style={{ font: "var(--text-price)", fontSize: 32 }}>
             {formatPrice(price, purpose)}
           </div>
@@ -265,7 +268,7 @@ export default async function ImovelDetailPage({ params }: ImovelDetailPageProps
               Corretor responsável: {corretorDireto.name} · {corretorDireto.creci}
             </div>
           )}
-        </div>
+        </FadeInOnMount>
       </div>
 
       <ImovelMobilePriceBar

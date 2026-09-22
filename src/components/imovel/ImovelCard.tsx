@@ -1,4 +1,6 @@
+/// <reference types="react/canary" />
 import Link from "next/link";
+import { ViewTransition } from "react";
 import { BedDouble, Bath, Car, Ruler, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { ImovelPhoto } from "./ImovelPhoto";
@@ -30,9 +32,11 @@ export function ImovelCard({ imovel }: ImovelCardProps) {
       className="group block w-full bg-bg-surface rounded-lg overflow-hidden shadow-md transition-shadow duration-150 ease-out hover:shadow-lg font-body"
     >
       <div className="relative aspect-[4/3] bg-bg-sunken overflow-hidden">
-        <div className="transition-transform duration-300 ease-out group-hover:scale-[1.03] h-full">
-          <ImovelPhoto src={coverImage} alt={title} sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" />
-        </div>
+        <ViewTransition name={`imovel-photo-${slug}`} share="morph" default="none">
+          <div className="transition-transform duration-300 ease-out group-hover:scale-[1.03] h-full">
+            <ImovelPhoto src={coverImage} alt={title} sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" />
+          </div>
+        </ViewTransition>
         <Badge
           tone={purpose === "locacao" ? "locacao" : "venda"}
           solid
