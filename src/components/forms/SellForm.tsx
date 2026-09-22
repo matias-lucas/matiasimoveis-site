@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -8,6 +7,7 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
 import { FieldError } from "@/components/ui/FieldError";
+import { PrivacyNotice } from "@/components/ui/PrivacyNotice";
 import { buildWhatsAppUrl, sellInquiryMessage } from "@/lib/whatsapp";
 
 const schema = z.object({
@@ -97,13 +97,7 @@ export function SellForm() {
 
       <Input label="Valor pretendido" placeholder="R$" {...register("askingPrice")} />
 
-      <p className="text-text-3" style={{ font: "var(--text-caption)" }}>
-        Ao enviar, você será direcionado ao WhatsApp — não guardamos seus dados. Veja nossa{" "}
-        <Link href="/privacidade" className="text-brand-primary no-underline">
-          política de privacidade
-        </Link>
-        .
-      </p>
+      <PrivacyNotice />
       <Button type="submit" variant="whatsapp" size="lg" disabled={isSubmitting} className="self-start mt-2">
         Falar no WhatsApp
       </Button>
