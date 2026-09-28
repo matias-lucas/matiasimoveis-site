@@ -136,7 +136,8 @@ src/lib/corretor.ts         corretorPadrao(): SITE.defaultCorretor (name/CRECI f
                             photo uploaded for that corretor in the admin, matched by name. Only the
                             Empresa page's DB-down fallback uses it now (see "Who is the contact").
 src/lib/media.ts            aspectOf(), VERTICAL_VIDEO_MAX_ASPECT (0.9: below it a video is "em pé"
-                            and gets the side layout), formatDuration().
+                            and gets the side layout), formatDuration(), videoPosterUrl() (the
+                            photo of a video-only listing — see "Video-only listings" below).
 src/lib/media-upload.ts     Browser-only (admin): readImageSize(), readVideoInfo() (size, duration
                             and a JPEG frame at ~1s for the poster), describeOrientation().
 src/lib/types.ts            Imovel/Corretor/ImovelPhotoRecord shape — kept in sync with the live
@@ -160,7 +161,7 @@ src/lib/queries.ts          Public read layer, all async, backed by Supabase; RL
                             getCorretores()/getCorretoresSafe() read the public `brokers` table
                             (RLS "public read brokers") with photoUrl from the broker-photos bucket.
                             Photos/videos carry width/height (+ video duration and posterUrl); a
-                            listing with no photo uses its first video's poster as coverImage, and
+                            listing with no photo uses its first video poster as coverImage, and
                             CARD_SELECT fetches property_videos(id, position, poster_path) for the
                             card's "Vídeo" badge.
 src/lib/search-params.ts    The /imoveis URL contract: parseSearchParams() validates everything
@@ -265,7 +266,10 @@ src/components/forms/       SellForm, ContactForm — client components, react-h
                             build a WhatsApp message on submit via lib/whatsapp.ts and
                             window.open() it. No email/database backend exists for these yet.
 src/components/admin/       AdminHeader (logo + user email + Sair, shared by both admin sections)
-                            and LoginForm (client, Supabase signInWithPassword) sit flat here;
+                            and LoginForm (client, Supabase signInWithPassword) sit flat here,
+                            with video-meta.ts (uploadPoster/completeVideoMeta, shared by
+                            VideoManager and VideoPosterBackfill — the latter runs on the admin
+                            list and generates missing video posters as soon as the admin logs in);
                             everything else is grouped by which admin feature it belongs to:
   admin/corretor/              CorretorCard (grid tile that flips into an inline edit <form>) and
                               CorretorForm (plain create/edit form) — re-exported from index.ts,
@@ -438,9 +442,14 @@ From the user, during implementation:
     widest item fills the phone width on mobile), horizontal scroll with arrows when it
     overflows, centered when it's short.
   Media uploaded before 28/09 has no stored size: the client corrects the aspect on load, and
-  the admin VideoManager fills size/duration/poster for old videos by itself when that listing
-  is opened in the admin. Posters live in the property-photos bucket (`<id>/poster-*.jpg`)
-  because property-videos only accepts video mime types.
+  the admin fills size/duration/poster for old videos by itself — on the imóveis list
+  (VideoPosterBackfill, all pending videos) and when a listing is opened (VideoManager). Posters
+  live in the property-photos bucket (`<id>/poster-*.jpg`) because property-videos only accepts
+  video mime types. Posters are generated in the admin's browser (no ffmpeg on the server).
+- **Video-only listings** (owner, 28/09): the video poster is the listing's photo everywhere
+  else — cards, similar listings, Open Graph image, JSON-LD and the admin list
+  (`videoPosterUrl()` in lib/media.ts, used by `mapRow` and `listImoveis`). Until a poster
+  exists the card shows the kind's "Fotos em breve" tile.
 - **Property photos are public files even for draft (unpublished) listings.** The Storage bucket
   is `public` for simplicity (plain URLs, works with `next/image` with no signed-URL plumbing) —
   RLS still gates the `properties`/`property_photos` *rows*, but a photo's raw storage path

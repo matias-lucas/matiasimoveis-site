@@ -6,7 +6,8 @@ import { Container } from "@/components/layout/Container";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { ImovelPhoto } from "@/components/imovel/ImovelPhoto";
-import { listImoveis, type PublishFilter } from "@/lib/admin/queries";
+import { VideoPosterBackfill } from "@/components/admin/VideoPosterBackfill";
+import { listImoveis, listVideosSemCapa, type PublishFilter } from "@/lib/admin/queries";
 import { KIND_LABELS, LEGACY_KIND_LABELS, STATUS_LABELS } from "@/lib/admin/labels";
 import { formatPrice } from "@/lib/format";
 import { setPublished, setFeatured } from "./actions/imoveis";
@@ -29,7 +30,7 @@ interface AdminImoveisPageProps {
 export default async function AdminImoveisPage({ searchParams }: AdminImoveisPageProps) {
   const { status } = await searchParams;
   const filter: PublishFilter = status === "published" || status === "draft" ? status : "all";
-  const imoveis = await listImoveis(filter);
+  const [imoveis, videosSemCapa] = await Promise.all([listImoveis(filter), listVideosSemCapa()]);
 
   return (
     <Container className="py-8">
@@ -44,6 +45,10 @@ export default async function AdminImoveisPage({ searchParams }: AdminImoveisPag
           Novo imóvel
         </Button>
       </div>
+
+      {videosSemCapa.length > 0 && (
+        <VideoPosterBackfill key={videosSemCapa.map((v) => v.id).join()} videos={videosSemCapa} />
+      )}
 
       <div className="inline-flex bg-bg-page border border-border-1 rounded-pill p-1 gap-1 mb-6 font-display">
         {TABS.map((tab) => (

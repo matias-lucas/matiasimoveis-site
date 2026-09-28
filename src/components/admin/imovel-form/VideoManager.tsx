@@ -3,10 +3,11 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import { Upload, Trash2, ChevronUp, ChevronDown, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { IMOVEL_PHOTOS_BUCKET, IMOVEL_VIDEOS_BUCKET, publicStorageUrl } from "@/lib/supabase/env";
-import { addVideo, deleteVideo, moveVideo, setVideoMeta } from "@/app/admin/imoveis/actions/videos";
-import { describeOrientation, readVideoInfo, type VideoInfo } from "@/lib/media-upload";
+import { IMOVEL_VIDEOS_BUCKET, publicStorageUrl } from "@/lib/supabase/env";
+import { addVideo, deleteVideo, moveVideo } from "@/app/admin/imoveis/actions/videos";
+import { describeOrientation, readVideoInfo } from "@/lib/media-upload";
 import { formatDuration } from "@/lib/media";
+import { completeVideoMeta, uploadPoster } from "../video-meta";
 
 const MAX_FILE_BYTES = 100 * 1024 * 1024; // corresponde ao file_size_limit do bucket property-videos
 const ALLOWED_TYPES = ["video/mp4", "video/webm", "video/quicktime"];
@@ -21,16 +22,6 @@ interface Video {
   height?: number | null;
   duration_seconds?: number | null;
   poster_path?: string | null;
-}
-
-type SupabaseBrowser = ReturnType<typeof createClient>;
-
-/** Sobe a capa (quadro do vídeo) no bucket de fotos; o de vídeos só aceita vídeo. */
-async function uploadPoster(supabase: SupabaseBrowser, imovelId: string, info: VideoInfo): Promise<string | null> {
-  if (!info.poster) return null;
-  const path = `${imovelId}/poster-${crypto.randomUUID()}.jpg`;
-  const { error } = await supabase.storage.from(IMOVEL_PHOTOS_BUCKET).upload(path, info.poster, { contentType: "image/jpeg" });
-  return error ? null : path;
 }
 
 interface VideoManagerProps {
@@ -49,7 +40,8 @@ export function VideoManager({ imovelId, imovelTitle, initialVideos }: VideoMana
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Vídeos enviados antes de 28/09 não têm tamanho nem capa gravados: completa
-  // sozinho quando o admin abre o imóvel (a ficha e o card passam a usá-los).
+  // sozinho quando o admin abre o imóvel (a lista de imóveis também faz isso,
+  // ver VideoPosterBackfill). A ficha e o card passam a usá-los.
   useEffect(() => {
     const pending = initialVideos.filter((v) => !v.width || !v.height || !v.poster_path);
     if (pending.length === 0) return;
@@ -57,27 +49,16 @@ export function VideoManager({ imovelId, imovelTitle, initialVideos }: VideoMana
     (async () => {
       const supabase = createClient();
       for (const video of pending) {
-        const info = await readVideoInfo(video.url);
-        if (cancelled || !info) continue;
-        const posterPath = video.poster_path ?? (await uploadPoster(supabase, imovelId, info));
+        const meta = await completeVideoMeta(supabase, imovelId, video, () => cancelled);
         if (cancelled) return;
-        try {
-          await setVideoMeta(video.id, imovelId, {
-            width: info.width,
-            height: info.height,
-            durationSeconds: info.durationSeconds,
-            posterPath,
-          });
-          setVideos((prev) =>
-            prev.map((v) =>
-              v.id === video.id
-                ? { ...v, width: info.width, height: info.height, duration_seconds: info.durationSeconds, poster_path: posterPath }
-                : v
-            )
-          );
-        } catch {
-          // Fica para a próxima vez que o imóvel for aberto.
-        }
+        if (!meta) continue; // fica para a próxima vez que o imóvel for aberto
+        setVideos((prev) =>
+          prev.map((v) =>
+            v.id === video.id
+              ? { ...v, width: meta.width, height: meta.height, duration_seconds: meta.durationSeconds, poster_path: meta.posterPath }
+              : v
+          )
+        );
       }
     })();
     return () => {

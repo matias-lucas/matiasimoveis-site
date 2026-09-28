@@ -5,6 +5,7 @@ import type { Corretor, Imovel, ImovelKind, ImovelPurpose } from "./types";
 import { resolveKindFilter, searchKindOf } from "./imovel-kind-categories";
 import { PAGE_SIZE, type SearchFilters } from "./search-params";
 import { normalizeText } from "./format";
+import { videoPosterUrl } from "./media";
 
 /**
  * Camada de leitura pública, apoiada no Supabase (RLS restringe estas
@@ -99,12 +100,9 @@ function mapRow(row: RowWithRelations): Imovel {
       width: p.width ?? undefined,
       height: p.height ?? undefined,
     })),
-    // Anúncio só com vídeo: o quadro de capa do vídeo faz o papel da foto no card.
-    coverImage: cover
-      ? publicStorageUrl(cover.storage_path)
-      : videos[0]?.poster_path
-        ? publicStorageUrl(videos[0].poster_path)
-        : undefined,
+    // Anúncio só com vídeo: o quadro de capa do vídeo faz o papel da foto em
+    // todo o site (card, semelhantes, imagem de compartilhamento, JSON-LD).
+    coverImage: cover ? publicStorageUrl(cover.storage_path) : videoPosterUrl(videos),
     videos: videos.map((v) => ({
       id: v.id,
       url: v.storage_path ? publicStorageUrl(v.storage_path, IMOVEL_VIDEOS_BUCKET) : "",
