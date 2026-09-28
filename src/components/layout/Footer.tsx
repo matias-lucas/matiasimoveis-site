@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Phone, Mail, MapPin, MessageCircle } from "lucide-react";
+import { Phone, MapPin, MessageCircle } from "lucide-react";
 import { Container } from "./Container";
 import { FOOTER_LINKS, SITE } from "@/lib/site";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
@@ -70,12 +70,6 @@ export function Footer() {
                 <a href={SITE.phoneHref} className="flex items-center gap-2 min-h-11 text-white no-underline hover:text-white">
                   <Phone className="w-4 h-4 shrink-0" aria-hidden />
                   {SITE.phone}
-                </a>
-              </li>
-              <li>
-                <a href={`mailto:${SITE.email}`} className="flex items-center gap-2 min-h-11 text-white no-underline hover:text-white">
-                  <Mail className="w-4 h-4 shrink-0" aria-hidden />
-                  {SITE.email}
                 </a>
               </li>
               <li className="flex items-start gap-2 py-3 text-white/80">

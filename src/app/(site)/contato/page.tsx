@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { MapPin, Phone, MessageCircle, Mail, type LucideIcon } from "lucide-react";
+import { MapPin, Phone, MessageCircle, type LucideIcon } from "lucide-react";
 import { Container } from "@/components/layout/Container";
 import { ContactForm } from "@/components/forms/ContactForm";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
@@ -53,7 +53,7 @@ export default function ContatoPage() {
           Fale com a {SITE.name}
         </h1>
         <p className="mt-2 mb-6 text-text-2" style={{ font: "var(--text-body-md)" }}>
-          O jeito mais rápido é o WhatsApp. Toque para ligar, conversar ou mandar e-mail.
+          O jeito mais rápido é o WhatsApp. Toque para conversar ou ligar.
         </p>
         {/* Todos clicáveis: antes telefone e WhatsApp eram texto puro (review 28/09). */}
         <div className="grid gap-3">
@@ -65,7 +65,6 @@ export default function ContatoPage() {
             external
           />
           <ContactRow icon={Phone} label="Telefone" value={SITE.phone} href={SITE.phoneHref} />
-          <ContactRow icon={Mail} label="E-mail" value={SITE.email} href={`mailto:${SITE.email}`} />
           <ContactRow icon={MapPin} label="Endereço" value={fullAddress} />
         </div>
         {/* Fachada real: ajuda a reconhecer a loja na rua (placa vermelha e azul). */}

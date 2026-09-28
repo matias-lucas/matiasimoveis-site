@@ -30,13 +30,14 @@ export const SITE = {
   whatsappNumber: "556233753330",
   whatsappDefaultMessage: "Olá! Preciso de uma informação.",
 
-  email: "contato@matiasimoveisgo.com.br",
+  // Sem e-mail público por enquanto: o contato@ do domínio próprio não
+  // recebe mensagens (dono, 28/09). Volta quando o domínio for configurado.
 
-  // Corretor padrão usado nas fichas de imóvel do mock, até o painel
-  // admin permitir atribuir um corretor por imóvel.
+  // Corretor padrão: Home, rodapé e anúncios sem corretor próprio. CRECI no
+  // mesmo formato do cadastro em Admin → Corretores (dono, 28/09).
   defaultCorretor: {
     name: "Divino Matias",
-    creci: "CRECI-GO 9155",
+    creci: "CRECI PF - 9155",
   },
 } as const;
 

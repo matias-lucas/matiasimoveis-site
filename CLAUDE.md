@@ -334,11 +334,15 @@ From the user, during implementation:
 - **Address**: placeholder text in `site.ts` (marked with a `TODO(cliente)` comment) — the
   handoff's two source files disagreed ("Alfredo Nasser" vs "Alfredo Nascer") and the user said
   to leave it, they'll correct it later. Don't guess a third spelling.
-- **Corretor vs. company**: "Divino Matias · CRECI-GO 9155" is a specific corretor (shown as
+- **Corretor vs. company**: "Divino Matias · CRECI PF - 9155" is a specific corretor (shown as
   `SITE.defaultCorretor` on Home, footer and listings without their own corretor; the Empresa
   page lists the whole team from the `brokers` table); "Matias Imóveis · CJ-40079" is the company's own
   juridical registration (footer, company-level mentions). These are different things — don't
-  conflate them. Both live in `SITE` (`site.ts`).
+  conflate them. Both live in `SITE` (`site.ts`). CRECI format = the admin's ("CRECI PF - 9155",
+  owner's choice on 28/09; it used to read "CRECI-GO 9155" in SITE).
+- **No public e-mail** (owner, 28/09): `contato@matiasimoveisgo.com.br` doesn't receive mail, so
+  it was removed from Contato, footer, privacy page and JSON-LD (there's no `SITE.email`). Contact
+  is WhatsApp + phone until the own domain is configured.
 - **Phone/WhatsApp**: `(62) 3375-3330` for both — confirmed by the user, used as-is even though
   it reads like a landline format; don't "fix" it by inventing a 9th mobile digit.
 - **Footer links**: "Trabalhe conosco" and "Simule um financiamento" (present in the old site's
@@ -388,8 +392,9 @@ From the user, during implementation:
 - **"Foto pendente" slots** (owner, 28/09): where a real photo belongs but doesn't exist yet, the
   frame stays in the layout with "Foto pendente" written in it, for the owner to upload later.
   Corretor photos → Admin → Corretores (CorretorPhoto picks them up; Divino and Rafael had none on
-  28/09). Office interior on /empresa → static file: drop it in `public/images/` and set
-  `FOTO_ESCRITORIO` in `app/(site)/empresa/page.tsx` (no admin UI for site photos yet).
+  28/09). Office interior on /empresa → the owner sends the photo in the chat (their choice on
+  28/09, instead of an admin "Fotos do site" screen); save it in `public/images/` and set
+  `FOTO_ESCRITORIO` in `app/(site)/empresa/page.tsx`.
 - **Images: real vs. AI.** Real: the brokerage facade (`public/images/fachada-matias*.webp`, sent
   by the owner on 28/09) on the Home hero, Empresa and Contato. AI (Higgsfield, owner approved on
   28/09, `public/images/ia/`): the kind line illustrations for listings without photos, the empty-

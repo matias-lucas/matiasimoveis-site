@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Container } from "@/components/layout/Container";
 import { SITE } from "@/lib/site";
+import { buildWhatsAppUrl } from "@/lib/whatsapp";
 
 export const metadata: Metadata = {
   title: "Política de privacidade",
@@ -66,9 +67,14 @@ export default function PrivacidadePage() {
           </h2>
           <p>
             Se tiver qualquer dúvida sobre como tratamos essas informações, fale com a gente
-            pelo e-mail{" "}
-            <a href={`mailto:${SITE.email}`} className="text-red-600 underline">
-              {SITE.email}
+            pelo{" "}
+            <a
+              href={buildWhatsAppUrl(SITE.whatsappDefaultMessage)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-red-600 underline"
+            >
+              WhatsApp
             </a>{" "}
             ou pelo telefone {SITE.phone}.
           </p>
