@@ -127,7 +127,14 @@ export function ImoveisFilters({ filters, summary, mode, onNavigate, onClose, re
                 <span
                   className={clsx(
                     "flex items-center justify-center h-11 rounded-lg transition-colors duration-150 ease-out peer-focus-visible:shadow-focus",
-                    checked ? "bg-bg-surface text-text-1 shadow-sm" : "text-text-2 hover:text-text-1"
+                    // Azul = locação, vermelho = venda, como no resto do site.
+                    checked
+                      ? value === "locacao"
+                        ? "bg-blue-500 text-white shadow-sm"
+                        : value === "venda"
+                          ? "bg-red-600 text-white shadow-sm"
+                          : "bg-bg-surface text-text-1 shadow-sm"
+                      : "text-text-2 hover:text-text-1"
                   )}
                   style={{ font: "700 15px/1 var(--font-display)" }}
                 >

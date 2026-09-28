@@ -7,10 +7,10 @@ import { WhatsAppLink } from "@/components/ui/WhatsAppLink";
 import { HomeSearch } from "@/components/home/HomeSearch";
 import { ListingShowcase } from "@/components/home/ListingShowcase";
 import { ServicesList } from "@/components/home/ServicesList";
-import { CorretorPhoto } from "@/components/corretor/CorretorPhoto";
-import { getCatalogSummary, getCorretoresSafe, getHomeImoveis, type CatalogSummary } from "@/lib/queries";
-import { corretorPadrao } from "@/lib/corretor";
+import { ImobiliariaSelo } from "@/components/layout/ImobiliariaSelo";
+import { getCatalogSummary, getHomeImoveis, type CatalogSummary } from "@/lib/queries";
 import { searchHref } from "@/lib/search-params";
+import { buildWhatsAppUrl } from "@/lib/whatsapp";
 import { SITE } from "@/lib/site";
 import type { Imovel } from "@/lib/types";
 import fachada from "../../../public/images/fachada-matias.webp";
@@ -41,8 +41,7 @@ async function loadHome(): Promise<{ summary: CatalogSummary; aluguel: Imovel[];
 }
 
 export default async function HomePage() {
-  const [{ summary, aluguel, venda, ok }, corretores] = await Promise.all([loadHome(), getCorretoresSafe()]);
-  const corretor = corretorPadrao(corretores);
+  const { summary, aluguel, venda, ok } = await loadHome();
   const bairros = summary.neighborhoods.slice(0, 10);
 
   return (
@@ -80,19 +79,25 @@ export default async function HomePage() {
                 className="object-cover"
               />
             </div>
-            <div className="absolute -bottom-5 -left-5 flex items-center gap-3 rounded-xl bg-bg-surface text-text-1 shadow-lg px-4 py-3">
+            {/* O número é o da imobiliária, não de um corretor (dono, 28/09). */}
+            <a
+              href={buildWhatsAppUrl(SITE.whatsappDefaultMessage)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="absolute -bottom-5 -left-5 flex items-center gap-3 rounded-xl bg-bg-surface text-text-1 no-underline shadow-lg px-4 py-3 hover:text-text-1 hover:shadow-xl transition-shadow duration-150 ease-out"
+            >
               <span className="flex items-center justify-center w-10 h-10 rounded-full bg-whatsapp text-white">
                 <MessageCircle className="w-5 h-5" aria-hidden />
               </span>
               <span>
                 <span className="block" style={{ font: "700 15px/1.2 var(--font-display)" }}>
-                  Fale direto com o corretor
+                  Fale direto conosco
                 </span>
                 <span className="block text-text-2" style={{ font: "var(--text-body-sm)" }}>
-                  {SITE.defaultCorretor.name} · {SITE.phone}
+                  WhatsApp · {SITE.phone}
                 </span>
               </span>
-            </div>
+            </a>
           </div>
         </Container>
       </section>
@@ -155,21 +160,23 @@ export default async function HomePage() {
               Atendimento de quem conhece a cidade
             </h2>
             <p className="mt-3 text-text-2 max-w-[52ch]" style={{ font: "var(--text-body-md)" }}>
-              Imobiliária de Itaberaí, com registro {SITE.cj}. Você fala direto com o corretor, do primeiro contato à
+              Imobiliária de Itaberaí, com registro {SITE.cj}. Você fala direto com a gente, do primeiro contato à
               entrega das chaves.
             </p>
             <div className="mt-6 flex flex-wrap items-center gap-4 rounded-xl border border-border-1 bg-bg-surface p-5">
-              <CorretorPhoto corretor={corretor} size={72} />
-              <div className="flex-1 min-w-[160px]">
-                <div className="text-text-1" style={{ font: "700 18px/1.2 var(--font-display)" }}>
-                  {corretor.name}
-                </div>
-                <div className="text-text-2" style={{ font: "var(--text-body-sm)" }}>
-                  Corretor · {corretor.creci}
-                </div>
+              <div className="flex-1 min-w-[200px]">
+                <ImobiliariaSelo size={64} />
               </div>
               <WhatsAppLink message={SITE.whatsappDefaultMessage}>Falar no WhatsApp</WhatsAppLink>
             </div>
+            <Link
+              href="/empresa"
+              className="inline-flex items-center gap-1.5 mt-4 text-text-1 underline underline-offset-4 hover:text-text-1"
+              style={{ font: "600 15px/1 var(--font-display)" }}
+            >
+              Conheça nossa equipe
+              <ArrowRight className="w-4 h-4" aria-hidden />
+            </Link>
           </div>
           <ServicesList />
         </Container>

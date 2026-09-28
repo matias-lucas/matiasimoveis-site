@@ -38,12 +38,19 @@ export function ListingShowcase({ purpose, title, imoveis, total }: ListingShowc
       <Container>
         <div className="flex items-end justify-between gap-4 mb-5">
           <h2 id={`vitrine-${purpose}`} className="text-text-1" style={{ font: "var(--text-display-md)" }}>
+            <span
+              className={clsx("block w-10 h-1 mb-3 rounded-pill", purpose === "locacao" ? "bg-blue-500" : "bg-red-600")}
+              aria-hidden
+            />
             {title}
           </h2>
           {total > 0 && (
             <Link
               href={allHref}
-              className="inline-flex items-center gap-1.5 shrink-0 text-red-600 no-underline hover:text-red-700 whitespace-nowrap"
+              className={clsx(
+                "inline-flex items-center gap-1.5 shrink-0 no-underline whitespace-nowrap",
+                purpose === "locacao" ? "text-blue-500 hover:text-blue-700" : "text-red-600 hover:text-red-700"
+              )}
               style={{ font: "700 16px/1 var(--font-display)" }}
             >
               Ver todos ({total})

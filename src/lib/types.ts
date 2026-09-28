@@ -27,6 +27,9 @@ export interface ImovelPhotoRecord {
   alt: string;
   isCover: boolean;
   position: number;
+  /** Tamanho original em px (gravado no upload); ausente em fotos antigas. */
+  width?: number;
+  height?: number;
 }
 
 export interface ImovelVideoRecord {
@@ -34,6 +37,12 @@ export interface ImovelVideoRecord {
   url: string;
   label: string;
   position: number;
+  /** Tamanho original em px (gravado no upload); ausente em vídeos antigos. */
+  width?: number;
+  height?: number;
+  durationSeconds?: number;
+  /** Quadro do vídeo usado como capa (gerado no admin). */
+  posterUrl?: string;
 }
 
 export interface Imovel {
@@ -66,7 +75,7 @@ export interface Imovel {
   corretor?: Corretor;
   /** Fotos públicas do anúncio, em ordem; a de capa também define coverImage. */
   photos?: ImovelPhotoRecord[];
-  /** URL da foto de capa (Supabase Storage), ou undefined para exibir o estado de placeholder. */
+  /** URL da foto de capa (Supabase Storage); sem foto, o quadro do 1º vídeo; senão undefined (placeholder). */
   coverImage?: string;
   /** Vídeos públicos do anúncio, em ordem. */
   videos?: ImovelVideoRecord[];

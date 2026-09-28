@@ -17,6 +17,14 @@ function isActive(link: NavLink, pathname: string, finalidade: string | null): b
   return pathname.startsWith(link.href);
 }
 
+/** Azul = locação, vermelho = venda (e o vermelho da marca nos demais itens). */
+function linkColors(link: NavLink): { text: string; hover: string; bar: string } {
+  if ("purpose" in link && link.purpose === "locacao") {
+    return { text: "text-blue-500", hover: "hover:text-blue-500", bar: "bg-blue-500" };
+  }
+  return { text: "text-red-600", hover: "hover:text-red-600", bar: "bg-red-600" };
+}
+
 function NavLinks({ variant }: { variant: "desktop" | "mobile" }) {
   const pathname = usePathname();
   const finalidade = useSearchParams().get("finalidade");
@@ -36,6 +44,7 @@ function NavLinkList({
     <>
       {NAV_LINKS.map((link) => {
         const active = isActive(link, pathname, finalidade);
+        const colors = linkColors(link);
         return (
           <Link
             key={link.href}
@@ -46,13 +55,13 @@ function NavLinkList({
               variant === "desktop"
                 ? "relative flex items-center h-16 px-1"
                 : "flex items-center h-14 px-2 border-b border-border-1",
-              active ? "text-red-600" : "text-text-1 hover:text-red-600"
+              active ? colors.text : clsx("text-text-1", colors.hover)
             )}
             style={{ font: variant === "desktop" ? "600 16px/1 var(--font-display)" : "700 20px/1 var(--font-display)" }}
           >
             {link.label}
             {variant === "desktop" && active && (
-              <span className="absolute left-0 right-0 bottom-0 h-[3px] rounded-t bg-red-600" aria-hidden />
+              <span className={clsx("absolute left-0 right-0 bottom-0 h-[3px] rounded-t", colors.bar)} aria-hidden />
             )}
           </Link>
         );

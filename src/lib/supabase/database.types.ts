@@ -167,29 +167,35 @@ export type Database = {
         Row: {
           alt: string;
           created_at: string;
+          height: number | null;
           id: string;
           is_cover: boolean;
           position: number;
           property_id: string;
           storage_path: string;
+          width: number | null;
         };
         Insert: {
           alt?: string;
           created_at?: string;
+          height?: number | null;
           id?: string;
           is_cover?: boolean;
           position?: number;
           property_id: string;
           storage_path: string;
+          width?: number | null;
         };
         Update: {
           alt?: string;
           created_at?: string;
+          height?: number | null;
           id?: string;
           is_cover?: boolean;
           position?: number;
           property_id?: string;
           storage_path?: string;
+          width?: number | null;
         };
         Relationships: [
           {
@@ -204,27 +210,39 @@ export type Database = {
       property_videos: {
         Row: {
           created_at: string;
+          duration_seconds: number | null;
+          height: number | null;
           id: string;
           label: string;
           position: number;
+          poster_path: string | null;
           property_id: string;
           storage_path: string;
+          width: number | null;
         };
         Insert: {
           created_at?: string;
+          duration_seconds?: number | null;
+          height?: number | null;
           id?: string;
           label?: string;
           position?: number;
+          poster_path?: string | null;
           property_id: string;
           storage_path: string;
+          width?: number | null;
         };
         Update: {
           created_at?: string;
+          duration_seconds?: number | null;
+          height?: number | null;
           id?: string;
           label?: string;
           position?: number;
+          poster_path?: string | null;
           property_id?: string;
           storage_path?: string;
+          width?: number | null;
         };
         Relationships: [
           {

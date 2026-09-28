@@ -115,7 +115,7 @@ export function ImoveisShell({ filters, summary, total, children }: ImoveisShell
                 <button
                   type="button"
                   onClick={() => navigate(searchHref({ ...filters, ...chip.without, pagina: 1 }))}
-                  className="inline-flex items-center gap-1.5 h-9 pl-3 pr-2 rounded-pill bg-blue-50 text-blue-600 hover:bg-blue-100"
+                  className="inline-flex items-center gap-1.5 h-9 pl-3 pr-2 rounded-pill bg-bg-sunken text-text-1 hover:bg-border-1"
                   style={{ font: "600 14px/1 var(--font-display)" }}
                   aria-label={`Remover filtro ${chip.label}`}
                 >
@@ -128,7 +128,7 @@ export function ImoveisShell({ filters, summary, total, children }: ImoveisShell
               <button
                 type="button"
                 onClick={() => navigate(searchHref({ purpose: filters.purpose, ordem: filters.ordem }))}
-                className="inline-flex items-center h-9 px-2 text-red-600 underline underline-offset-2"
+                className="inline-flex items-center h-9 px-2 text-text-2 underline underline-offset-2 hover:text-text-1"
                 style={{ font: "600 14px/1 var(--font-display)" }}
               >
                 Limpar filtros

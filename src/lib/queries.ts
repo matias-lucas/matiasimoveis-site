@@ -22,18 +22,22 @@ type VideoRow = Database["public"]["Tables"]["property_videos"]["Row"];
 type CorretorRow = Database["public"]["Tables"]["brokers"]["Row"];
 type RowWithRelations = Partial<ImovelRow> &
   Pick<ImovelRow, "id" | "slug" | "ref" | "purpose" | "kind" | "title" | "neighborhood" | "city" | "state" | "price"> & {
-    property_photos?: Pick<PhotoRow, "id" | "storage_path" | "alt" | "is_cover" | "position">[];
-    property_videos?: Pick<VideoRow, "id" | "storage_path" | "label" | "position">[];
+    property_photos?: (Pick<PhotoRow, "id" | "storage_path" | "alt" | "is_cover" | "position"> &
+      Partial<Pick<PhotoRow, "width" | "height">>)[];
+    property_videos?: (Pick<VideoRow, "id" | "position"> &
+      Partial<Pick<VideoRow, "storage_path" | "label" | "width" | "height" | "duration_seconds" | "poster_path">>)[];
     brokers?: CorretorFields | null;
   };
 type CorretorFields = Pick<CorretorRow, "id" | "name" | "creci" | "contact" | "photo_path">;
 
 const CORRETOR_SELECT = "id, name, creci, contact, photo_path";
 
-const FULL_SELECT = `*, property_photos(id, storage_path, alt, is_cover, position), property_videos(id, storage_path, label, position), brokers(${CORRETOR_SELECT})`;
+const FULL_SELECT = `*, property_photos(id, storage_path, alt, is_cover, position, width, height), property_videos(id, storage_path, label, position, width, height, duration_seconds, poster_path), brokers(${CORRETOR_SELECT})`;
 
+// Do vídeo, o card só precisa saber que existe (selo "Vídeo") e do quadro de
+// capa, usado quando o anúncio não tem foto.
 const CARD_SELECT =
-  "id, slug, ref, purpose, kind, kind_other, title, neighborhood, city, state, price, bedrooms, bathrooms, parking, parking_motorcycle_only, area_m2, lot_area_m2, status, featured, published_at, property_photos(id, storage_path, alt, is_cover, position)";
+  "id, slug, ref, purpose, kind, kind_other, title, neighborhood, city, state, price, bedrooms, bathrooms, parking, parking_motorcycle_only, area_m2, lot_area_m2, status, featured, published_at, property_photos(id, storage_path, alt, is_cover, position), property_videos(id, position, poster_path)";
 
 /** Vendidos/alugados saem das listagens; a ficha continua acessível pelo link. */
 const HIDDEN_STATUSES = "(vendido,alugado)";
@@ -92,13 +96,24 @@ function mapRow(row: RowWithRelations): Imovel {
       alt: p.alt,
       isCover: p === cover,
       position: p.position,
+      width: p.width ?? undefined,
+      height: p.height ?? undefined,
     })),
-    coverImage: cover ? publicStorageUrl(cover.storage_path) : undefined,
+    // Anúncio só com vídeo: o quadro de capa do vídeo faz o papel da foto no card.
+    coverImage: cover
+      ? publicStorageUrl(cover.storage_path)
+      : videos[0]?.poster_path
+        ? publicStorageUrl(videos[0].poster_path)
+        : undefined,
     videos: videos.map((v) => ({
       id: v.id,
-      url: publicStorageUrl(v.storage_path, IMOVEL_VIDEOS_BUCKET),
-      label: v.label,
+      url: v.storage_path ? publicStorageUrl(v.storage_path, IMOVEL_VIDEOS_BUCKET) : "",
+      label: v.label ?? "",
       position: v.position,
+      width: v.width ?? undefined,
+      height: v.height ?? undefined,
+      durationSeconds: v.duration_seconds != null ? Number(v.duration_seconds) : undefined,
+      posterUrl: v.poster_path ? publicStorageUrl(v.poster_path) : undefined,
     })),
   };
 }

@@ -133,7 +133,12 @@ src/lib/site.ts             Single source for phone/WhatsApp/address/CJ/CRECI/na
                             Edit here, not in components. Has a TODO on the address (see below).
                             SITE.url is the Vercel domain for now (see "Decisions already made").
 src/lib/corretor.ts         corretorPadrao(): SITE.defaultCorretor (name/CRECI from SITE) plus the
-                            photo uploaded for that corretor in the admin, matched by name.
+                            photo uploaded for that corretor in the admin, matched by name. Only the
+                            Empresa page's DB-down fallback uses it now (see "Who is the contact").
+src/lib/media.ts            aspectOf(), VERTICAL_VIDEO_MAX_ASPECT (0.9: below it a video is "em pé"
+                            and gets the side layout), formatDuration().
+src/lib/media-upload.ts     Browser-only (admin): readImageSize(), readVideoInfo() (size, duration
+                            and a JPEG frame at ~1s for the poster), describeOrientation().
 src/lib/types.ts            Imovel/Corretor/ImovelPhotoRecord shape — kept in sync with the live
                             Supabase schema (src/lib/supabase/database.types.ts is the generated
                             source of truth; types.ts is the app-facing shape mapped from it in
@@ -154,6 +159,10 @@ src/lib/queries.ts          Public read layer, all async, backed by Supabase; RL
                             "not informed" and puts the cover first without duplicating it.
                             getCorretores()/getCorretoresSafe() read the public `brokers` table
                             (RLS "public read brokers") with photoUrl from the broker-photos bucket.
+                            Photos/videos carry width/height (+ video duration and posterUrl); a
+                            listing with no photo uses its first video's poster as coverImage, and
+                            CARD_SELECT fetches property_videos(id, position, poster_path) for the
+                            card's "Vídeo" badge.
 src/lib/search-params.ts    The /imoveis URL contract: parseSearchParams() validates everything
                             (invalid finalidade/tipo/numbers are dropped, never reach queries —
                             they used to 500) and searchHref() writes ONLY what the user chose.
@@ -221,7 +230,7 @@ src/components/ui/          Design-system primitives ported from the handoff's _
                             frame that shows "Foto pendente" in place while the real photo
                             doesn't exist yet (see "Foto pendente" under Decisions).
 src/components/corretor/    CorretorPhoto: round corretor photo (uploaded in Admin → Corretores)
-                            or a dashed "Foto pendente" circle. Used on Home, Empresa and the ficha.
+                            or a dashed "Foto pendente" circle. Used on Empresa and on venda fichas.
 src/components/imovel/      ImovelCard (price first, specs with words, `listOnMobile` row variant
                             used by /imoveis), ImovelPhoto (image or honest "Fotos em breve" tile
                             with the kind's AI line illustration from kind-illustrations.ts — a
@@ -234,7 +243,10 @@ src/components/imovel/      ImovelCard (price first, specs with words, `listOnMo
                             datalist, quartos 1+.., price presets; "sidebar" mode applies on
                             change, "sheet" mode on its button), ImovelGallery (all photos, count
                             badge, native <dialog> lightbox with scroll-snap; see the
-                            ViewTransition note below), BackToSearchLink, ImovelMobilePriceBar
+                            ViewTransition note below — rewritten 28/09 as the adaptive media row,
+                            see "Ficha media layout" below), ImovelVideo (client: poster + big play
+                            button in the purpose color, plays inline with sound on tap, one
+                            <video> element so iOS accepts play()), BackToSearchLink, ImovelMobilePriceBar
                             (sticky, not fixed, so it stops before the footer).
                             Public-facing only — admin equivalents live under components/admin/.
 src/components/home/        HomeSearch (client: explicit "Buscar" button, never navigates on
@@ -243,7 +255,8 @@ src/components/home/        HomeSearch (client: explicit "Buscar" button, never 
                             tile so rows never end with an orphan card), ServicesList (shared
                             by Home and Empresa).
 src/components/layout/      Navbar (mobile menu = native Popover API, no drawer lib), Footer
-                            (grid on the shared Container, with contacts), WhatsAppFab,
+                            (grid on the shared Container, with contacts), ImobiliariaSelo (logo
+                            mark + "Matias Imóveis": the contact for rentals), WhatsAppFab,
                             Container, ProblemState (body of the 404/error pages). Wired into
                             src/app/(site)/layout.tsx — NOT the root layout, see routing note
                             below — so every public page gets them automatically. app/not-found
@@ -401,6 +414,33 @@ From the user, during implementation:
   search illustration (/imoveis with no results, 404/erro) and the ipê street on the /anuncie
   banner, labeled "Imagem ilustrativa". Rules: never an AI or stock image as a listing's photo,
   never AI-generated people, realistic AI images always labeled "Imagem ilustrativa".
+- **Who is the contact** (owner, 28/09): the site's phone/WhatsApp `(62) 3375-3330` is the
+  agency's, never "o corretor" ("Fale direto conosco" on the Home). Locação has no responsible
+  corretor: the ficha shows the agency (ImobiliariaSelo). Only venda listings have their own
+  corretor (broker_id) — the ficha shows that corretor's photo/CRECI and routes WhatsApp/phone to
+  their `contact`. A venda without broker_id falls back to the agency, not to Divino.
+- **Color code: azul = locação, vermelho = venda** (owner, 28/09). Applies to every purpose
+  signal: card/ficha chips, HomeSearch and /imoveis finalidade toggles, the Alugar/Comprar nav
+  items (active text + underline), showcase headings/"Ver todos", the video play button and the
+  card's "Vídeo" badge. Neutral UI (filter chips, "Limpar filtros") stays gray; the brand red
+  remains for generic CTAs (Buscar, Anunciar band) and the other nav items.
+- **Ficha media layout** (owner, 28/09): the video is always the highlight, with a play button
+  in the middle; nothing is stretched, cropped or letterboxed — every photo/video box has the
+  file's own aspect ratio (width/height stored per media — migration
+  `media_dimensions_and_video_poster`: property_photos.width/height, property_videos.width/
+  height/duration_seconds/poster_path, all nullable). Two layouts, decided server-side in
+  `app/(site)/imovel/[slug]/page.tsx`:
+  - first video "em pé" (aspect < 0.9): the video goes big on the left (desktop, sticky, up to
+    760px tall / 520px wide) with title, price, contact card, photo thumbnails ("miniaturas" row)
+    and the rest on the right; on mobile the video comes first at full width (≤72svh);
+  - otherwise: one row on top with video(s) first then photos, all the same height with natural
+    widths (`.midia-row` in globals.css: container-query math, 400–560px tall on desktop, the
+    widest item fills the phone width on mobile), horizontal scroll with arrows when it
+    overflows, centered when it's short.
+  Media uploaded before 28/09 has no stored size: the client corrects the aspect on load, and
+  the admin VideoManager fills size/duration/poster for old videos by itself when that listing
+  is opened in the admin. Posters live in the property-photos bucket (`<id>/poster-*.jpg`)
+  because property-videos only accepts video mime types.
 - **Property photos are public files even for draft (unpublished) listings.** The Storage bucket
   is `public` for simplicity (plain URLs, works with `next/image` with no signed-URL plumbing) —
   RLS still gates the `properties`/`property_photos` *rows*, but a photo's raw storage path

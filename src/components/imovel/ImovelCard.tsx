@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { ViewTransition } from "react";
 import { clsx } from "clsx";
-import { BedDouble, Bath, Car, Ruler, MapPin, Camera, type LucideIcon } from "lucide-react";
+import { BedDouble, Bath, Car, Ruler, MapPin, Camera, Play, type LucideIcon } from "lucide-react";
 import { ImovelPhoto } from "./ImovelPhoto";
 import { formatPriceParts } from "@/lib/format";
 import { imovelSpecs, type SpecKey } from "@/lib/imovel-specs";
@@ -30,7 +30,8 @@ interface ImovelCardProps {
  * número, que ninguém sabia ler — review 28/09). "Ref." fica só na ficha.
  */
 export function ImovelCard({ imovel, listOnMobile = false, preload }: ImovelCardProps) {
-  const { slug, purpose, price, title, neighborhood, coverImage, kind, status, photos } = imovel;
+  const { slug, purpose, price, title, neighborhood, coverImage, kind, status, photos, videos } = imovel;
+  const hasVideo = (videos?.length ?? 0) > 0;
   const { value, suffix } = formatPriceParts(price, purpose);
   const specs = imovelSpecs(imovel).filter((s) => s.key !== "terreno");
   const photoCount = photos?.length ?? 0;
@@ -59,6 +60,18 @@ export function ImovelCard({ imovel, listOnMobile = false, preload }: ImovelCard
           >
             {purpose === "locacao" ? "Aluguel" : "Venda"}
           </span>
+          {hasVideo && (
+            <span
+              className="inline-flex items-center gap-1 rounded-pill bg-white/95 px-2.5 py-1 text-gray-900 shadow-sm"
+              style={{ font: "700 12px/1 var(--font-display)" }}
+            >
+              <Play
+                className={clsx("w-3 h-3", purpose === "locacao" ? "fill-blue-500 text-blue-500" : "fill-red-600 text-red-600")}
+                aria-hidden
+              />
+              Vídeo
+            </span>
+          )}
           {status === "em_negociacao" && (
             <span className="rounded-pill px-2.5 py-1 bg-amber-100 text-gray-900" style={{ font: "700 12px/1 var(--font-display)" }}>
               Em negociação

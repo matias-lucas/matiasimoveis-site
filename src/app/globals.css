@@ -401,6 +401,51 @@ form:has(input[name="purpose"][value="venda"]:checked) .pf-tab-corretor {
   }
 }
 
+/* Fotos e vídeos da ficha (ImovelGallery.tsx): todos com a mesma altura
+   (--h) e cada um com a largura da própria proporção (--ar), sem cortar nem
+   esticar. A altura sai da largura disponível (container query), para não
+   depender de JavaScript nem "pular" ao carregar:
+   - celular: a mídia mais larga ocupa a tela toda, até 72% da altura;
+   - desktop: as mídias preenchem a linha, entre 400 e 560px de altura; se não
+     couberem, a faixa rola para o lado (setas). */
+.midia-wrap {
+  container-type: inline-size;
+}
+.midia-row {
+  --h: min(72svh, calc(100cqw / var(--max-ar)));
+}
+@media (min-width: 1024px) {
+  .midia-row {
+    --h: clamp(400px, calc((100cqw - var(--gaps)) / var(--sum-ar)), min(560px, 70svh));
+  }
+}
+.midia-row--mini {
+  --h: 150px;
+}
+@media (min-width: 1024px) {
+  .midia-row--mini {
+    --h: 190px;
+  }
+}
+.midia-item {
+  flex: none;
+  height: var(--h);
+  width: min(calc(var(--h) * var(--ar)), 100cqw);
+}
+
+/* Vídeo em pé da ficha (ImovelVideo na página do imóvel): no celular ocupa a
+   largura até 72% da altura da tela; no desktop fica grande à esquerda, da
+   altura da tela (até 760px), sempre na proporção do próprio vídeo. */
+.video-em-pe {
+  aspect-ratio: var(--ar);
+  width: min(100%, calc(72svh * var(--ar)));
+}
+@media (min-width: 1024px) {
+  .video-em-pe {
+    width: min(520px, calc(min(100svh - 8rem, 760px) * var(--ar)));
+  }
+}
+
 /* Lightbox da galeria (<dialog> nativo, ver ImovelGallery.tsx). */
 .lightbox::backdrop {
   background: #000;

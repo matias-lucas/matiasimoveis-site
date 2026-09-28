@@ -4,7 +4,13 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { IMOVEL_PHOTOS_BUCKET } from "@/lib/supabase/env";
 
-export async function addPhoto(imovelId: string, storagePath: string, alt: string) {
+/** @param size tamanho original lido no navegador (ver lib/media-upload.ts), para a ficha não esticar a foto. */
+export async function addPhoto(
+  imovelId: string,
+  storagePath: string,
+  alt: string,
+  size?: { width: number; height: number } | null
+) {
   const supabase = await createClient();
 
   const { count } = await supabase
@@ -20,6 +26,7 @@ export async function addPhoto(imovelId: string, storagePath: string, alt: strin
       alt,
       position: count ?? 0,
       is_cover: !count,
+      ...(size ? { width: Math.round(size.width), height: Math.round(size.height) } : {}),
     })
     .select()
     .single();
@@ -29,6 +36,7 @@ export async function addPhoto(imovelId: string, storagePath: string, alt: strin
   revalidatePath(`/admin/imoveis/${imovelId}`);
   revalidatePath("/imoveis");
   revalidatePath("/");
+  revalidatePath("/imovel/[slug]", "page");
   return data;
 }
 
@@ -52,6 +60,7 @@ export async function deletePhoto(photoId: string, imovelId: string, storagePath
   revalidatePath(`/admin/imoveis/${imovelId}`);
   revalidatePath("/imoveis");
   revalidatePath("/");
+  revalidatePath("/imovel/[slug]", "page");
 }
 
 export async function setCoverPhoto(photoId: string, imovelId: string) {
@@ -64,6 +73,7 @@ export async function setCoverPhoto(photoId: string, imovelId: string) {
   revalidatePath(`/admin/imoveis/${imovelId}`);
   revalidatePath("/imoveis");
   revalidatePath("/");
+  revalidatePath("/imovel/[slug]", "page");
 }
 
 export async function movePhoto(imovelId: string, photoId: string, direction: "up" | "down") {

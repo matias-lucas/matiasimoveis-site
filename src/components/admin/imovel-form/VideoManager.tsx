@@ -1,10 +1,12 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { Upload, Trash2, ChevronUp, ChevronDown, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { IMOVEL_VIDEOS_BUCKET, publicStorageUrl } from "@/lib/supabase/env";
-import { addVideo, deleteVideo, moveVideo } from "@/app/admin/imoveis/actions/videos";
+import { IMOVEL_PHOTOS_BUCKET, IMOVEL_VIDEOS_BUCKET, publicStorageUrl } from "@/lib/supabase/env";
+import { addVideo, deleteVideo, moveVideo, setVideoMeta } from "@/app/admin/imoveis/actions/videos";
+import { describeOrientation, readVideoInfo, type VideoInfo } from "@/lib/media-upload";
+import { formatDuration } from "@/lib/media";
 
 const MAX_FILE_BYTES = 100 * 1024 * 1024; // corresponde ao file_size_limit do bucket property-videos
 const ALLOWED_TYPES = ["video/mp4", "video/webm", "video/quicktime"];
@@ -15,6 +17,20 @@ interface Video {
   label: string;
   position: number;
   storage_path: string;
+  width?: number | null;
+  height?: number | null;
+  duration_seconds?: number | null;
+  poster_path?: string | null;
+}
+
+type SupabaseBrowser = ReturnType<typeof createClient>;
+
+/** Sobe a capa (quadro do vídeo) no bucket de fotos; o de vídeos só aceita vídeo. */
+async function uploadPoster(supabase: SupabaseBrowser, imovelId: string, info: VideoInfo): Promise<string | null> {
+  if (!info.poster) return null;
+  const path = `${imovelId}/poster-${crypto.randomUUID()}.jpg`;
+  const { error } = await supabase.storage.from(IMOVEL_PHOTOS_BUCKET).upload(path, info.poster, { contentType: "image/jpeg" });
+  return error ? null : path;
 }
 
 interface VideoManagerProps {
@@ -32,6 +48,43 @@ export function VideoManager({ imovelId, imovelTitle, initialVideos }: VideoMana
   const [, startTransition] = useTransition();
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Vídeos enviados antes de 28/09 não têm tamanho nem capa gravados: completa
+  // sozinho quando o admin abre o imóvel (a ficha e o card passam a usá-los).
+  useEffect(() => {
+    const pending = initialVideos.filter((v) => !v.width || !v.height || !v.poster_path);
+    if (pending.length === 0) return;
+    let cancelled = false;
+    (async () => {
+      const supabase = createClient();
+      for (const video of pending) {
+        const info = await readVideoInfo(video.url);
+        if (cancelled || !info) continue;
+        const posterPath = video.poster_path ?? (await uploadPoster(supabase, imovelId, info));
+        if (cancelled) return;
+        try {
+          await setVideoMeta(video.id, imovelId, {
+            width: info.width,
+            height: info.height,
+            durationSeconds: info.durationSeconds,
+            posterPath,
+          });
+          setVideos((prev) =>
+            prev.map((v) =>
+              v.id === video.id
+                ? { ...v, width: info.width, height: info.height, duration_seconds: info.durationSeconds, poster_path: posterPath }
+                : v
+            )
+          );
+        } catch {
+          // Fica para a próxima vez que o imóvel for aberto.
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [imovelId, initialVideos]);
+
   async function handleFiles(fileList: FileList) {
     setError(null);
     setUploading(true);
@@ -46,6 +99,10 @@ export function VideoManager({ imovelId, imovelTitle, initialVideos }: VideoMana
           throw new Error(`${file.name} tem mais de 100MB — reduza a duração ou a qualidade antes de enviar.`);
         }
 
+        // Formato, duração e capa, lidos aqui no navegador antes de enviar: a
+        // ficha usa para mostrar o vídeo sem tarjas, com o play por cima da capa.
+        const info = await readVideoInfo(file);
+
         const extension = file.name.split(".").pop()?.toLowerCase() || "mp4";
         const path = `${imovelId}/${crypto.randomUUID()}.${extension}`;
         const { error: uploadError } = await supabase.storage
@@ -53,7 +110,13 @@ export function VideoManager({ imovelId, imovelTitle, initialVideos }: VideoMana
           .upload(path, file, { contentType: file.type });
         if (uploadError) throw uploadError;
 
-        const row = await addVideo(imovelId, path, imovelTitle);
+        const posterPath = info ? await uploadPoster(supabase, imovelId, info) : null;
+        const row = await addVideo(imovelId, path, imovelTitle, {
+          width: info?.width,
+          height: info?.height,
+          durationSeconds: info?.durationSeconds,
+          posterPath,
+        });
         setVideos((prev) => [
           ...prev,
           {
@@ -62,6 +125,10 @@ export function VideoManager({ imovelId, imovelTitle, initialVideos }: VideoMana
             label: row.label,
             position: row.position,
             storage_path: row.storage_path,
+            width: row.width,
+            height: row.height,
+            duration_seconds: row.duration_seconds,
+            poster_path: row.poster_path,
           },
         ]);
       } catch (e) {
@@ -127,15 +194,26 @@ export function VideoManager({ imovelId, imovelTitle, initialVideos }: VideoMana
 
       {videos.length === 0 ? (
         <p className="text-text-3" style={{ font: "var(--text-body-sm)" }}>
-          Nenhum vídeo ainda. Os vídeos aparecem na ficha do imóvel, abaixo das fotos.
+          Nenhum vídeo ainda. O primeiro vídeo é o destaque da ficha do imóvel, com um botão de play.
         </p>
       ) : (
         <div className="grid grid-cols-3 gap-3">
           {videos.map((video, index) => (
             <div key={video.id} className="flex flex-col gap-1.5">
               <div className="relative h-[140px] rounded-md overflow-hidden bg-bg-sunken border border-border-1">
-                <video src={video.url} controls preload="metadata" className="w-full h-full object-cover" />
+                <video
+                  src={video.url}
+                  poster={video.poster_path ? publicStorageUrl(video.poster_path) : undefined}
+                  controls
+                  preload="metadata"
+                  className="w-full h-full object-contain bg-black"
+                />
               </div>
+              <p className="text-text-3" style={{ font: "var(--text-caption)" }}>
+                {index === 0 ? "Destaque · " : ""}
+                {describeOrientation(video.width, video.height) ?? "Lendo formato…"}
+                {video.duration_seconds ? ` · ${formatDuration(Number(video.duration_seconds))}` : ""}
+              </p>
               <div className="flex items-center gap-1">
                 <button
                   type="button"

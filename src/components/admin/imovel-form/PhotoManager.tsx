@@ -7,6 +7,7 @@ import { Upload, Star, Trash2, ChevronUp, ChevronDown, Loader2 } from "lucide-re
 import { createClient } from "@/lib/supabase/client";
 import { IMOVEL_PHOTOS_BUCKET, publicStorageUrl } from "@/lib/supabase/env";
 import { compressImage } from "@/lib/image-compression";
+import { readImageSize } from "@/lib/media-upload";
 import { addPhoto, deletePhoto, setCoverPhoto, movePhoto } from "@/app/admin/imoveis/actions/photos";
 
 interface Photo {
@@ -41,13 +42,15 @@ export function PhotoManager({ imovelId, imovelTitle, initialPhotos }: PhotoMana
     for (const rawFile of Array.from(fileList)) {
       try {
         const file = await compressImage(rawFile);
+        // Tamanho real da foto enviada: a ficha usa para não esticar nem cortar.
+        const size = await readImageSize(file);
         const path = `${imovelId}/${crypto.randomUUID()}.jpg`;
         const { error: uploadError } = await supabase.storage
           .from(IMOVEL_PHOTOS_BUCKET)
           .upload(path, file, { contentType: "image/jpeg" });
         if (uploadError) throw uploadError;
 
-        const row = await addPhoto(imovelId, path, imovelTitle);
+        const row = await addPhoto(imovelId, path, imovelTitle, size);
         setPhotos((prev) => [
           ...prev,
           {
