@@ -204,7 +204,9 @@ src/lib/admin/              queries.ts (admin reads: listImoveis, getImovelById,
                             RLS filter for an authenticated admin), labels.ts (ImovelKind/
                             ImovelStatus <-> PT-BR label maps, shared by the admin form and
                             list), auth.ts (username <-> synthetic-e-mail mapping for login —
-                            see "Decisions already made" below).
+                            see "Decisions already made" below), draft-media.ts (the hidden-field
+                            contract for photos/videos picked on "Novo imóvel" before the row
+                            exists — see "Admin create flow" under Decisions).
 src/proxy.ts                Next 16 renamed "middleware" to "proxy" (same mechanism, new file/
                             export name — see the deprecation note this repo's `next dev`
                             appends below). Refreshes the Supabase session cookie on every
@@ -278,11 +280,14 @@ src/components/admin/       AdminHeader (logo + user email + Sair, shared by bot
                               helpers shared between them. AreaM2Input/CityStateField/
                               QuantityStepper are form-only inputs used exclusively inside these
                               panels. PhotoManager/VideoManager/ImovelQuickActions are client
-                              components the edit page (app/admin/imoveis/[id]/page.tsx) renders
-                              and passes into ImovelForm as `photoManager`/`videoManager`/
-                              `quickActions` props — grouped here because they're conceptually
-                              "the imóvel editor", even though the edit page imports them
-                              directly rather than through ImovelForm. index.ts re-exports the
+                              components the pages render and pass into ImovelForm as
+                              `photoManager`/`videoManager`/`quickActions` props (the create page
+                              passes the managers with `draft`, and no quickActions — ImovelForm
+                              then renders CadastroToggles in that spot). SaveButton is the
+                              submit (pending state + holds the submit while a draft upload is
+                              running). Grouped here because they're conceptually "the imóvel
+                              editor", even though the pages import them directly rather than
+                              through ImovelForm. index.ts re-exports the
                               4 pieces external code actually imports (ImovelForm, PhotoManager,
                               VideoManager, ImovelQuickActions); the rest are this folder's
                               private implementation detail — import them only from within it.
@@ -392,12 +397,22 @@ From the user, during implementation:
   converts `username` <-> `username@login.matiasimoveisgo.com.br` at the login form boundary;
   Supabase Auth itself never sees anything but that synthetic e-mail. See "One manual step left"
   above for how this affects creating a user in the dashboard.
-- **Admin create flow is "save basics, then manage photos"**, not one long form: `/admin/imoveis/
-  novo` only collects text/number fields and has no photo uploader, because `property_photos`
-  rows need a `property_id` FK that doesn't exist until the row is inserted. Submitting redirects
-  to `/admin/imoveis/[id]`, which has the full form (now pre-filled) plus PhotoManager. New
-  properties are `published = false` until explicitly published from the list or the edit page —
-  no half-filled listing can go live by accident.
+- **Admin create flow: photos/videos, Destaque and Visível/Oculto on "Novo imóvel" itself** (owner,
+  28/09 — replaced the old "save basics, then manage photos" two-step, which hid the uploaders on
+  the create screen). `property_photos`/`property_videos` rows need a `property_id` FK, so the
+  create page generates the imóvel's UUID up front (`createImovel.bind(null, imovelId)`);
+  PhotoManager/VideoManager in `draft` mode upload the files to Storage under `<imovelId>/…`
+  right away (bucket policies only check the admin role, not the row) and keep the list, order and
+  cover in hidden fields (`lib/admin/draft-media.ts`); createImovel inserts the property with that
+  id, then the media rows, dropping any path outside the imóvel's own folder. Files uploaded on an
+  abandoned create page stay orphaned in Storage (accepted trade-off). A new imóvel defaults to
+  **Visível** (owner: "por padrão estão indo como ocultos"); unchecking it saves it as a draft.
+- **One Destaque control, same spot in create and edit** (owner, 28/09: "duas opções de destaque que
+  não conversam"): the star next to Visível/Oculto under Preço — instant server actions on the edit
+  page (ImovelQuickActions), plain form checkboxes on create (CadastroToggles). The old "Exibir na
+  home" checkbox in the Características tab is gone, and `fieldsFromForm()` no longer writes
+  `featured` (it used to reset the star to false on every "Salvar alterações", since the edit form
+  had no such field). The first video's label in VideoManager is "Principal", not "Destaque".
 - **`SITE.url` = `https://site-matiasimoveis.vercel.app` for now** (owner, 28/09: "por enquanto
   ficaremos só no vercel"). The own domain isn't attached to the Vercel project yet; with it in
   SITE.url, the listing links inside WhatsApp messages, the sitemap and Open Graph pointed away

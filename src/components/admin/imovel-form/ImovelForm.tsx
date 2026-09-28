@@ -1,9 +1,7 @@
 import type { ReactNode } from "react";
-import { Save } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
-import { Button } from "@/components/ui/Button";
 import { KIND_OPTIONS, LEGACY_KIND_LABELS } from "@/lib/admin/labels";
 import type { AdminImovelRow, CorretorRow } from "@/lib/admin/queries";
 import { FormField } from "./FormField";
@@ -11,18 +9,20 @@ import { CityStateField } from "./CityStateField";
 import { CharacteristicsPanel } from "./CharacteristicsPanel";
 import { AnnouncementPanel } from "./AnnouncementPanel";
 import { CorretorPanel } from "./CorretorPanel";
+import { CadastroToggles } from "./CadastroToggles";
+import { SaveButton } from "./SaveButton";
 
 interface ImovelFormProps {
   imovel?: AdminImovelRow;
   corretores: CorretorRow[];
-  /** Renderizado dentro da seção "Fotos, vídeos e descrição" — omitido no
-   *  cadastro, já que as fotos precisam de um property_id salvo. */
+  /** Renderizado na aba "Anúncio". No cadastro vem em modo `draft` (sobe os
+   *  arquivos já com o id que a página gerou; ver lib/admin/draft-media.ts). */
   photoManager?: ReactNode;
-  /** Renderizado logo após photoManager, na mesma seção — omitido no
-   *  cadastro pelo mesmo motivo (vídeos também precisam de um property_id). */
+  /** Renderizado logo após photoManager, na mesma aba — idem. */
   videoManager?: ReactNode;
-  /** Linha de ações rápidas Destacar/Publicar/Excluir, abaixo de "Preço".
-   *  Omitida no cadastro — essas ações dependem de um property_id salvo. */
+  /** Linha de ações instantâneas Destacar/Visível/Excluir da edição, abaixo de
+   *  "Preço". Omitida no cadastro, que mostra no mesmo lugar os mesmos
+   *  controles como campos do formulário (CadastroToggles). */
   quickActions?: ReactNode;
   action: (formData: FormData) => void;
   submitLabel: string;
@@ -102,11 +102,16 @@ export function ImovelForm({ imovel, corretores, photoManager, videoManager, qui
 
         <Input label="Preço (R$)" name="price" type="number" min={0} step="1" defaultValue={imovel?.price} required />
 
-        {quickActions}
+        <div className="flex flex-col gap-1.5">
+          {quickActions ?? <CadastroToggles />}
+          <p className="text-text-3" style={{ font: "var(--text-caption)" }}>
+            {quickActions
+              ? "Estrela = destaque na home. Destaque e Visível/Oculto mudam na hora, sem precisar salvar."
+              : "Estrela = destaque na home. Oculto = salvo fora do site até você torná-lo visível."}
+          </p>
+        </div>
 
-        <Button type="submit" size="lg" className="mt-2 w-full" icon={<Save className="w-5 h-5" />}>
-          {submitLabel}
-        </Button>
+        <SaveButton label={submitLabel} />
       </div>
 
       {/* Coluna de detalhes: abas em vez de seções empilhadas */}

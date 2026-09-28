@@ -3,8 +3,8 @@ import { Textarea } from "@/components/ui/Textarea";
 import { FormField } from "./FormField";
 
 interface AnnouncementPanelProps {
-  /** Renderizado pela página de edição — omitido no cadastro, já que fotos
-   *  precisam de um property_id salvo. */
+  /** Na edição grava na hora; no cadastro vem em modo `draft` (ver
+   *  lib/admin/draft-media.ts). */
   photoManager?: ReactNode;
   /** Idem, para vídeos. */
   videoManager?: ReactNode;

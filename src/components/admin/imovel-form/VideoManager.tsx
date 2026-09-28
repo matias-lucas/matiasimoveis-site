@@ -7,6 +7,7 @@ import { IMOVEL_PHOTOS_BUCKET, IMOVEL_VIDEOS_BUCKET, publicStorageUrl } from "@/
 import { addVideo, deleteVideo, moveVideo, setVideoMeta } from "@/app/admin/imoveis/actions/videos";
 import { describeOrientation, readVideoInfo, type VideoInfo } from "@/lib/media-upload";
 import { formatDuration } from "@/lib/media";
+import { DRAFT_VIDEOS_FIELD, type DraftVideo } from "@/lib/admin/draft-media";
 
 const MAX_FILE_BYTES = 100 * 1024 * 1024; // corresponde ao file_size_limit do bucket property-videos
 const ALLOWED_TYPES = ["video/mp4", "video/webm", "video/quicktime"];
@@ -37,9 +38,12 @@ interface VideoManagerProps {
   imovelId: string;
   imovelTitle: string;
   initialVideos: Video[];
+  /** Cadastro: como no PhotoManager, o arquivo sobe na hora e a linha só é
+   *  gravada pelo createImovel (ver lib/admin/draft-media.ts). */
+  draft?: boolean;
 }
 
-export function VideoManager({ imovelId, imovelTitle, initialVideos }: VideoManagerProps) {
+export function VideoManager({ imovelId, imovelTitle, initialVideos, draft = false }: VideoManagerProps) {
   const [videos, setVideos] = useState<Video[]>(
     [...initialVideos].sort((a, b) => a.position - b.position)
   );
@@ -111,6 +115,24 @@ export function VideoManager({ imovelId, imovelTitle, initialVideos }: VideoMana
         if (uploadError) throw uploadError;
 
         const posterPath = info ? await uploadPoster(supabase, imovelId, info) : null;
+        if (draft) {
+          setVideos((prev) => [
+            ...prev,
+            {
+              id: path,
+              url: publicStorageUrl(path, IMOVEL_VIDEOS_BUCKET),
+              label: "",
+              position: prev.length,
+              storage_path: path,
+              width: info?.width,
+              height: info?.height,
+              duration_seconds: info?.durationSeconds,
+              poster_path: posterPath,
+            },
+          ]);
+          continue;
+        }
+
         const row = await addVideo(imovelId, path, imovelTitle, {
           width: info?.width,
           height: info?.height,
@@ -142,6 +164,12 @@ export function VideoManager({ imovelId, imovelTitle, initialVideos }: VideoMana
 
   function handleDelete(video: Video) {
     setVideos((prev) => prev.filter((v) => v.id !== video.id));
+    if (draft) {
+      const supabase = createClient();
+      supabase.storage.from(IMOVEL_VIDEOS_BUCKET).remove([video.storage_path]);
+      if (video.poster_path) supabase.storage.from(IMOVEL_PHOTOS_BUCKET).remove([video.poster_path]);
+      return;
+    }
     startTransition(() => {
       deleteVideo(video.id, imovelId, video.storage_path);
     });
@@ -156,13 +184,24 @@ export function VideoManager({ imovelId, imovelTitle, initialVideos }: VideoMana
       [next[index], next[swapWith]] = [next[swapWith], next[index]];
       return next;
     });
+    if (draft) return;
     startTransition(() => {
       moveVideo(imovelId, video.id, direction);
     });
   }
 
+  const draftValue: DraftVideo[] = videos.map((v) => ({
+    path: v.storage_path,
+    width: v.width,
+    height: v.height,
+    durationSeconds: v.duration_seconds,
+    posterPath: v.poster_path,
+  }));
+
   return (
     <div className="flex flex-col gap-4 bg-bg-surface border border-border-1 rounded-lg p-7">
+      {draft && <input type="hidden" name={DRAFT_VIDEOS_FIELD} value={JSON.stringify(draftValue)} />}
+      {draft && uploading && <span hidden data-media-uploading />}
       <div className="flex items-center justify-between">
         <h2 className="text-text-1" style={{ font: "var(--text-display-sm)", fontFamily: "var(--font-display)" }}>
           Vídeos
@@ -194,7 +233,7 @@ export function VideoManager({ imovelId, imovelTitle, initialVideos }: VideoMana
 
       {videos.length === 0 ? (
         <p className="text-text-3" style={{ font: "var(--text-body-sm)" }}>
-          Nenhum vídeo ainda. O primeiro vídeo é o destaque da ficha do imóvel, com um botão de play.
+          Nenhum vídeo ainda. O primeiro vídeo é o principal da ficha do imóvel, em tamanho grande com um botão de play.
         </p>
       ) : (
         <div className="grid grid-cols-3 gap-3">
@@ -210,7 +249,7 @@ export function VideoManager({ imovelId, imovelTitle, initialVideos }: VideoMana
                 />
               </div>
               <p className="text-text-3" style={{ font: "var(--text-caption)" }}>
-                {index === 0 ? "Destaque · " : ""}
+                {index === 0 ? "Principal · " : ""}
                 {describeOrientation(video.width, video.height) ?? "Lendo formato…"}
                 {video.duration_seconds ? ` · ${formatDuration(Number(video.duration_seconds))}` : ""}
               </p>

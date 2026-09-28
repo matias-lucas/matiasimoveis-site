@@ -102,24 +102,10 @@ export function CharacteristicsPanel({ imovel }: CharacteristicsPanelProps) {
         </span>
       </FormField>
 
+      {/* O destaque na home fica só na coluna da esquerda (estrela ao lado de
+          Visível/Oculto), no cadastro e na edição — ver CadastroToggles. */}
       <SubLabel>Situação</SubLabel>
-      <div className={`grid gap-4 ${imovel ? "grid-cols-1" : "grid-cols-2"}`}>
-        <Select label="Situação" name="status" options={STATUS_OPTIONS} defaultValue={imovel?.status ?? "disponivel"} />
-        {/* Ao editar um imóvel já salvo, o "featured" é controlado pela
-            ação instantânea Destacar em quickActions — evita dois
-            controles para o mesmo campo. No cadastro ainda não há
-            property_id para essa ação, então mantém este checkbox. */}
-        {!imovel && (
-          <FormField>
-            <span className="text-text-1" style={{ font: "var(--text-label)" }}>
-              Destaque
-            </span>
-            <div className="h-11 flex items-center">
-              <Checkbox label="Exibir na home" name="featured" />
-            </div>
-          </FormField>
-        )}
-      </div>
+      <Select label="Situação" name="status" options={STATUS_OPTIONS} defaultValue={imovel?.status ?? "disponivel"} />
     </>
   );
 }

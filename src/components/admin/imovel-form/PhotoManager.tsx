@@ -9,6 +9,7 @@ import { IMOVEL_PHOTOS_BUCKET, publicStorageUrl } from "@/lib/supabase/env";
 import { compressImage } from "@/lib/image-compression";
 import { readImageSize } from "@/lib/media-upload";
 import { addPhoto, deletePhoto, setCoverPhoto, movePhoto } from "@/app/admin/imoveis/actions/photos";
+import { DRAFT_PHOTOS_FIELD, type DraftPhoto } from "@/lib/admin/draft-media";
 
 interface Photo {
   id: string;
@@ -17,15 +18,21 @@ interface Photo {
   is_cover: boolean;
   position: number;
   storage_path: string;
+  width?: number | null;
+  height?: number | null;
 }
 
 interface PhotoManagerProps {
   imovelId: string;
   imovelTitle: string;
   initialPhotos: Photo[];
+  /** Cadastro: o imóvel ainda não existe. Os arquivos sobem na hora, mas as
+   *  linhas só são gravadas pelo createImovel, a partir de um campo oculto
+   *  (ver lib/admin/draft-media.ts) — capa e ordem ficam só aqui até salvar. */
+  draft?: boolean;
 }
 
-export function PhotoManager({ imovelId, imovelTitle, initialPhotos }: PhotoManagerProps) {
+export function PhotoManager({ imovelId, imovelTitle, initialPhotos, draft = false }: PhotoManagerProps) {
   const [photos, setPhotos] = useState<Photo[]>(
     [...initialPhotos].sort((a, b) => a.position - b.position)
   );
@@ -50,6 +57,23 @@ export function PhotoManager({ imovelId, imovelTitle, initialPhotos }: PhotoMana
           .upload(path, file, { contentType: "image/jpeg" });
         if (uploadError) throw uploadError;
 
+        if (draft) {
+          setPhotos((prev) => [
+            ...prev,
+            {
+              id: path,
+              url: publicStorageUrl(path),
+              alt: "",
+              is_cover: !prev.some((p) => p.is_cover),
+              position: prev.length,
+              storage_path: path,
+              width: size?.width,
+              height: size?.height,
+            },
+          ]);
+          continue;
+        }
+
         const row = await addPhoto(imovelId, path, imovelTitle, size);
         setPhotos((prev) => [
           ...prev,
@@ -72,7 +96,15 @@ export function PhotoManager({ imovelId, imovelTitle, initialPhotos }: PhotoMana
   }
 
   function handleDelete(photo: Photo) {
-    setPhotos((prev) => prev.filter((p) => p.id !== photo.id));
+    // Se era a capa, a primeira que sobrar vira capa (o deletePhoto faz o mesmo no banco).
+    setPhotos((prev) => {
+      const rest = prev.filter((p) => p.id !== photo.id);
+      return photo.is_cover && rest.length > 0 ? rest.map((p, i) => ({ ...p, is_cover: i === 0 })) : rest;
+    });
+    if (draft) {
+      createClient().storage.from(IMOVEL_PHOTOS_BUCKET).remove([photo.storage_path]);
+      return;
+    }
     startTransition(() => {
       deletePhoto(photo.id, imovelId, photo.storage_path);
     });
@@ -80,6 +112,7 @@ export function PhotoManager({ imovelId, imovelTitle, initialPhotos }: PhotoMana
 
   function handleSetCover(photo: Photo) {
     setPhotos((prev) => prev.map((p) => ({ ...p, is_cover: p.id === photo.id })));
+    if (draft) return;
     startTransition(() => {
       setCoverPhoto(photo.id, imovelId);
     });
@@ -94,13 +127,23 @@ export function PhotoManager({ imovelId, imovelTitle, initialPhotos }: PhotoMana
       [next[index], next[swapWith]] = [next[swapWith], next[index]];
       return next;
     });
+    if (draft) return;
     startTransition(() => {
       movePhoto(imovelId, photo.id, direction);
     });
   }
 
+  const draftValue: DraftPhoto[] = photos.map((p) => ({
+    path: p.storage_path,
+    width: p.width,
+    height: p.height,
+    isCover: p.is_cover,
+  }));
+
   return (
     <div className="flex flex-col gap-4 bg-bg-surface border border-border-1 rounded-lg p-7">
+      {draft && <input type="hidden" name={DRAFT_PHOTOS_FIELD} value={JSON.stringify(draftValue)} />}
+      {draft && uploading && <span hidden data-media-uploading />}
       <div className="flex items-center justify-between">
         <h2 className="text-text-1" style={{ font: "var(--text-display-sm)", fontFamily: "var(--font-display)" }}>
           Fotos
