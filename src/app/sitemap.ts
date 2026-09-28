@@ -8,7 +8,8 @@ import { SITE } from "@/lib/site";
 export const revalidate = 60;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const slugs = await getAllPublishedSlugs();
+  // Banco fora do ar não pode derrubar o build: sitemap só com as páginas fixas.
+  const slugs = await getAllPublishedSlugs().catch(() => [] as string[]);
 
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: SITE.url, changeFrequency: "daily", priority: 1 },

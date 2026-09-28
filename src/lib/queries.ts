@@ -2,32 +2,53 @@ import { createPublicClient } from "./supabase/public";
 import { publicStorageUrl, IMOVEL_VIDEOS_BUCKET } from "./supabase/env";
 import type { Database } from "./supabase/database.types";
 import type { Imovel, ImovelKind, ImovelPurpose } from "./types";
+import { resolveKindFilter, searchKindOf } from "./imovel-kind-categories";
+import { PAGE_SIZE, type SearchFilters } from "./search-params";
+import { normalizeText } from "./format";
 
 /**
  * Camada de leitura pública, apoiada no Supabase (RLS restringe estas
  * consultas a linhas com `published = true` — ver as políticas "public
- * read..." aplicadas via as migrations do Supabase MCP). Substitui o antigo
- * mock-properties.ts; os call sites não precisaram mudar de formato, só
- * passaram a usar `await`.
+ * read..." aplicadas via as migrations do Supabase MCP).
+ *
+ * Listagens (Home, /imoveis, parecidos) usam CARD_SELECT, só com o que o card
+ * mostra: antes cada card trazia descrição, vídeos e corretor, e /imoveis
+ * mandava tudo isso para o navegador sem paginação (review 28/09).
  */
 
 type ImovelRow = Database["public"]["Tables"]["properties"]["Row"];
 type PhotoRow = Database["public"]["Tables"]["property_photos"]["Row"];
 type VideoRow = Database["public"]["Tables"]["property_videos"]["Row"];
 type CorretorRow = Database["public"]["Tables"]["brokers"]["Row"];
-type RowWithPhotos = ImovelRow & {
-  property_photos: PhotoRow[];
-  property_videos: VideoRow[];
-  brokers: CorretorRow | null;
-};
+type RowWithRelations = Partial<ImovelRow> &
+  Pick<ImovelRow, "id" | "slug" | "ref" | "purpose" | "kind" | "title" | "neighborhood" | "city" | "state" | "price"> & {
+    property_photos?: Pick<PhotoRow, "id" | "storage_path" | "alt" | "is_cover" | "position">[];
+    property_videos?: Pick<VideoRow, "id" | "storage_path" | "label" | "position">[];
+    brokers?: Pick<CorretorRow, "id" | "name" | "creci" | "contact"> | null;
+  };
 
-const IMOVEL_SELECT =
+const FULL_SELECT =
   "*, property_photos(id, storage_path, alt, is_cover, position), property_videos(id, storage_path, label, position), brokers(id, name, creci, contact)";
 
-function mapRow(row: RowWithPhotos): Imovel {
-  const photos = [...row.property_photos].sort((a, b) => a.position - b.position);
+const CARD_SELECT =
+  "id, slug, ref, purpose, kind, kind_other, title, neighborhood, city, state, price, bedrooms, bathrooms, parking, parking_motorcycle_only, area_m2, lot_area_m2, status, featured, published_at, property_photos(id, storage_path, alt, is_cover, position)";
+
+/** Vendidos/alugados saem das listagens; a ficha continua acessível pelo link. */
+const HIDDEN_STATUSES = "(vendido,alugado)";
+
+function positiveOrUndefined(value: number | string | null | undefined): number | undefined {
+  if (value == null) return undefined;
+  const n = Number(value);
+  return Number.isFinite(n) && n > 0 ? n : undefined;
+}
+
+function mapRow(row: RowWithRelations): Imovel {
+  const photos = [...(row.property_photos ?? [])].sort((a, b) => a.position - b.position);
+  // Capa primeiro e sem repetir: antes, sem nenhuma foto marcada como capa, a
+  // primeira aparecia duas vezes na galeria (capa + miniatura).
   const cover = photos.find((p) => p.is_cover) ?? photos[0];
-  const videos = [...row.property_videos].sort((a, b) => a.position - b.position);
+  const ordered = cover ? [cover, ...photos.filter((p) => p !== cover)] : photos;
+  const videos = [...(row.property_videos ?? [])].sort((a, b) => a.position - b.position);
 
   return {
     id: row.id,
@@ -37,7 +58,7 @@ function mapRow(row: RowWithPhotos): Imovel {
     kind: row.kind,
     kindOther: row.kind_other ?? undefined,
     title: row.title,
-    description: row.description,
+    description: row.description ?? "",
     neighborhood: row.neighborhood,
     city: row.city,
     state: row.state,
@@ -45,20 +66,21 @@ function mapRow(row: RowWithPhotos): Imovel {
     bedrooms: row.bedrooms ?? undefined,
     bathrooms: row.bathrooms ?? undefined,
     parking: row.parking ?? undefined,
-    parkingMotorcycleOnly: row.parking_motorcycle_only,
-    areaM2: Number(row.area_m2 ?? 0),
-    lotAreaM2: row.lot_area_m2 != null ? Number(row.lot_area_m2) : undefined,
-    features: row.features.length ? row.features : undefined,
+    parkingMotorcycleOnly: row.parking_motorcycle_only ?? false,
+    // 0/nulo = não informado (antes aparecia "0m²" no card, na ficha e no JSON-LD).
+    areaM2: positiveOrUndefined(row.area_m2),
+    lotAreaM2: positiveOrUndefined(row.lot_area_m2),
+    features: row.features?.length ? row.features : undefined,
     status: row.status,
     featured: row.featured,
     corretor: row.brokers
       ? { id: row.brokers.id, name: row.brokers.name, creci: row.brokers.creci, contact: row.brokers.contact }
       : undefined,
-    photos: photos.map((p) => ({
+    photos: ordered.map((p) => ({
       id: p.id,
       url: publicStorageUrl(p.storage_path),
       alt: p.alt,
-      isCover: p.is_cover,
+      isCover: p === cover,
       position: p.position,
     })),
     coverImage: cover ? publicStorageUrl(cover.storage_path) : undefined,
@@ -71,31 +93,54 @@ function mapRow(row: RowWithPhotos): Imovel {
   };
 }
 
-export async function getFeaturedImoveis(): Promise<Imovel[]> {
+/** Vitrine da Home por finalidade: destaques primeiro, depois os mais recentes. */
+export async function getHomeImoveis(purpose: ImovelPurpose, limit = 4): Promise<Imovel[]> {
   const supabase = createPublicClient();
   const { data, error } = await supabase
     .from("properties")
-    .select(IMOVEL_SELECT)
+    .select(CARD_SELECT)
     .eq("published", true)
-    .eq("featured", true)
-    .order("published_at", { ascending: false })
-    .limit(4);
+    .eq("purpose", purpose)
+    .not("status", "in", HIDDEN_STATUSES)
+    .order("featured", { ascending: false })
+    .order("published_at", { ascending: false, nullsFirst: false })
+    .limit(limit);
 
   if (error) throw error;
-  return (data ?? []).map((row) => mapRow(row as RowWithPhotos));
+  return (data ?? []).map((row) => mapRow(row as RowWithRelations));
 }
 
 export async function getImovelBySlug(slug: string): Promise<Imovel | undefined> {
   const supabase = createPublicClient();
   const { data, error } = await supabase
     .from("properties")
-    .select(IMOVEL_SELECT)
+    .select(FULL_SELECT)
     .eq("slug", slug)
     .eq("published", true)
     .maybeSingle();
 
   if (error) throw error;
-  return data ? mapRow(data as RowWithPhotos) : undefined;
+  return data ? mapRow(data as RowWithRelations) : undefined;
+}
+
+/** "Imóveis parecidos" na ficha: mesma finalidade, mesmo tipo primeiro. */
+export async function getSimilarImoveis(imovel: Imovel, limit = 4): Promise<Imovel[]> {
+  const supabase = createPublicClient();
+  const { data, error } = await supabase
+    .from("properties")
+    .select(CARD_SELECT)
+    .eq("published", true)
+    .eq("purpose", imovel.purpose)
+    .neq("id", imovel.id)
+    .not("status", "in", HIDDEN_STATUSES)
+    .order("published_at", { ascending: false, nullsFirst: false })
+    .limit(12);
+
+  if (error) throw error;
+  const rows = (data ?? []).map((row) => mapRow(row as RowWithRelations));
+  const sameKind = rows.filter((r) => searchKindOf(r.kind) === searchKindOf(imovel.kind));
+  const others = rows.filter((r) => searchKindOf(r.kind) !== searchKindOf(imovel.kind));
+  return [...sameKind, ...others].slice(0, limit);
 }
 
 export async function getAllPublishedSlugs(): Promise<string[]> {
@@ -105,98 +150,103 @@ export async function getAllPublishedSlugs(): Promise<string[]> {
   return (data ?? []).map((row) => row.slug);
 }
 
-export interface ImovelFilters {
-  purpose?: ImovelPurpose;
-  neighborhood?: string;
-  // Lista de kinds quando o filtro "Tipo" é uma categoria (Residencial/
-  // Comercial/Lotes) — ver resolveKindFilter() em lib/imovel-kind-categories.
-  kind?: ImovelKind | ImovelKind[];
-  minBedrooms?: number;
-  maxBedrooms?: number;
-  minPrice?: number;
-  maxPrice?: number;
-}
+export type KindCounts = Partial<Record<ImovelKind, number>>;
 
-export interface ImovelRange {
-  minPrice: number;
-  maxPrice: number;
-  minBedrooms: number;
-  maxBedrooms: number;
-}
-
-export interface ImovelRangesByPurpose {
-  locacao: ImovelRange;
-  venda: ImovelRange;
-}
-
-// Usado quando não há nenhum imóvel publicado para a finalidade (catálogo
-// vazio ainda) — sem isso min/max ficariam os dois em 0 e o slider de faixa
-// dupla teria largura zero.
-const FALLBACK_RANGE: ImovelRange = { minPrice: 0, maxPrice: 5000, minBedrooms: 0, maxBedrooms: 5 };
-
-function computeRange(rows: { price: number; bedrooms: number | null }[]): ImovelRange {
-  if (rows.length === 0) return FALLBACK_RANGE;
-
-  const prices = rows.map((row) => row.price);
-  const bedrooms = rows.map((row) => row.bedrooms).filter((value): value is number => value != null);
-
-  const minPrice = Math.min(...prices);
-  const maxPrice = Math.max(...prices);
-  const minBedrooms = bedrooms.length ? Math.min(...bedrooms) : FALLBACK_RANGE.minBedrooms;
-  const maxBedrooms = bedrooms.length ? Math.max(...bedrooms) : FALLBACK_RANGE.maxBedrooms;
-
-  return {
-    minPrice,
-    // maxPrice === minPrice (só um imóvel, ou todos com o mesmo preço)
-    // também deixaria o slider com largura zero.
-    maxPrice: maxPrice > minPrice ? maxPrice : minPrice + 500,
-    minBedrooms,
-    maxBedrooms: maxBedrooms > minBedrooms ? maxBedrooms : minBedrooms + 1,
-  };
+export interface CatalogSummary {
+  total: number;
+  byPurpose: Record<ImovelPurpose, number>;
+  /** Contagem por tipo: geral e por finalidade (sobrado conta como casa). */
+  kinds: { all: KindCounts; locacao: KindCounts; venda: KindCounts };
+  /** Bairros com anúncios, do que tem mais para o que tem menos. */
+  neighborhoods: { name: string; count: number }[];
 }
 
 /**
- * Menor/maior preço e nº de quartos entre os imóveis publicados, por
- * finalidade — usado para calibrar os extremos do slider de faixa dupla do
- * SearchFilterBar em vez de limites fixos arbitrários.
+ * Resumo leve do catálogo (3 colunas por anúncio) para os atalhos com
+ * contagem ("Casas (3)"), os chips de tipo e as sugestões de bairro.
+ * Substitui getImovelRanges(), que existia só para calibrar os sliders.
  */
-export async function getImovelRanges(): Promise<ImovelRangesByPurpose> {
+export async function getCatalogSummary(): Promise<CatalogSummary> {
   const supabase = createPublicClient();
-  const { data, error } = await supabase.from("properties").select("purpose, price, bedrooms").eq("published", true);
+  const { data, error } = await supabase
+    .from("properties")
+    .select("purpose, kind, neighborhood")
+    .eq("published", true)
+    .not("status", "in", HIDDEN_STATUSES);
 
   if (error) throw error;
 
-  const rows = data ?? [];
-  const byPurpose = (purpose: ImovelPurpose) =>
-    rows
-      .filter((row) => row.purpose === purpose)
-      .map((row) => ({ price: Number(row.price), bedrooms: row.bedrooms }));
-
-  return {
-    locacao: computeRange(byPurpose("locacao")),
-    venda: computeRange(byPurpose("venda")),
+  const summary: CatalogSummary = {
+    total: 0,
+    byPurpose: { locacao: 0, venda: 0 },
+    kinds: { all: {}, locacao: {}, venda: {} },
+    neighborhoods: [],
   };
+  const hoods = new Map<string, number>();
+  for (const row of data ?? []) {
+    const kind = searchKindOf(row.kind);
+    summary.total += 1;
+    summary.byPurpose[row.purpose] += 1;
+    summary.kinds.all[kind] = (summary.kinds.all[kind] ?? 0) + 1;
+    summary.kinds[row.purpose][kind] = (summary.kinds[row.purpose][kind] ?? 0) + 1;
+    const hood = row.neighborhood.trim();
+    if (hood) hoods.set(hood, (hoods.get(hood) ?? 0) + 1);
+  }
+  summary.neighborhoods = [...hoods.entries()]
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, "pt-BR"));
+  return summary;
 }
 
-export async function searchImoveis(filters: ImovelFilters): Promise<Imovel[]> {
+export interface SearchResult {
+  items: Imovel[];
+  total: number;
+}
+
+/**
+ * @param knownNeighborhoods bairros existentes (de getCatalogSummary): o
+ * bairro digitado é comparado sem acento em JS e vira um filtro exato
+ * `.in()`, já que o banco não tem a extensão unaccent.
+ */
+export async function searchImoveis(filters: SearchFilters, knownNeighborhoods: string[] = []): Promise<SearchResult> {
   const supabase = createPublicClient();
   let query = supabase
     .from("properties")
-    .select(IMOVEL_SELECT)
+    .select(CARD_SELECT, { count: "exact" })
     .eq("published", true)
-    .order("published_at", { ascending: false });
+    .not("status", "in", HIDDEN_STATUSES);
 
   if (filters.purpose) query = query.eq("purpose", filters.purpose);
-  if (filters.neighborhood) query = query.ilike("neighborhood", `%${filters.neighborhood}%`);
-  if (filters.kind) {
-    query = Array.isArray(filters.kind) ? query.in("kind", filters.kind) : query.eq("kind", filters.kind);
-  }
-  if (filters.minBedrooms) query = query.gte("bedrooms", filters.minBedrooms);
-  if (filters.maxBedrooms != null) query = query.lte("bedrooms", filters.maxBedrooms);
-  if (filters.minPrice != null) query = query.gte("price", filters.minPrice);
-  if (filters.maxPrice != null) query = query.lte("price", filters.maxPrice);
 
-  const { data, error } = await query;
-  if (error) throw error;
-  return (data ?? []).map((row) => mapRow(row as RowWithPhotos));
+  if (filters.bairro) {
+    const needle = normalizeText(filters.bairro);
+    const matches = knownNeighborhoods.filter((name) => normalizeText(name).includes(needle));
+    if (matches.length === 0) return { items: [], total: 0 };
+    query = query.in("neighborhood", matches);
+  }
+
+  const kind = resolveKindFilter(filters.tipo);
+  if (kind) query = Array.isArray(kind) ? query.in("kind", kind) : query.eq("kind", kind);
+
+  // Só filtra quartos quando o usuário pediu: antes o filtro ia sempre na URL
+  // e tirava da lista imóveis sem quartos (lote, galpão, sala).
+  if (filters.quartos) query = query.gte("bedrooms", filters.quartos);
+  if (filters.precoMin) query = query.gte("price", filters.precoMin);
+  if (filters.precoMax) query = query.lte("price", filters.precoMax);
+
+  if (filters.ordem === "menor-preco") query = query.order("price", { ascending: true });
+  else if (filters.ordem === "maior-preco") query = query.order("price", { ascending: false });
+  else query = query.order("published_at", { ascending: false, nullsFirst: false });
+  query = query.order("id", { ascending: true });
+
+  const from = (filters.pagina - 1) * PAGE_SIZE;
+  query = query.range(from, from + PAGE_SIZE - 1);
+
+  const { data, error, count } = await query;
+  if (error) {
+    // Página além do fim (ex.: ?pagina=99) responde 416 no PostgREST.
+    if (error.code === "PGRST103") return { items: [], total: count ?? 0 };
+    throw error;
+  }
+  return { items: (data ?? []).map((row) => mapRow(row as RowWithRelations)), total: count ?? 0 };
 }

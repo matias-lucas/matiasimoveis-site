@@ -9,7 +9,7 @@ export type ImovelKindCategory = "residencial" | "comercial" | "lotes";
  * por tipo específico) — essas categorias só existem como atalho.
  */
 export const KIND_CATEGORIES: { value: ImovelKindCategory; label: string; kinds: ImovelKind[] }[] = [
-  { value: "residencial", label: "Residencial", kinds: ["casa", "kitnet", "apartamento"] },
+  { value: "residencial", label: "Residencial", kinds: ["casa", "sobrado", "kitnet", "apartamento"] },
   { value: "comercial", label: "Comercial", kinds: ["sala_comercial", "galpao"] },
   { value: "lotes", label: "Lotes", kinds: ["lote"] },
 ];
@@ -23,8 +23,37 @@ export const KIND_CATEGORIES: { value: ImovelKindCategory; label: string; kinds:
 export function resolveKindFilter(tipo?: string): ImovelKind | ImovelKind[] | undefined {
   if (!tipo) return undefined;
   const category = KIND_CATEGORIES.find((c) => c.value === tipo);
-  return category ? category.kinds : (tipo as ImovelKind);
+  if (category) return category.kinds;
+  // "sobrado" saiu das opções mas ainda existe no enum/em linhas antigas:
+  // quem filtra por Casa espera ver sobrados também.
+  if (tipo === "casa") return ["casa", "sobrado"];
+  return tipo as ImovelKind;
 }
+
+/** Tipo usado para contagem/agrupamento na busca pública (sobrado conta como casa). */
+export function searchKindOf(kind: ImovelKind): ImovelKind {
+  return kind === "sobrado" ? "casa" : kind;
+}
+
+/** Valores aceitos no parâmetro `tipo` da URL (tipos + categorias antigas). */
+export function isValidTipo(value: string): boolean {
+  return KIND_OPTIONS.some((o) => o.value === value) || KIND_CATEGORIES.some((c) => c.value === value);
+}
+
+/**
+ * Uma única linha de tipos na busca pública, com rótulo no plural para os
+ * atalhos da Home ("Casas (3)"). Substitui as duas linhas redundantes
+ * Residencial/Comercial/Lotes + Casa/Kitnet/.../Lote (review 28/09).
+ */
+export const SEARCH_KINDS: { value: ImovelKind; label: string; plural: string }[] = [
+  { value: "casa", label: "Casa", plural: "Casas" },
+  { value: "apartamento", label: "Apartamento", plural: "Apartamentos" },
+  { value: "kitnet", label: "Kitnet", plural: "Kitnets" },
+  { value: "lote", label: "Lote", plural: "Lotes" },
+  { value: "sala_comercial", label: "Sala comercial", plural: "Salas comerciais" },
+  { value: "galpao", label: "Galpão", plural: "Galpões" },
+  { value: "outros", label: "Outros", plural: "Outros" },
+];
 
 /**
  * Rótulos em português por tipo de imóvel — usados no filtro de busca
@@ -65,3 +94,7 @@ export const KIND_LABELS: Record<ImovelKind, string> = {
   ...Object.fromEntries(KIND_OPTIONS.map((o) => [o.value, o.label])),
   ...LEGACY_KIND_LABELS,
 } as Record<ImovelKind, string>;
+
+/** Rótulos para o site público: igual a KIND_LABELS, mas sem o sufixo
+ * "(descontinuado)" que só faz sentido no admin. */
+export const PUBLIC_KIND_LABELS: Record<ImovelKind, string> = { ...KIND_LABELS, sobrado: "Sobrado" };

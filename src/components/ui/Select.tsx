@@ -190,7 +190,11 @@ export function Select({
         name={name}
         required={required}
         disabled={disabled}
-        defaultValue={defaultValue}
+        // Com placeholder e sem valor, começa em "" (o placeholder). Sem isso
+        // o navegador escolhia sozinho a 1ª opção válida e o formulário do
+        // Anuncie chegava como "Vender"/"Casa" sem a pessoa ter escolhido — e
+        // a validação "Escolha uma opção" nunca disparava (review 28/09).
+        defaultValue={defaultValue ?? (placeholder && value === undefined ? "" : undefined)}
         value={value}
         onChange={onChange}
         onBlur={onBlur}

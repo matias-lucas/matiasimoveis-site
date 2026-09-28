@@ -26,6 +26,15 @@ at the top of that file).
 
 ## Read these first
 
+- **`docs/review/REVIEW-2026-09-28.md`** — raw full-site review (design,
+  bugs, measured alignment, performance, AI-asset plan) requested by the
+  owner on 2026-09-28. The owner explicitly asked that this review
+  **ignore the design principles recorded in the .md files below**, which
+  they feel stagnated the design: goals are an eye-catching site, easy to
+  read, where a customer finds the property in seconds. Where this review
+  conflicts with PRODUCT.md/DESIGN.md/REDESIGN-* on visual or UX matters,
+  treat the older docs as open to change (confirm direction with the
+  owner via the review's "Perguntas em aberto").
 - **`docs/REDESIGN-PLANO.md`** — master plan for the visual redesign
   currently underway on branch `redesign/editorial`: what already
   existed, the design direction, which tool enters at which phase, and
@@ -126,16 +135,33 @@ src/lib/types.ts            Imovel/Corretor/ImovelPhotoRecord shape — kept in 
                             ImovelPurpose/Kind/Status) — see "Domain vocabulary" below; the
                             underlying Supabase tables/columns stay English (properties, brokers,
                             broker_id...), since renaming those needs a live migration.
-src/lib/queries.ts          Public read layer — searchImoveis()/getImovelBySlug()/
-                            getFeaturedImoveis()/getAllPublishedSlugs(), all async, backed by
-                            Supabase (replaced mock-properties.ts wholesale; call sites just
-                            gained `await`). RLS restricts these to `published = true` rows.
-src/lib/format.ts           formatPrice/formatArea/pluralize/slugify — small display/string
-                            helpers with no Supabase dependency, used across app/ and components/.
-src/lib/imovel-kind-categories.ts KIND_CATEGORIES (Residencial/Comercial/Lotes — the first row of
-                            "Tipo" buttons in SearchFilterBar) and resolveKindFilter(), which
-                            turns the URL's `tipo` value into either a single ImovelKind or the
-                            category's full list for searchImoveis()'s `.in()` filter.
+src/lib/queries.ts          Public read layer, all async, backed by Supabase; RLS restricts to
+                            `published = true`. Listings (getHomeImoveis, searchImoveis,
+                            getSimilarImoveis) use a slim CARD_SELECT and hide vendido/alugado;
+                            searchImoveis() paginates (PAGE_SIZE, `.range()` + exact count) and
+                            sorts. getCatalogSummary() is one light query (purpose/kind/
+                            neighborhood) feeding the per-type counts ("Casas 3"), the neighborhood
+                            suggestions and the accent-insensitive bairro match (the DB has no
+                            `unaccent`, so the typed bairro is matched in JS against the known
+                            names and becomes an exact `.in()`). getImovelBySlug() uses the full
+                            select (photos, videos, corretor). mapRow() treats area 0/null as
+                            "not informed" and puts the cover first without duplicating it.
+src/lib/search-params.ts    The /imoveis URL contract: parseSearchParams() validates everything
+                            (invalid finalidade/tipo/numbers are dropped, never reach queries —
+                            they used to 500) and searchHref() writes ONLY what the user chose.
+                            Quartos is a minimum (1+..4+), price uses PRICE_OPTIONS presets per
+                            finalidade. Legacy params (quartos_min, category tipo values) still
+                            parse so old links keep working.
+src/lib/imovel-specs.ts     imovelSpecs(): the quartos/banheiros/vagas/área/terreno list shared by
+                            card and ficha, with zeros/nulls dropped (lote/galpão have 0 in the DB).
+src/lib/format.ts           formatPrice/formatPriceParts/formatArea/pluralize/slugify/
+                            normalizeText — small display/string helpers with no Supabase
+                            dependency (safe to import from client components).
+src/lib/imovel-kind-categories.ts SEARCH_KINDS (the single row of types in the public search, with
+                            plural labels), KIND_OPTIONS/KIND_LABELS (admin), PUBLIC_KIND_LABELS,
+                            searchKindOf() (sobrado counts as casa), isValidTipo(), and
+                            resolveKindFilter() (casa → [casa, sobrado]; legacy categories
+                            residencial/comercial/lotes → their kind lists).
 src/lib/whatsapp.ts         buildWhatsAppUrl() + the 3 message builders (imovelInquiryMessage,
                             sellInquiryMessage, contactInquiryMessage). All lead capture goes
                             through here.
@@ -184,19 +210,31 @@ src/components/ui/          Design-system primitives ported from the handoff's _
                             flows) and FieldError (react-hook-form error line, used by every
                             form). These stay English-named — generic UI vocabulary, not this
                             business's domain — see "Domain vocabulary" below.
-src/components/imovel/      ImovelCard, ImovelCardSkeleton (same footprint as ImovelCard, shown
-                            while a filter change is in flight — see the auto-submit note below),
-                            SearchFilterBar (client component: purpose-dependent range-slider
-                            bounds, and now also owns auto-submit-on-change — see "Fixed bugs"
-                            below), ImoveisResultsSection (client wrapper used only by
-                            /imoveis/page.tsx — pairs SearchFilterBar with the results grid so it
-                            can swap in ImovelCardSkeleton while a navigation it triggered is
-                            pending), ImovelPhoto (shared image-or-placeholder slot, now also
-                            used for real Supabase Storage photos, not just mock data).
+src/components/imovel/      ImovelCard (price first, specs with words, `listOnMobile` row variant
+                            used by /imoveis), ImovelPhoto (image or honest "Fotos em breve" tile
+                            with the kind's icon; `preload` replaces Next 16's deprecated
+                            `priority`), kind-icons.ts, ImoveisShell (client: sidebar filters on
+                            desktop, native <dialog> filter sheet on mobile, sort, removable
+                            active-filter chips, dims results while a navigation is pending,
+                            remembers the last search in sessionStorage), ImoveisFilters (client:
+                            finalidade Todos/Alugar/Comprar, types with counts, bairro with
+                            datalist, quartos 1+.., price presets; "sidebar" mode applies on
+                            change, "sheet" mode on its button), ImovelGallery (all photos, count
+                            badge, native <dialog> lightbox with scroll-snap; see the
+                            ViewTransition note below), BackToSearchLink, ImovelMobilePriceBar
+                            (sticky, not fixed, so it stops before the footer).
                             Public-facing only — admin equivalents live under components/admin/.
-src/components/layout/      Navbar, Footer, WhatsAppFab, Container. Wired into
+src/components/home/        HomeSearch (client: explicit "Buscar" button, never navigates on
+                            change; also a plain GET form without JS), ListingShowcase (one
+                            finalidade's cards; fills leftover grid columns with a "Não achou?"
+                            tile so rows never end with an orphan card), ServicesList (shared
+                            by Home and Empresa).
+src/components/layout/      Navbar (mobile menu = native Popover API, no drawer lib), Footer
+                            (grid on the shared Container, with contacts), WhatsAppFab,
+                            Container, ProblemState (body of the 404/error pages). Wired into
                             src/app/(site)/layout.tsx — NOT the root layout, see routing note
-                            below — so every public page gets them automatically.
+                            below — so every public page gets them automatically. app/not-found
+                            .tsx re-adds Navbar/Footer itself (it sits outside the (site) group).
 src/components/forms/       SellForm, ContactForm — client components, react-hook-form + zod,
                             build a WhatsApp message on submit via lib/whatsapp.ts and
                             window.open() it. No email/database backend exists for these yet.
@@ -291,10 +329,11 @@ From the user, during implementation:
   it reads like a landline format; don't "fix" it by inventing a 9th mobile digit.
 - **Footer links**: "Trabalhe conosco" and "Simule um financiamento" (present in the old site's
   nav) were dropped — user said remove, not stub.
-- **Fonts**: Poppins + Inter kept as the handoff's design system chose them; user had no
-  preference and deferred to this call. **Revoked** by the visual redesign (see
-  `docs/REDESIGN-PLANO.md`) — the pairing is being redefined there; don't reintroduce
-  Poppins/Inter as a default going forward.
+- **Fonts**: **Outfit** (titles, prices, buttons — `--font-display`, weights 600/700/800) +
+  **Instrument Sans** (body — `--font-body`, 400/500/600), chosen on 2026-09-28 when the owner
+  asked for a strong visual change ("mudar com força"). Replaced Fraunces (serif, banned as a
+  default by the installed higgsfield-websites design guide) which itself had replaced the
+  handoff's Poppins + Inter. Type tokens are fluid (`clamp()`), body is 17px (older audience).
 - **Forms → WhatsApp, not email/database**: user's explicit choice. No leads are stored anywhere
   yet — if that's ever wanted, it's a `leads` table + server action, additive to the current flow.
 - **`properties.price` is `numeric` reais, not `price_cents`.** `docs/PLANO-IMPLEMENTACAO.md` §3
@@ -342,32 +381,26 @@ From the user, during implementation:
   rules). Caught via screenshot — the hero's white outline button was rendering blue-purple text.
   Fixed by wrapping those base rules in `@layer base { ... }` in `globals.css`. If a Tailwind
   color/border utility ever silently "doesn't work" again, check for unlayered CSS first.
-- **Quartos/Faixa de preço bounds are purpose-dependent**: the handoff's `SearchFilterBar` had one
-  fixed sale-oriented price scale (hundreds of thousands) applied regardless of Alugar/Comprar —
-  meaningless for rent prices (hundreds/month). `getImovelRanges()` (`lib/queries.ts`) computes
-  real min/max price and bedroom counts per finalidade from published listings, and
-  `SearchFilterBar`'s `DualRangeSlider` remounts (`key={`quartos-${purpose}`}`, same for preço)
-  with that finalidade's bounds whenever the toggle changes. This replaced an earlier discrete
-  "price band" `<select>` (`lib/price-bands.ts`, now deleted) with a continuous two-handle slider.
-- **`SearchFilterBar` has no submit button — it auto-submits on every change**, debounced for
-  Bairro, via `router.push` wrapped in `useTransition` (not a native form GET). The `<form>` is
-  still the source of truth for field values (read with `new FormData(formRef.current)` at submit
-  time) so the native radio/hidden-input plumbing didn't need to change, just how submission is
-  triggered: a delegated `onChange` on the `<form>` schedules `submitNow()` — immediately for most
-  fields, after a 500ms debounce for `bairro` (`name=""` visible range `<input type="range">`
-  elements are ignored here; they fire onChange on every drag tick, and their commit instead comes
-  from `DualRangeSlider`'s new `onCommit` prop, called on pointer-up/blur). The one subtlety: when
-  the Alugar/Comprar toggle changes, `setPurpose` remounts the two `DualRangeSlider`s with a new
-  finalidade's default bounds, but that remount hasn't committed yet inside the same synchronous
-  change-event handler — reading `FormData` right there would still see the *old* finalidade's
-  slider values. `scheduleSubmit`'s `setTimeout(fn, delay)` (even at `delay=0`) defers to the next
-  macrotask, which is after React's commit, so `submitNow()` always reads the post-remount DOM.
-  `SearchFilterBar` takes an optional `onPendingChange(pending)` prop — `/imoveis` wires it up via
-  `ImoveisResultsSection` (a small client wrapper) to swap the results grid for
-  `ImovelCardSkeleton` cards while `isPending` is true, so a filter change never blanks the page
-  (the "pisca-pisca" the user explicitly asked to avoid) while still showing that something is
-  loading. Home's usage of `SearchFilterBar` doesn't pass `onPendingChange` — there's no local
-  results grid to cover there, changing a filter just client-navigates to `/imoveis`.
+- **Search (rewritten 2026-09-28, see docs/review/REVIEW-2026-09-28.md).** The old
+  SearchFilterBar (dual range sliders, auto-submit on every change, reused on Home) was removed:
+  its hidden inputs always wrote quartos/preço limits into the URL, which hid listings without
+  bedrooms, froze saved links and made the max price unreachable (slider step); on Home it
+  navigated mid-typing; and the hero `<section class="relative">` covered its Alugar/Comprar
+  toggle on desktop (the "Comprar não funciona" bug). Now: Home has HomeSearch with an explicit
+  Buscar; /imoveis has ImoveisShell/ImoveisFilters; the URL contract lives in
+  lib/search-params.ts. Don't reintroduce always-sent range limits.
+- **Animations are CSS-only and never hide server HTML.** The old motion-lib wrappers
+  (HeroReveal/FadeIn*) rendered `opacity:0` in the server HTML and, with "reduce motion" on,
+  `useReducedMotion()` swapped the tree on the client — a hydration mismatch that left the
+  property page blank forever. Use the `.reveal` / `.reveal-on-scroll` classes in globals.css
+  (inside `prefers-reduced-motion: no-preference`; scroll reveal only where
+  `animation-timeline: view()` exists). Don't add JS-driven entrance animations back.
+- **Only one `<ViewTransition name="imovel-photo-…">` may be mounted at a time.** ImovelGallery
+  renders separate mobile/desktop main photos; the `Morph` helper enables the name only on the
+  one matching the viewport (useSyncExternalStore + matchMedia). Duplicate names break the morph.
+- **Build must survive the DB being down** (the free Supabase project pauses when idle, and on
+  2026-09-21 that took production down and made `next build` fail). generateStaticParams,
+  sitemap and the Home loader catch errors; (site)/error.tsx and not-found.tsx exist in PT-BR.
 - **`ImovelPhoto` never reuses the one real handoff photo across listings.** The handoff bundle
   had exactly one real stock photo (a house exterior, embedded in `.image-slots.state.json`),
   repeated across every image slot in the prototype. Reusing it across 6 different fake listings
@@ -375,14 +408,10 @@ From the user, during implementation:
   y". It's used once, honestly, as atmosphere on the Home hero (`public/images/hero-house.webp`).
   Every property card/gallery slot without a real `coverImage` renders an honest "Foto em breve"
   empty state instead. Don't wire the hero photo into card placeholders as a shortcut.
-- **Native HTML over client state where possible**: SegmentedControl/purpose toggle = radio
-  inputs + `peer-checked`/`group-has-checked` CSS, not `useState`. Checkbox = same pattern.
-  `SearchFilterBar` still uses a real `<form>` as its state container — filters are read from it
-  via `FormData` into URL query params on `/imoveis`, shareable/bookmarkable, not React state —
-  but submission itself is client-driven (`router.push` in a transition, no button, auto-submit on
-  change) rather than a native GET; see the "Fixed bugs" note above for why. Keep the native-form-
-  as-data-source pattern for new interactive UI unless there's a real reason (e.g. purpose-
-  dependent range bounds, or needing a pending state) to reach for a client component.
+- **Native HTML over client libraries where possible**: radios + CSS for toggles/pills, the
+  Popover API for the mobile menu, `<dialog>` for the filter sheet and the photo lightbox,
+  scroll-snap instead of a carousel lib. This cut ~80 KB of JS per page (motion, @base-ui,
+  embla, cn, class-variance-authority, tw-animate-css were uninstalled). Keep it that way.
 - **`src/app/icon.png` (favicon)** is not a raw copy of the handoff's `logo-icon.png` — that asset has
   "CJ-40079" baked into the same PNG below the house mark, illegible at favicon size and unreadable-
   contrast on a dark browser tab bar (transparent background). It's cropped to just the circular

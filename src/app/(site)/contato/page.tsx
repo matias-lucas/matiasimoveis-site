@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { MapPin, Phone, MessageCircle } from "lucide-react";
+import { MapPin, Phone, MessageCircle, Mail, type LucideIcon } from "lucide-react";
 import { Container } from "@/components/layout/Container";
-import { WhatsAppLink } from "@/components/ui/WhatsAppLink";
 import { ContactForm } from "@/components/forms/ContactForm";
+import { buildWhatsAppUrl } from "@/lib/whatsapp";
 import { SITE } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -10,41 +10,63 @@ export const metadata: Metadata = {
   description: `Fale com a ${SITE.name}: telefone, WhatsApp, endereço e formulário de contato.`,
 };
 
+function ContactRow({ icon: Icon, label, value, href, external }: { icon: LucideIcon; label: string; value: string; href?: string; external?: boolean }) {
+  const content = (
+    <>
+      <span className="flex items-center justify-center w-11 h-11 shrink-0 rounded-xl bg-red-50 text-red-600">
+        <Icon className="w-5 h-5" aria-hidden />
+      </span>
+      <span className="min-w-0">
+        <span className="block text-text-2" style={{ font: "var(--text-caption)" }}>
+          {label}
+        </span>
+        <span className="block text-text-1" style={{ font: "700 17px/1.3 var(--font-display)" }}>
+          {value}
+        </span>
+      </span>
+    </>
+  );
+  const className = "flex items-center gap-3 rounded-xl border border-border-1 bg-bg-surface p-3.5 no-underline";
+  return href ? (
+    <a
+      href={href}
+      className={`${className} hover:border-text-1`}
+      {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+    >
+      {content}
+    </a>
+  ) : (
+    <div className={className}>{content}</div>
+  );
+}
+
 export default function ContatoPage() {
   const fullAddress = `${SITE.address.street}, ${SITE.address.district}, ${SITE.address.city} - ${SITE.address.state}`;
   const mapSrc = `https://www.google.com/maps?q=${encodeURIComponent(fullAddress)}&output=embed`;
 
   return (
-    <Container className="py-20 lg:py-24 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+    <Container className="py-10 lg:py-16 grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14">
       <div>
-        <div
-          className="uppercase text-red-600 mb-2"
-          style={{ font: "var(--text-eyebrow)", letterSpacing: "var(--tracking-eyebrow)" }}
-        >
-          Contato
-        </div>
-        <h1
-          className="text-text-1 mb-6"
-          style={{ font: "var(--text-display-lg)", fontFamily: "var(--font-display)" }}
-        >
+        <h1 className="text-text-1" style={{ font: "var(--text-display-lg)" }}>
           Fale com a {SITE.name}
         </h1>
-        <div className="flex flex-col gap-3.5 text-text-2 mb-7" style={{ font: "var(--text-body-md)" }}>
-          <div className="flex gap-2.5 items-center">
-            <MapPin className="w-[18px] h-[18px] text-brand-primary shrink-0" />
-            {fullAddress}
-          </div>
-          <div className="flex gap-2.5 items-center">
-            <Phone className="w-[18px] h-[18px] text-brand-primary shrink-0" />
-            {SITE.phone}
-          </div>
-          <div className="flex gap-2.5 items-center">
-            <MessageCircle className="w-[18px] h-[18px] text-brand-primary shrink-0" />
-            {SITE.phone} (WhatsApp)
-          </div>
+        <p className="mt-2 mb-6 text-text-2" style={{ font: "var(--text-body-md)" }}>
+          O jeito mais rápido é o WhatsApp. Toque para ligar, conversar ou mandar e-mail.
+        </p>
+        {/* Todos clicáveis: antes telefone e WhatsApp eram texto puro (review 28/09). */}
+        <div className="grid gap-3">
+          <ContactRow
+            icon={MessageCircle}
+            label="WhatsApp"
+            value={SITE.phone}
+            href={buildWhatsAppUrl(SITE.whatsappDefaultMessage)}
+            external
+          />
+          <ContactRow icon={Phone} label="Telefone" value={SITE.phone} href={SITE.phoneHref} />
+          <ContactRow icon={Mail} label="E-mail" value={SITE.email} href={`mailto:${SITE.email}`} />
+          <ContactRow icon={MapPin} label="Endereço" value={fullAddress} />
         </div>
-        <WhatsAppLink message={SITE.whatsappDefaultMessage}>Falar no WhatsApp agora</WhatsAppLink>
-        <div className="h-[180px] lg:h-[220px] rounded-lg mt-7 overflow-hidden border border-border-1">
+        <div className="h-[200px] lg:h-[240px] rounded-xl mt-6 overflow-hidden border border-border-1">
           <iframe
             src={mapSrc}
             title={`Mapa: ${fullAddress}`}
@@ -55,7 +77,12 @@ export default function ContatoPage() {
         </div>
       </div>
 
-      <ContactForm />
+      <div>
+        <h2 className="text-text-1 mb-4" style={{ font: "var(--text-display-sm)" }}>
+          Ou deixe sua mensagem
+        </h2>
+        <ContactForm />
+      </div>
     </Container>
   );
 }

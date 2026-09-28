@@ -2,49 +2,38 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { clsx } from "clsx";
 
-export type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "whatsapp";
+export type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "whatsapp" | "light";
 export type ButtonSize = "sm" | "md" | "lg";
 
-/** Compartilhado com WhatsAppLink, que usa o mesmo dimensionamento de botão. */
+/** Compartilhado com WhatsAppLink, que usa o mesmo dimensionamento de botão.
+ * Alturas fixas (40/48/56px) em vez de padding vertical + altura de linha:
+ * antes cada botão do site tinha uma altura (42/44/46/59px) e dois deles
+ * ficavam abaixo do alvo de toque de 44px (review 28/09). */
 export const sizeClasses: Record<ButtonSize, string> = {
-  sm: "gap-1.5 px-4 py-2",
-  // py-[13px]: com --text-label (14px/1.3 = 18.2px de linha) + borda de 1px em
-  // cima/embaixo, py-[11px] rendia ~42.2px de altura — abaixo do alvo mínimo de
-  // toque de 44px exigido pelo redesign (público de perfil mais velho). É o
-  // tamanho padrão de <Button>, usado por ex. no botão "Enviar mensagem" do
-  // ContactForm (/contato) sem size= explícito. +2px de cada lado fecha a conta
-  // (~46.2px), com folga para variação de renderização de fonte entre navegadores.
-  md: "gap-2 px-[22px] py-[13px]",
-  lg: "gap-2.5 px-7 py-[15px]",
+  sm: "gap-1.5 px-4 h-10",
+  md: "gap-2 px-5 h-12",
+  lg: "gap-2.5 px-7 h-14",
 };
 
+/** Uma família só (a de títulos) em todos os tamanhos — antes o "lg" usava a
+ * serifada de 22px e os demais a sans, na mesma página. */
 export const sizeFont: Record<ButtonSize, string> = {
-  sm: "var(--text-body-sm)",
-  md: "var(--text-label)",
-  lg: "var(--text-display-sm)",
+  sm: "600 14px/1 var(--font-display)",
+  md: "600 16px/1 var(--font-display)",
+  lg: "700 18px/1 var(--font-display)",
 };
 
 const variantClasses: Record<ButtonVariant, string> = {
-  // bg-red-600 (não bg-brand-primary/--red-500) por contraste: branco sobre
-  // --red-500 dá ~4.2:1 em --text-label (14px/600), abaixo do AA (4.5:1) —
-  // mesma falha matemática já corrigida no Badge.tsx tom "venda" sólido
-  // (auditoria estática da Etapa 8, achado de review). --red-600 resolve para
-  // ~5.16:1. hover/active sobem um degrau (--red-700/--red-900, não há
-  // --red-800) para manter estados visualmente distintos da base agora mais
-  // escura.
   primary:
-    "bg-red-600 text-text-on-primary border border-transparent hover:bg-red-700 active:bg-red-900",
+    "bg-brand-primary text-text-on-primary border border-transparent hover:bg-brand-primary-hover active:bg-brand-primary-active",
   secondary:
-    "bg-brand-secondary text-text-on-primary border border-transparent hover:bg-brand-secondary-hover active:bg-brand-secondary-active",
-  // text-red-600 (não text-brand-primary) por contraste: --red-500 sobre fundo
-  // claro renderiza ~4.2:1 no texto de --text-label (14px/600), abaixo do AA
-  // (4.5:1) — auditoria estática da Etapa 8. --red-600 (mesma família,
-  // já usado como --status-venda-fg no Badge tonal) resolve para ~5.16:1.
+    "bg-bg-inverse text-text-on-primary border border-transparent hover:bg-blue-700 active:bg-blue-600",
   outline:
-    "bg-transparent text-red-600 border border-border-2 hover:bg-bg-sunken",
+    "bg-bg-surface text-text-1 border border-border-2 hover:border-text-1",
   ghost: "bg-transparent text-text-1 border border-transparent hover:bg-bg-sunken",
   whatsapp:
     "bg-whatsapp text-white border border-transparent hover:bg-whatsapp-hover",
+  light: "bg-white text-text-1 border border-transparent hover:bg-gray-100",
 };
 
 const baseClasses =
@@ -82,7 +71,7 @@ export function Button({
     baseClasses,
     sizeClasses[size],
     variantClasses[variant],
-    "font-display",
+    "whitespace-nowrap",
     className
   );
   const style = { font: sizeFont[size] } as React.CSSProperties;

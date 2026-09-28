@@ -19,13 +19,13 @@ export function WhatsAppLink({ message, number, children, size = "md", className
       target="_blank"
       rel="noopener noreferrer"
       className={clsx(
-        "inline-flex items-center justify-center rounded-md bg-whatsapp text-white transition-colors duration-150 ease-out hover:bg-whatsapp-hover focus-visible:outline-none focus-visible:shadow-focus font-display",
+        "inline-flex items-center justify-center whitespace-nowrap rounded-md bg-whatsapp text-white no-underline transition-colors duration-150 ease-out hover:bg-whatsapp-hover hover:text-white focus-visible:outline-none focus-visible:shadow-focus",
         sizeClasses[size],
         className
       )}
       style={{ font: sizeFont[size] }}
     >
-      <MessageCircle className="w-4 h-4" />
+      <MessageCircle className={size === "lg" ? "w-5 h-5" : "w-4 h-4"} aria-hidden />
       {children}
     </a>
   );

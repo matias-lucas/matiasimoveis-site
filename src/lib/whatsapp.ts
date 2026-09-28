@@ -50,13 +50,22 @@ export function sellInquiryMessage(values: SellFormValues): string {
 
 interface ContactFormValues {
   name: string;
-  email: string;
+  email?: string;
   message: string;
 }
 
 export function contactInquiryMessage(values: ContactFormValues): string {
-  return [
-    `Olá! Meu nome é ${values.name} (${values.email}).`,
-    values.message,
-  ].join("\n");
+  const email = values.email?.trim();
+  return [`Olá! Meu nome é ${values.name}${email ? ` (${email})` : ""}.`, values.message].join("\n");
+}
+
+/**
+ * Abre o WhatsApp numa nova aba; se o navegador bloquear como pop-up (Safari
+ * do iPhone bloqueia window.open depois da validação assíncrona do
+ * formulário), abre na mesma aba em vez de não fazer nada.
+ */
+export function openWhatsApp(url: string): void {
+  const win = window.open(url, "_blank");
+  if (win) win.opener = null;
+  else window.location.href = url;
 }

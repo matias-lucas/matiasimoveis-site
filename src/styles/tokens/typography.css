@@ -1,18 +1,23 @@
 :root{
---font-display:'Fraunces',ui-serif,Georgia,serif;
+/* Família real vem do next/font (layout.tsx) e é religada em globals.css. */
+--font-display:'Outfit',ui-sans-serif,system-ui,sans-serif;
 --font-body:'Instrument Sans',ui-sans-serif,system-ui,sans-serif;
 
---text-display-xl:700 56px/1.08 var(--font-display);
---text-display-lg:700 40px/1.12 var(--font-display);
---text-display-md:600 30px/1.2 var(--font-display);
---text-display-sm:600 22px/1.3 var(--font-display);
+/* Escala fluida: o primeiro valor do clamp() vale em ~390px de largura, o
+   último em ~1440px. Antes era tudo px fixo, então o h1 da Home ocupava 3
+   linhas no celular e o da Empresa 4 (review 28/09). */
+--text-display-xl:800 clamp(34px, calc(24.3px + 2.48vw), 60px)/1.05 var(--font-display);
+--text-display-lg:800 clamp(28px, calc(22px + 1.52vw), 44px)/1.1 var(--font-display);
+--text-display-md:700 clamp(24px, calc(20.3px + 0.95vw), 34px)/1.15 var(--font-display);
+--text-display-sm:700 clamp(19px, calc(17.9px + 0.29vw), 22px)/1.25 var(--font-display);
 --text-eyebrow:700 13px/1.2 var(--font-display);
---text-body-lg:400 18px/1.6 var(--font-body);
---text-body-md:400 16px/1.6 var(--font-body);
---text-body-sm:400 14px/1.5 var(--font-body);
---text-label:600 14px/1.3 var(--font-body);
---text-caption:500 12px/1.4 var(--font-body);
---text-price:700 24px/1.2 var(--font-display);
+/* Corpo um ponto acima do padrão: público de perfil mais velho. */
+--text-body-lg:400 clamp(17px, calc(16.3px + 0.19vw), 19px)/1.55 var(--font-body);
+--text-body-md:400 17px/1.6 var(--font-body);
+--text-body-sm:400 15px/1.5 var(--font-body);
+--text-label:600 15px/1.3 var(--font-body);
+--text-caption:500 13px/1.4 var(--font-body);
+--text-price:800 clamp(22px, calc(20.5px + 0.38vw), 26px)/1.15 var(--font-display);
 
 --tracking-eyebrow:0.08em;
 }

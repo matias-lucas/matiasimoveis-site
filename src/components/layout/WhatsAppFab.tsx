@@ -32,7 +32,7 @@ export function WhatsAppFab() {
       aria-label="Falar no WhatsApp"
       className={clsx(
         hasInlineCta ? "hidden lg:flex" : "flex",
-        "fixed right-6 bottom-6 z-50 items-center justify-center w-[60px] h-[60px] rounded-full bg-whatsapp text-white shadow-lg transition-transform duration-150 ease-out hover:scale-105 focus-visible:outline-none focus-visible:shadow-focus"
+        "fixed right-4 bottom-4 sm:right-6 sm:bottom-6 z-50 items-center justify-center w-14 h-14 sm:w-[60px] sm:h-[60px] rounded-full bg-whatsapp text-white shadow-lg transition-transform duration-150 ease-out hover:scale-105 focus-visible:outline-none focus-visible:shadow-focus"
       )}
     >
       <MessageCircle className="w-7 h-7" />

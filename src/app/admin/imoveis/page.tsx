@@ -79,7 +79,8 @@ export default async function AdminImoveisPage({ searchParams }: AdminImoveisPag
                   src={imovel.coverImage}
                   alt={imovel.title}
                   sizes="(max-width: 768px) 100vw, 33vw"
-                  iconClassName="w-6 h-6"
+                  kind={imovel.kind}
+                  compact
                 />
                 <div className="absolute top-3 left-3">
                   <Badge tone={imovel.purpose === "locacao" ? "locacao" : "venda"}>

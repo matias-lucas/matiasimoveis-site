@@ -54,7 +54,8 @@ export interface Imovel {
   parking?: number;
   /** True quando as vagas de `parking` são só para moto, não para carro. */
   parkingMotorcycleOnly?: boolean;
-  areaM2: number;
+  /** Área construída/útil; undefined quando não informada (0 também conta como não informada). */
+  areaM2?: number;
   lotAreaM2?: number;
   features?: string[];
   status?: ImovelStatus;

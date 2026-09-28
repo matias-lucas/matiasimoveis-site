@@ -36,15 +36,26 @@ export const SITE = {
   },
 } as const;
 
+/** Menu principal: as duas intenções que trazem gente ao site (alugar,
+ * comprar) vêm primeiro e levam direto à busca filtrada. */
 export const NAV_LINKS = [
-  { href: "/", label: "Início" },
-  { href: "/imoveis", label: "Buscar imóveis" },
-  { href: "/anuncie", label: "Anuncie seu imóvel" },
-  { href: "/contato", label: "Contato" },
+  { href: "/imoveis?finalidade=locacao", label: "Alugar", purpose: "locacao" },
+  { href: "/imoveis?finalidade=venda", label: "Comprar", purpose: "venda" },
+  { href: "/anuncie", label: "Anunciar" },
   { href: "/empresa", label: "Empresa" },
+  { href: "/contato", label: "Contato" },
 ] as const;
 
 export const FOOTER_LINKS = [
+  {
+    heading: "Imóveis",
+    links: [
+      { href: "/imoveis?finalidade=locacao", label: "Alugar" },
+      { href: "/imoveis?finalidade=venda", label: "Comprar" },
+      { href: "/imoveis", label: "Todos os imóveis" },
+      { href: "/anuncie", label: "Anunciar meu imóvel" },
+    ],
+  },
   {
     heading: "Empresa",
     links: [
@@ -52,16 +63,5 @@ export const FOOTER_LINKS = [
       { href: "/contato", label: "Contato" },
       { href: "/privacidade", label: "Política de privacidade" },
     ],
-  },
-  {
-    heading: "Serviços",
-    links: [
-      { href: "/imoveis?finalidade=venda", label: "Comprar imóvel" },
-      { href: "/imoveis?finalidade=locacao", label: "Alugar imóvel" },
-    ],
-  },
-  {
-    heading: "Seu imóvel",
-    links: [{ href: "/anuncie", label: "Anuncie seu imóvel" }],
   },
 ] as const;

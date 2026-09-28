@@ -1,3 +1,11 @@
+> **Atualização 28/09/2026:** partes visuais deste brief foram substituídas a pedido do dono ("mudar com força").
+> - **Fontes:** Outfit + Instrument Sans (a Fraunces saiu).
+> - **Fundo:** gray-50, não mais creme.
+> - **Cor:** marinho e vermelho como base.
+> - **Animações:** só CSS.
+>
+> Ver `docs/review/REVIEW-2026-09-28.md` e as notas de `CLAUDE.md`.
+
 # Matias Imóveis — Redesign editorial: brief de design
 
 Fonte da verdade do sistema visual a partir daqui, substituindo `DESIGN.md`

@@ -8,11 +8,15 @@ import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
 import { FieldError } from "@/components/ui/FieldError";
 import { PrivacyNotice } from "@/components/ui/PrivacyNotice";
-import { buildWhatsAppUrl, sellInquiryMessage } from "@/lib/whatsapp";
+import { buildWhatsAppUrl, openWhatsApp, sellInquiryMessage } from "@/lib/whatsapp";
 
 const schema = z.object({
-  name: z.string().trim().min(2, "Conte seu nome completo."),
-  phone: z.string().trim().min(8, "Informe um telefone válido."),
+  name: z.string().trim().min(3, "Conte seu nome."),
+  // DDD + número: 10 ou 11 dígitos (aceita pontuação, espaços, +55).
+  phone: z
+    .string()
+    .trim()
+    .refine((v) => /^(\+?55)?\d{10,11}$/.test(v.replace(/[\s().-]/g, "")), "Informe um telefone com DDD, ex.: (62) 99999-0000."),
   purpose: z.string().min(1, "Escolha uma opção."),
   kind: z.string().min(1, "Escolha uma opção."),
   neighborhood: z.string().trim().min(2, "Informe o bairro."),
@@ -45,7 +49,7 @@ export function SellForm() {
 
   function onSubmit(values: FormValues) {
     const message = sellInquiryMessage({ ...values, askingPrice: values.askingPrice ?? "" });
-    window.open(buildWhatsAppUrl(message), "_blank", "noopener,noreferrer");
+    openWhatsApp(buildWhatsAppUrl(message));
   }
 
   return (
@@ -54,15 +58,18 @@ export function SellForm() {
       className="flex flex-col gap-4 bg-bg-surface border border-border-1 rounded-lg p-7"
       noValidate
     >
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <Input label="Nome completo" placeholder="Seu nome" {...register("name")} />
+          <Input label="Seu nome" placeholder="Seu nome" autoComplete="name" {...register("name")} />
           {errors.name && <FieldError message={errors.name.message} className="mt-1" />}
         </div>
         <div>
           <Input
             label="Telefone / WhatsApp"
-            placeholder="(62) 90000-0000"
+            placeholder="(62) 99999-0000"
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel"
             {...register("phone")}
           />
           {errors.phone && <FieldError message={errors.phone.message} className="mt-1" />}
@@ -79,7 +86,7 @@ export function SellForm() {
         {errors.purpose && <FieldError message={errors.purpose.message} className="mt-1" />}
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <Select
             label="Tipo de imóvel"
@@ -99,7 +106,7 @@ export function SellForm() {
 
       <PrivacyNotice />
       <Button type="submit" variant="whatsapp" size="lg" disabled={isSubmitting} className="self-start mt-2">
-        Falar no WhatsApp
+        Enviar pelo WhatsApp
       </Button>
     </form>
   );

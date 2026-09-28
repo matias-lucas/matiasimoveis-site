@@ -1,21 +1,23 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { Fraunces, Instrument_Sans } from "next/font/google";
+import { Outfit, Instrument_Sans } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import { SITE } from "@/lib/site";
 
-const fraunces = Fraunces({
+// Outfit (sans geométrica, pesos altos) nos títulos e preços no lugar da
+// Fraunces serifada: leitura mais rápida e visual de vitrine, não de revista
+// (review 28/09). Só os pesos realmente usados, sem itálico.
+const outfit = Outfit({
   subsets: ["latin"],
-  weight: ["300", "400", "600", "700"],
-  style: ["normal", "italic"],
-  variable: "--font-fraunces",
+  weight: ["600", "700", "800"],
+  variable: "--font-outfit",
   display: "swap",
 });
 
 const instrumentSans = Instrument_Sans({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "600"],
   variable: "--font-instrument-sans",
   display: "swap",
 });
@@ -23,7 +25,7 @@ const instrumentSans = Instrument_Sans({
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
   title: {
-    default: `${SITE.name} — Imóveis em Itaberaí/GO`,
+    default: `${SITE.name}: imóveis para alugar e comprar em Itaberaí/GO`,
     template: `%s | ${SITE.name}`,
   },
   description: SITE.description,
@@ -39,7 +41,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html
       lang="pt-BR"
-      className={`${fraunces.variable} ${instrumentSans.variable} h-full antialiased`}
+      className={`${outfit.variable} ${instrumentSans.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-bg-page">
         {children}
