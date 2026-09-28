@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { MapPin, Phone, MessageCircle, Mail, type LucideIcon } from "lucide-react";
 import { Container } from "@/components/layout/Container";
 import { ContactForm } from "@/components/forms/ContactForm";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
 import { SITE } from "@/lib/site";
+import fachada from "../../../../public/images/fachada-matias.webp";
 
 export const metadata: Metadata = {
   title: "Contato",
@@ -66,7 +68,23 @@ export default function ContatoPage() {
           <ContactRow icon={Mail} label="E-mail" value={SITE.email} href={`mailto:${SITE.email}`} />
           <ContactRow icon={MapPin} label="Endereço" value={fullAddress} />
         </div>
-        <div className="h-[200px] lg:h-[240px] rounded-xl mt-6 overflow-hidden border border-border-1">
+        {/* Fachada real: ajuda a reconhecer a loja na rua (placa vermelha e azul). */}
+        <figure className="mt-6">
+          <div className="relative aspect-[16/9] rounded-xl overflow-hidden">
+            <Image
+              src={fachada}
+              alt="Fachada da Matias Imóveis em Itaberaí"
+              fill
+              placeholder="blur"
+              sizes="(min-width: 1024px) 560px, 100vw"
+              className="object-cover object-[center_45%]"
+            />
+          </div>
+          <figcaption className="mt-2 text-text-2" style={{ font: "var(--text-caption)" }}>
+            Nossa fachada: {SITE.address.street}, {SITE.address.district}
+          </figcaption>
+        </figure>
+        <div className="h-[200px] lg:h-[240px] rounded-xl mt-4 overflow-hidden border border-border-1">
           <iframe
             src={mapSrc}
             title={`Mapa: ${fullAddress}`}

@@ -8,7 +8,9 @@ import { ImovelMobilePriceBar } from "@/components/imovel/ImovelMobilePriceBar";
 import { BackToSearchLink } from "@/components/imovel/BackToSearchLink";
 import { WhatsAppLink } from "@/components/ui/WhatsAppLink";
 import { Button } from "@/components/ui/Button";
-import { getAllPublishedSlugs, getImovelBySlug, getSimilarImoveis } from "@/lib/queries";
+import { CorretorPhoto } from "@/components/corretor/CorretorPhoto";
+import { getAllPublishedSlugs, getCorretoresSafe, getImovelBySlug, getSimilarImoveis } from "@/lib/queries";
+import { corretorPadrao } from "@/lib/corretor";
 import { PUBLIC_KIND_LABELS } from "@/lib/imovel-kind-categories";
 import { formatPrice, formatPriceParts } from "@/lib/format";
 import { imovelSpecs, type SpecKey } from "@/lib/imovel-specs";
@@ -96,7 +98,7 @@ export default async function ImovelDetailPage({ params }: ImovelDetailPageProps
   const imovel = await getImovelBySlug(slug);
   if (!imovel) notFound();
 
-  const similar = await getSimilarImoveis(imovel).catch(() => []);
+  const [similar, corretores] = await Promise.all([getSimilarImoveis(imovel).catch(() => []), getCorretoresSafe()]);
   const { purpose, title, neighborhood, city, state, ref, description, price, corretor, status, features, areaM2 } = imovel;
   const specs = imovelSpecs(imovel);
   const { value: priceValue, suffix: priceSuffix } = formatPriceParts(price, purpose);
@@ -146,6 +148,7 @@ export default async function ImovelDetailPage({ params }: ImovelDetailPageProps
   const contactWhatsAppNumber = corretorDireto ? toWhatsAppNumber(corretorDireto.contact) : undefined;
   const contactPhoneHref = corretorDireto ? `tel:+${toWhatsAppNumber(corretorDireto.contact)}` : SITE.phoneHref;
   const contactPhoneLabel = corretorDireto ? corretorDireto.contact : SITE.phone;
+  const corretorExibido = corretorDireto ?? corretorPadrao(corretores);
   const mapsHref = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${neighborhood}, ${city} - ${state}`)}`;
 
   return (
@@ -302,11 +305,14 @@ export default async function ImovelDetailPage({ params }: ImovelDetailPageProps
             <Button variant="outline" size="lg" href={contactPhoneHref} icon={<Phone className="w-5 h-5" aria-hidden />} className="w-full">
               {contactPhoneLabel}
             </Button>
-            <div className="pt-4 border-t border-border-1 text-text-2" style={{ font: "var(--text-body-sm)" }}>
-              <div className="text-text-1" style={{ font: "700 16px/1.3 var(--font-display)" }}>
-                {corretorDireto?.name ?? SITE.defaultCorretor.name}
+            <div className="flex items-center gap-3 pt-4 border-t border-border-1 text-text-2" style={{ font: "var(--text-body-sm)" }}>
+              <CorretorPhoto corretor={corretorExibido} size={56} />
+              <div className="min-w-0">
+                <div className="text-text-1" style={{ font: "700 16px/1.3 var(--font-display)" }}>
+                  {corretorExibido.name}
+                </div>
+                {corretorExibido.creci} · {SITE.name}
               </div>
-              {corretorDireto?.creci ?? SITE.defaultCorretor.creci} · {SITE.name}
             </div>
           </div>
         </aside>

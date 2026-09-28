@@ -7,11 +7,13 @@ import { WhatsAppLink } from "@/components/ui/WhatsAppLink";
 import { HomeSearch } from "@/components/home/HomeSearch";
 import { ListingShowcase } from "@/components/home/ListingShowcase";
 import { ServicesList } from "@/components/home/ServicesList";
-import { getCatalogSummary, getHomeImoveis, type CatalogSummary } from "@/lib/queries";
+import { CorretorPhoto } from "@/components/corretor/CorretorPhoto";
+import { getCatalogSummary, getCorretoresSafe, getHomeImoveis, type CatalogSummary } from "@/lib/queries";
+import { corretorPadrao } from "@/lib/corretor";
 import { searchHref } from "@/lib/search-params";
 import { SITE } from "@/lib/site";
 import type { Imovel } from "@/lib/types";
-import heroImage from "../../../public/images/hero-house.webp";
+import fachada from "../../../public/images/fachada-matias.webp";
 
 export const revalidate = 60;
 
@@ -39,14 +41,14 @@ async function loadHome(): Promise<{ summary: CatalogSummary; aluguel: Imovel[];
 }
 
 export default async function HomePage() {
-  const { summary, aluguel, venda, ok } = await loadHome();
+  const [{ summary, aluguel, venda, ok }, corretores] = await Promise.all([loadHome(), getCorretoresSafe()]);
+  const corretor = corretorPadrao(corretores);
   const bairros = summary.neighborhoods.slice(0, 10);
 
   return (
     <>
-      {/* Hero: a busca é a protagonista. A foto atual (738×369 px) fica num
-          quadro de ~520px no desktop, onde não borra; no celular a busca vem
-          primeiro e sozinha. Trocar por uma foto real/IA em alta resolução. */}
+      {/* Hero: a busca é a protagonista. No desktop, ao lado, a fachada real
+          da imobiliária; no celular a busca vem primeiro e sozinha. */}
       <section className="bg-bg-inverse text-white">
         <Container className="grid lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] gap-10 lg:gap-14 items-center pt-8 pb-10 sm:pt-12 lg:pt-16 lg:pb-16">
           <div className="min-w-0">
@@ -69,8 +71,8 @@ export default async function HomePage() {
           <div className="hidden lg:block relative reveal reveal-d3">
             <div className="relative aspect-[4/3] rounded-2xl overflow-hidden">
               <Image
-                src={heroImage}
-                alt="Fachada de uma casa (imagem ilustrativa)"
+                src={fachada}
+                alt="Fachada da Matias Imóveis em Itaberaí"
                 fill
                 preload
                 placeholder="blur"
@@ -157,12 +159,13 @@ export default async function HomePage() {
               entrega das chaves.
             </p>
             <div className="mt-6 flex flex-wrap items-center gap-4 rounded-xl border border-border-1 bg-bg-surface p-5">
-              <div className="flex-1 min-w-[180px]">
+              <CorretorPhoto corretor={corretor} size={72} />
+              <div className="flex-1 min-w-[160px]">
                 <div className="text-text-1" style={{ font: "700 18px/1.2 var(--font-display)" }}>
-                  {SITE.defaultCorretor.name}
+                  {corretor.name}
                 </div>
                 <div className="text-text-2" style={{ font: "var(--text-body-sm)" }}>
-                  Corretor · {SITE.defaultCorretor.creci}
+                  Corretor · {corretor.creci}
                 </div>
               </div>
               <WhatsAppLink message={SITE.whatsappDefaultMessage}>Falar no WhatsApp</WhatsAppLink>

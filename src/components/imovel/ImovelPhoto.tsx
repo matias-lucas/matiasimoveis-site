@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { clsx } from "clsx";
 import { KIND_ICONS } from "./kind-icons";
+import { KIND_ILLUSTRATIONS } from "./kind-illustrations";
 import type { ImovelKind } from "@/lib/types";
 
 interface ImovelPhotoProps {
@@ -12,14 +13,14 @@ interface ImovelPhotoProps {
   sizes?: string;
   /** Tipo do imóvel, para o ícone do quadro "sem foto". */
   kind?: ImovelKind;
-  /** Tamanho do quadro "sem foto": compacto em miniaturas/cards pequenos. */
-  compact?: boolean;
+  /** Quadro "sem foto" compacto (sem o selo): miniaturas; "mobile" = só abaixo de 640px (card em linha da busca). */
+  compact?: boolean | "mobile";
 }
 
 /**
  * Slot de imagem compartilhado por cards, galerias e miniaturas. Sem foto
- * real, mostra um quadro honesto com o ícone do tipo do imóvel — nunca uma
- * foto de banco ou de IA no lugar da foto do anúncio.
+ * real, mostra um quadro "Fotos em breve" com a ilustração do tipo do imóvel
+ * — um desenho, nunca uma foto de banco ou de IA no lugar da foto do anúncio.
  */
 export function ImovelPhoto({ src, alt, className, preload, sizes, kind, compact }: ImovelPhotoProps) {
   if (src) {
@@ -35,17 +36,40 @@ export function ImovelPhoto({ src, alt, className, preload, sizes, kind, compact
     );
   }
 
+  const illustration = KIND_ILLUSTRATIONS[kind ?? "casa"];
   const Icon = KIND_ICONS[kind ?? "casa"];
   return (
-    <div
-      className={clsx(
-        "absolute inset-0 flex flex-col items-center justify-center gap-2 bg-blue-50 text-blue-500",
-        className
+    <div className={clsx("absolute inset-0 flex flex-col items-center justify-center bg-[#fbf8eb]", className)}>
+      {illustration ? (
+        // Borda esfumada (máscara radial) para o fundo creme do desenho se
+        // fundir ao do quadro sem aparecer o recorte quadrado.
+        <span
+          className={clsx(
+            "relative aspect-square",
+            compact === true && "h-[88%]",
+            compact === "mobile" && "h-[88%] sm:h-[72%] sm:-mt-[6%]",
+            !compact && "h-[72%] -mt-[6%]"
+          )}
+        >
+          <Image
+            src={illustration}
+            alt=""
+            fill
+            sizes={compact === true ? "96px" : "240px"}
+            className="object-contain [mask-image:radial-gradient(closest-side,#000_78%,transparent)]"
+          />
+        </span>
+      ) : (
+        <Icon className={clsx("text-blue-500", compact === true ? "w-6 h-6" : "w-10 h-10")} strokeWidth={1.5} aria-hidden />
       )}
-    >
-      <Icon className={compact ? "w-6 h-6" : "w-10 h-10"} strokeWidth={1.5} aria-hidden />
-      {!compact && (
-        <span className="text-blue-600" style={{ font: "600 13px/1.2 var(--font-display)" }}>
+      {compact !== true && (
+        <span
+          className={clsx(
+            "absolute bottom-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-pill bg-white/90 px-3 py-1.5 text-blue-900 shadow-sm",
+            compact === "mobile" && "hidden sm:block"
+          )}
+          style={{ font: "600 13px/1 var(--font-display)" }}
+        >
           Fotos em breve
         </span>
       )}

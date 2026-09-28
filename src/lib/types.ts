@@ -17,6 +17,8 @@ export interface Corretor {
   name: string;
   creci: string;
   contact: string;
+  /** Foto enviada pelo admin (bucket de corretores); sem ela, o site mostra "Foto pendente". */
+  photoUrl?: string;
 }
 
 export interface ImovelPhotoRecord {

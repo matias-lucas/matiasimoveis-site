@@ -46,7 +46,7 @@ export function ImovelCard({ imovel, listOnMobile = false, preload }: ImovelCard
       <div className={clsx("relative bg-bg-sunken overflow-hidden", listOnMobile ? "min-h-[132px] sm:aspect-[4/3]" : "aspect-[4/3]")}>
         <ViewTransition name={`imovel-photo-${slug}`} share="morph" default="none">
           <div className="absolute inset-0 transition-transform duration-300 ease-out group-hover:scale-[1.03]">
-            <ImovelPhoto src={coverImage} alt={title} kind={kind} compact={listOnMobile} preload={preload} />
+            <ImovelPhoto src={coverImage} alt={title} kind={kind} compact={listOnMobile ? "mobile" : false} preload={preload} />
           </div>
         </ViewTransition>
         <div className="absolute top-2.5 left-2.5 flex flex-wrap gap-1.5">

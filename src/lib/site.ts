@@ -5,7 +5,11 @@
 
 export const SITE = {
   name: "Matias Imóveis",
-  url: "https://matiasimoveisgo.com.br",
+  // Domínio da Vercel por enquanto (decisão do dono em 28/09). O domínio
+  // próprio não está ligado a este projeto na Vercel: com ele aqui, os links
+  // dos anúncios nas mensagens de WhatsApp, o sitemap e o Open Graph levavam
+  // para fora deste site. Quando o domínio for configurado, troque só esta linha.
+  url: "https://site-matiasimoveis.vercel.app",
   description:
     "Venda e locação de casas, apartamentos, lotes e imóveis comerciais em Itaberaí/GO.",
   cj: "CJ-40079",

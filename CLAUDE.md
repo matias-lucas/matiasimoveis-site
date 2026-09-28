@@ -117,8 +117,11 @@ writing directly into `auth.users` is a credential-store operation,
 correctly outside what an agent should do unprompted; it needs a
 password only the client knows.)
 
+**Deployed:** Vercel project `site-matiasimoveis` (production = `main`,
+https://site-matiasimoveis.vercel.app; own domain not set up yet).
+
 **Not built yet:** real property photos/content (the broker uploads
-these themselves via the admin panel now), deploy, SEO/sitemap pass
+these themselves via the admin panel now), SEO/sitemap pass
 (Fase 9 in the plan doc). The mobile responsive pass is no longer a
 separate future item — it's folded into the ongoing visual redesign,
 see `docs/REDESIGN-PLANO.md`.
@@ -128,6 +131,9 @@ see `docs/REDESIGN-PLANO.md`.
 ```
 src/lib/site.ts             Single source for phone/WhatsApp/address/CJ/CRECI/nav+footer links.
                             Edit here, not in components. Has a TODO on the address (see below).
+                            SITE.url is the Vercel domain for now (see "Decisions already made").
+src/lib/corretor.ts         corretorPadrao(): SITE.defaultCorretor (name/CRECI from SITE) plus the
+                            photo uploaded for that corretor in the admin, matched by name.
 src/lib/types.ts            Imovel/Corretor/ImovelPhotoRecord shape — kept in sync with the live
                             Supabase schema (src/lib/supabase/database.types.ts is the generated
                             source of truth; types.ts is the app-facing shape mapped from it in
@@ -146,6 +152,8 @@ src/lib/queries.ts          Public read layer, all async, backed by Supabase; RL
                             names and becomes an exact `.in()`). getImovelBySlug() uses the full
                             select (photos, videos, corretor). mapRow() treats area 0/null as
                             "not informed" and puts the cover first without duplicating it.
+                            getCorretores()/getCorretoresSafe() read the public `brokers` table
+                            (RLS "public read brokers") with photoUrl from the broker-photos bucket.
 src/lib/search-params.ts    The /imoveis URL contract: parseSearchParams() validates everything
                             (invalid finalidade/tipo/numbers are dropped, never reach queries —
                             they used to 500) and searchHref() writes ONLY what the user chose.
@@ -209,11 +217,16 @@ src/components/ui/          Design-system primitives ported from the handoff's _
                             bound server action; used by both the imóvel and corretor delete
                             flows) and FieldError (react-hook-form error line, used by every
                             form). These stay English-named — generic UI vocabulary, not this
-                            business's domain — see "Domain vocabulary" below.
+                            business's domain — see "Domain vocabulary" below. PhotoSlot: a photo
+                            frame that shows "Foto pendente" in place while the real photo
+                            doesn't exist yet (see "Foto pendente" under Decisions).
+src/components/corretor/    CorretorPhoto: round corretor photo (uploaded in Admin → Corretores)
+                            or a dashed "Foto pendente" circle. Used on Home, Empresa and the ficha.
 src/components/imovel/      ImovelCard (price first, specs with words, `listOnMobile` row variant
                             used by /imoveis), ImovelPhoto (image or honest "Fotos em breve" tile
-                            with the kind's icon; `preload` replaces Next 16's deprecated
-                            `priority`), kind-icons.ts, ImoveisShell (client: sidebar filters on
+                            with the kind's AI line illustration from kind-illustrations.ts — a
+                            drawing, never a fake photo; `compact` true/"mobile"; `preload`
+                            replaces Next 16's deprecated `priority`), kind-icons.ts, ImoveisShell (client: sidebar filters on
                             desktop, native <dialog> filter sheet on mobile, sort, removable
                             active-filter chips, dims results while a navigation is pending,
                             remembers the last search in sessionStorage), ImoveisFilters (client:
@@ -322,7 +335,8 @@ From the user, during implementation:
   handoff's two source files disagreed ("Alfredo Nasser" vs "Alfredo Nascer") and the user said
   to leave it, they'll correct it later. Don't guess a third spelling.
 - **Corretor vs. company**: "Divino Matias · CRECI-GO 9155" is a specific corretor (shown as
-  `SITE.defaultCorretor` on the Empresa page); "Matias Imóveis · CJ-40079" is the company's own
+  `SITE.defaultCorretor` on Home, footer and listings without their own corretor; the Empresa
+  page lists the whole team from the `brokers` table); "Matias Imóveis · CJ-40079" is the company's own
   juridical registration (footer, company-level mentions). These are different things — don't
   conflate them. Both live in `SITE` (`site.ts`).
 - **Phone/WhatsApp**: `(62) 3375-3330` for both — confirmed by the user, used as-is even though
@@ -367,6 +381,21 @@ From the user, during implementation:
   to `/admin/imoveis/[id]`, which has the full form (now pre-filled) plus PhotoManager. New
   properties are `published = false` until explicitly published from the list or the edit page —
   no half-filled listing can go live by accident.
+- **`SITE.url` = `https://site-matiasimoveis.vercel.app` for now** (owner, 28/09: "por enquanto
+  ficaremos só no vercel"). The own domain isn't attached to the Vercel project yet; with it in
+  SITE.url, the listing links inside WhatsApp messages, the sitemap and Open Graph pointed away
+  from this site. When the domain is set up in Vercel, change only that line.
+- **"Foto pendente" slots** (owner, 28/09): where a real photo belongs but doesn't exist yet, the
+  frame stays in the layout with "Foto pendente" written in it, for the owner to upload later.
+  Corretor photos → Admin → Corretores (CorretorPhoto picks them up; Divino and Rafael had none on
+  28/09). Office interior on /empresa → static file: drop it in `public/images/` and set
+  `FOTO_ESCRITORIO` in `app/(site)/empresa/page.tsx` (no admin UI for site photos yet).
+- **Images: real vs. AI.** Real: the brokerage facade (`public/images/fachada-matias*.webp`, sent
+  by the owner on 28/09) on the Home hero, Empresa and Contato. AI (Higgsfield, owner approved on
+  28/09, `public/images/ia/`): the kind line illustrations for listings without photos, the empty-
+  search illustration (/imoveis with no results, 404/erro) and the ipê street on the /anuncie
+  banner, labeled "Imagem ilustrativa". Rules: never an AI or stock image as a listing's photo,
+  never AI-generated people, realistic AI images always labeled "Imagem ilustrativa".
 - **Property photos are public files even for draft (unpublished) listings.** The Storage bucket
   is `public` for simplicity (plain URLs, works with `next/image` with no signed-URL plumbing) —
   RLS still gates the `properties`/`property_photos` *rows*, but a photo's raw storage path
@@ -401,13 +430,14 @@ From the user, during implementation:
 - **Build must survive the DB being down** (the free Supabase project pauses when idle, and on
   2026-09-21 that took production down and made `next build` fail). generateStaticParams,
   sitemap and the Home loader catch errors; (site)/error.tsx and not-found.tsx exist in PT-BR.
-- **`ImovelPhoto` never reuses the one real handoff photo across listings.** The handoff bundle
-  had exactly one real stock photo (a house exterior, embedded in `.image-slots.state.json`),
-  repeated across every image slot in the prototype. Reusing it across 6 different fake listings
-  would misrepresent which property it's a photo of — actively misleading, not just "placeholder-
-  y". It's used once, honestly, as atmosphere on the Home hero (`public/images/hero-house.webp`).
-  Every property card/gallery slot without a real `coverImage` renders an honest "Foto em breve"
-  empty state instead. Don't wire the hero photo into card placeholders as a shortcut.
+- **`ImovelPhoto` never shows a photo that isn't the listing's.** The handoff's single stock house
+  photo (formerly the Home hero, `hero-house.webp`) was removed on 28/09 when the real facade
+  replaced it. Every card/gallery slot without a real `coverImage` renders the "Fotos em breve"
+  tile with the kind's line illustration (a drawing, obviously not the property). Don't put any
+  photo — stock, AI or the facade — into listing placeholders.
+- **Playwright full-page screenshots can show `.reveal` elements blank** (the entrance animation
+  restarts when the viewport is resized for the capture). Before "fixing" a missing hero image,
+  check with a normal viewport screenshot.
 - **Native HTML over client libraries where possible**: radios + CSS for toggles/pills, the
   Popover API for the mobile menu, `<dialog>` for the filter sheet and the photo lightbox,
   scroll-snap instead of a carousel lib. This cut ~80 KB of JS per page (motion, @base-ui,

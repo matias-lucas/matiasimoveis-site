@@ -1,7 +1,7 @@
 import { createPublicClient } from "./supabase/public";
-import { publicStorageUrl, IMOVEL_VIDEOS_BUCKET } from "./supabase/env";
+import { publicStorageUrl, IMOVEL_VIDEOS_BUCKET, CORRETOR_PHOTOS_BUCKET } from "./supabase/env";
 import type { Database } from "./supabase/database.types";
-import type { Imovel, ImovelKind, ImovelPurpose } from "./types";
+import type { Corretor, Imovel, ImovelKind, ImovelPurpose } from "./types";
 import { resolveKindFilter, searchKindOf } from "./imovel-kind-categories";
 import { PAGE_SIZE, type SearchFilters } from "./search-params";
 import { normalizeText } from "./format";
@@ -24,11 +24,13 @@ type RowWithRelations = Partial<ImovelRow> &
   Pick<ImovelRow, "id" | "slug" | "ref" | "purpose" | "kind" | "title" | "neighborhood" | "city" | "state" | "price"> & {
     property_photos?: Pick<PhotoRow, "id" | "storage_path" | "alt" | "is_cover" | "position">[];
     property_videos?: Pick<VideoRow, "id" | "storage_path" | "label" | "position">[];
-    brokers?: Pick<CorretorRow, "id" | "name" | "creci" | "contact"> | null;
+    brokers?: CorretorFields | null;
   };
+type CorretorFields = Pick<CorretorRow, "id" | "name" | "creci" | "contact" | "photo_path">;
 
-const FULL_SELECT =
-  "*, property_photos(id, storage_path, alt, is_cover, position), property_videos(id, storage_path, label, position), brokers(id, name, creci, contact)";
+const CORRETOR_SELECT = "id, name, creci, contact, photo_path";
+
+const FULL_SELECT = `*, property_photos(id, storage_path, alt, is_cover, position), property_videos(id, storage_path, label, position), brokers(${CORRETOR_SELECT})`;
 
 const CARD_SELECT =
   "id, slug, ref, purpose, kind, kind_other, title, neighborhood, city, state, price, bedrooms, bathrooms, parking, parking_motorcycle_only, area_m2, lot_area_m2, status, featured, published_at, property_photos(id, storage_path, alt, is_cover, position)";
@@ -40,6 +42,16 @@ function positiveOrUndefined(value: number | string | null | undefined): number 
   if (value == null) return undefined;
   const n = Number(value);
   return Number.isFinite(n) && n > 0 ? n : undefined;
+}
+
+function mapCorretor(row: CorretorFields): Corretor {
+  return {
+    id: row.id,
+    name: row.name,
+    creci: row.creci,
+    contact: row.contact,
+    photoUrl: row.photo_path ? publicStorageUrl(row.photo_path, CORRETOR_PHOTOS_BUCKET) : undefined,
+  };
 }
 
 function mapRow(row: RowWithRelations): Imovel {
@@ -73,9 +85,7 @@ function mapRow(row: RowWithRelations): Imovel {
     features: row.features?.length ? row.features : undefined,
     status: row.status,
     featured: row.featured,
-    corretor: row.brokers
-      ? { id: row.brokers.id, name: row.brokers.name, creci: row.brokers.creci, contact: row.brokers.contact }
-      : undefined,
+    corretor: row.brokers ? mapCorretor(row.brokers) : undefined,
     photos: ordered.map((p) => ({
       id: p.id,
       url: publicStorageUrl(p.storage_path),
@@ -141,6 +151,24 @@ export async function getSimilarImoveis(imovel: Imovel, limit = 4): Promise<Imov
   const sameKind = rows.filter((r) => searchKindOf(r.kind) === searchKindOf(imovel.kind));
   const others = rows.filter((r) => searchKindOf(r.kind) !== searchKindOf(imovel.kind));
   return [...sameKind, ...others].slice(0, limit);
+}
+
+/** Equipe pública (Empresa, Home, ficha), na ordem de cadastro. */
+export async function getCorretores(): Promise<Corretor[]> {
+  const supabase = createPublicClient();
+  const { data, error } = await supabase.from("brokers").select(CORRETOR_SELECT).order("created_at", { ascending: true });
+  if (error) throw error;
+  return (data ?? []).map(mapCorretor);
+}
+
+/** getCorretores() tolerante a falha: sem banco, a página abre sem fotos em vez de cair na tela de erro. */
+export async function getCorretoresSafe(): Promise<Corretor[]> {
+  try {
+    return await getCorretores();
+  } catch (error) {
+    console.error("Falha ao carregar corretores", error);
+    return [];
+  }
 }
 
 export async function getAllPublishedSlugs(): Promise<string[]> {

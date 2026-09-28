@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, SearchX } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { clsx } from "clsx";
 import { Container } from "@/components/layout/Container";
 import { ImoveisShell } from "@/components/imovel/ImoveisShell";
@@ -8,6 +9,7 @@ import { ImovelCard } from "@/components/imovel/ImovelCard";
 import { WhatsAppLink } from "@/components/ui/WhatsAppLink";
 import { getCatalogSummary, searchImoveis } from "@/lib/queries";
 import { PAGE_SIZE, parseSearchParams, searchHref, type SearchFilters } from "@/lib/search-params";
+import buscaVazia from "../../../../public/images/ia/busca-vazia.webp";
 
 export const metadata: Metadata = {
   title: "Imóveis para alugar e comprar",
@@ -82,7 +84,7 @@ export default async function ImoveisPage({ searchParams }: ImoveisPageProps) {
           </>
         ) : (
           <div className="flex flex-col items-center text-center gap-4 py-14 px-6 bg-bg-surface border border-border-1 rounded-xl">
-            <SearchX className="w-10 h-10 text-text-3" aria-hidden />
+            <Image src={buscaVazia} alt="" width={140} height={140} className="[mask-image:radial-gradient(closest-side,#000_78%,transparent)]" />
             <p className="text-text-1" style={{ font: "var(--text-display-sm)" }}>
               Nenhum imóvel com esses filtros.
             </p>
