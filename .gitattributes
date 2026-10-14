@@ -1,0 +1,6 @@
+# Pastas de ferramentas de IA (skills de agente de terceiros, config do
+# Claude Code, estado do Impeccable). Não são código do site: ficam fora da
+# barra de linguagens do GitHub.
+.agents/** linguist-vendored
+.claude/** linguist-vendored
+.impeccable/** linguist-vendored
